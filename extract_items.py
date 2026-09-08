@@ -85,6 +85,7 @@ def parse_questions(src):
                   f"{len(options)} options", file=sys.stderr)
             continue
 
+        val, unit = numeric_answer(options[answer])
         items.append({
             "id": qid,
             "category": category,
@@ -93,8 +94,51 @@ def parse_questions(src):
             "options": options,
             "answer_index": answer,
             "answer_text": options[answer],
+            "numeric_answer": val,
+            "unit": unit,
         })
     return items
+
+
+WORD_NUMBERS = {"zero": 0.0, "none": 0.0, "no": 0.0}
+
+
+def numeric_answer(text):
+    """Best-effort numeric value of the correct option, for interval mode.
+
+    Multiple choice can be answered by elimination, and elimination is not
+    evidence of a world model. Asking for a number instead removes that crutch —
+    but only for items whose answer IS a number. This returns None otherwise,
+    and interval mode simply skips those rather than inventing a value.
+
+    Returns (value, unit_hint). "About 1 in 25 (4%)" resolves to the percentage
+    in parentheses, because that is the quantity a model would estimate.
+    """
+    t = text.strip().lower()
+
+    if t in WORD_NUMBERS:
+        return WORD_NUMBERS[t], ""
+
+    # A parenthesised percentage restates the headline figure; prefer it.
+    m = re.search(r"\(([\d.]+)\s*%\)", t)
+    if m:
+        return float(m.group(1)), "%"
+
+    # "1 in 25" -> 4.0%
+    m = re.search(r"(\d+)\s+in\s+(\d[\d,]*)", t)
+    if m:
+        den = float(m.group(2).replace(",", ""))
+        if den:
+            return round(100.0 * float(m.group(1)) / den, 3), "%"
+
+    m = re.search(r"(-?[\d,]*\.?\d+)\s*(%|°c|x|:1)?", t)
+    if not m:
+        return None, ""
+    try:
+        val = float(m.group(1).replace(",", ""))
+    except ValueError:
+        return None, ""
+    return val, (m.group(2) or "").strip()
 
 
 def parse_punctures(md):
@@ -143,6 +187,14 @@ def main():
     print(f"\n  option counts present: {sorted(opts)}")
     print("  NOTE: chance accuracy differs per item, so score against the "
           "per-item baseline, never a flat 25%.")
+
+    numeric = [it for it in items if it["numeric_answer"] is not None]
+    print(f"\n  items with a numeric answer: {len(numeric)}/{len(items)} "
+          "(the interval-mode subset)")
+    if len(items) - len(numeric):
+        skipped = [it["id"] for it in items if it["numeric_answer"] is None]
+        print(f"  qualitative, skipped by interval mode: {', '.join(skipped[:6])}"
+              + (" …" if len(skipped) > 6 else ""))
 
 
 if __name__ == "__main__":

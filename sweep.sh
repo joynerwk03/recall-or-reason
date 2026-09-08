@@ -1,6 +1,14 @@
 #!/bin/bash
 # Full 80-item sweep across every local model, then score each.
 # Long-running: roughly half an hour per model through the CLI transport.
+#
+# ⚠ RUN THIS IN THE FOREGROUND, and keep the invoking shell alive.
+#
+# Backgrounding it from a transient `wsl.exe -- bash -lc "... &"` does NOT work:
+# WSL2 shuts the distro down once the invoking shell's last process exits, and
+# it takes the nohup'd job with it. That failure is silent — an empty log, no
+# process, and no error anywhere — which is worse than a crash. Learned
+# 2026-09-08 after an hour of watching a sweep that had never started.
 cd "$(dirname "$0")" || exit 1
 mkdir -p results
 LOG=results/sweep.log
