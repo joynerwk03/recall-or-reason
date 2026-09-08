@@ -1,0 +1,3 @@
+results/*.jsonl
+data/items.jsonl
+__pycache__/
