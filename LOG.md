@@ -6,6 +6,72 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+## 2026-09-08 — both models: calibration tracks capability, and neither model
+## ever admits doubt
+
+**What.** Full 80 items on both local models. 80/80 parsed for lfm2, 80/80 for
+devstral-small-2 (one answer carried no confidence).
+
+| | lfm2 | devstral-small-2 |
+|---|---|---|
+| accuracy | 46.2% [35.7, 57.1] | **78.8% [68.6, 86.3]** |
+| chance | 26.8% | 26.8% |
+| ECE | 0.460 | **0.104** |
+| stated 85 → right | 32% | 73% |
+| stated 95 → right | 52% | 87% |
+
+**Finding 1: calibration tracks capability.** The more accurate model is also
+the far better calibrated one, by a factor of four on ECE. Both still sit below
+the diagonal, so both overclaim, but the gap shrinks sharply with capability.
+That is a cleaner statement than "models are overconfident" and it is the
+headline of the run.
+
+**Finding 2, and the more interesting one: neither model ever expresses real
+uncertainty.** Across **159 answers the lowest confidence either model ever
+stated was 80.** Not once did either say 40, or 60, or "I don't know". lfm2 used
+five distinct values (80, 85, 90, 95, 99); devstral used **two** (85, 95).
+
+That reframes the problem. The confidence channel is not badly calibrated so
+much as **barely used**: both models operate in the top fifth of the scale and
+never touch the rest of it. A model at 46% accuracy that never says it is less
+than 80% sure is not making a calibration error, it is declining to represent
+doubt at all.
+
+Note the counterintuitive detail: the *better* model uses the *coarser*
+vocabulary. Two values, better calibrated. So expressive range and calibration
+are not the same axis.
+
+**Finding 3: confidence is ordinally informative in both.** 95 beats 85 in both
+models (52 vs 32, and 87 vs 73). They do know which of their answers are better.
+They cannot say so on a 0–100 scale, and they never use the low end.
+
+**Skew: still unmeasured, in both.** devstral runs Right 77.4%, Left 75.0%,
+Secular 75.0%, with intervals 25–35 points wide. Nothing separable.
+**Do not report a skew result from 80 items.**
+
+⚠️ **A prediction of mine was wrong.** The 2026-09-07 entry guessed, from three
+items all reading 85, that confidence might be constant. Across 80 it is not.
+The three-item sample could not see it — the exact error the scorer is built to
+refuse, made by me rather than by the scorer.
+
+🔴 **The result that most needs interrogating: devstral scoring 78.8%.** These
+questions were written so reasoning beats recall, and a 15GB model getting four
+in five on contested public statistics is exactly what memorisation would look
+like. **This is not evidence of a world model until the memorisation probe runs.**
+It is the strongest argument yet for checkpoint 3, and the number should not be
+quoted as a capability result before then.
+
+**Chart.** `results/calibration.png`, both models.
+
+**Next.** Interval elicitation on the 50 numeric items. The motivation is now
+sharper than "try another channel": the models never use the low end of a
+percentage scale, so the question is whether an interval is a format in which
+they *can* express doubt. If interval widths also collapse to near-zero, the
+finding is about the models' unwillingness to represent uncertainty in any
+format, which is a bigger claim than a calibration number.
+
+---
+
 ## 2026-09-08 — full sweep, lfm2: real signal, badly miscalibrated
 
 **What.** All 80 items, one model, multiple choice with stated confidence.

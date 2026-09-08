@@ -94,12 +94,13 @@ def main():
     for t in leg.get_texts():
         t.set_color(INK)
 
-    ax.text(0.0, 1.155, "Stated confidence is not worth much",
+    ax.text(0.0, 1.155, "The better model is also the better-calibrated one",
             transform=ax.transAxes, color=INK, fontsize=13.5, fontweight="bold",
             va="bottom", ha="left")
     ax.text(0.0, 1.035,
-            "Every point sits below the diagonal, so every bin is overconfident.\n"
-            "Bubble size is how many answers landed in that bin; bars are 95% intervals.",
+            "Every point sits below the diagonal, so both models overclaim. But the gap "
+            "shrinks with capability.\nBubble size is how many answers landed in that bin; "
+            "bars are 95% intervals.",
             transform=ax.transAxes, color=MUTED, fontsize=10, va="bottom", ha="left")
 
     fig.subplots_adjust(top=0.80, left=0.11, right=0.97, bottom=0.13)
