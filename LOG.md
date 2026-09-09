@@ -34,7 +34,18 @@ runs, so the format comparison below is on identical questions.
 | interval: estimate outside its own interval | 8/48 | 0/50 |
 | interval: unparseable | 2/50 | 0/50 |
 
-**Verdict: (b) for the larger model, (a) for the smaller one.**
+**A size claim I had wrong, checked before it reached the write-up.** I had been
+calling devstral "the larger model" throughout, from the on-disk footprint —
+15GB against 14GB. `ollama show` says otherwise: **devstral-small-2 is 24.0B and
+lfm2 is 23.8B, both Q4_K_M**. Same size to within 1%, same quantisation. The
+difference is architecture, `mistral3` dense against `lfm2moe`, a
+mixture-of-experts whose active parameter count per token is a fraction of its
+nominal one. Every "larger model" phrasing in this repo was wrong and is
+corrected. This also removes the basis for reading checkpoint 2 as a scale
+effect: it is not one, and the finding is better for it, because two models of
+the same nominal size behaving oppositely is not explained by scale at all.
+
+**Verdict: (b) for devstral, (a) for lfm2.**
 
 devstral covers 76% against the 80% it was asked for, and the confidence
 interval contains 80, so it is statistically indistinguishable from nominal. The
@@ -83,6 +94,12 @@ produce.
 
 ## 2026-09-08 — both models: calibration tracks capability, and neither admits doubt
 
+> **Correction, 2026-09-09.** Read "capability" here as *measured accuracy on
+> this bank*, which is what was actually observed, and not as model size. At the
+> time this entry was written I believed devstral was the larger model. It is
+> not: 24.0B against 23.8B, both Q4_K_M. Nothing in the numbers below changes —
+> but any reading of them as a scale effect does.
+
 **What.** Full 80 items on both local models. 80/80 parsed for lfm2, 80/80 for
 devstral-small-2 (one answer carried no confidence).
 
@@ -129,7 +146,7 @@ The three-item sample could not see it — the exact error the scorer is built t
 refuse, made by me rather than by the scorer.
 
 🔴 **The result that most needs interrogating: devstral scoring 78.8%.** These
-questions were written so reasoning beats recall, and a 15GB model getting four
+questions were written so reasoning beats recall, and a 24B model getting four
 in five on contested public statistics is exactly what memorisation would look
 like. **This is not evidence of a world model until the memorisation probe runs.**
 It is the strongest argument yet for checkpoint 3, and the number should not be

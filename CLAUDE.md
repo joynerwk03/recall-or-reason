@@ -60,8 +60,15 @@ project exists. Two approaches, cheapest first:
   Expensive, because each variant needs its own verified answer.
 
 **Model ladder.** Local models through Ollama, free, so cost never gates the
-work. Scale is informative rather than incidental: larger models memorise more,
-so the gap should *widen* with scale if the probe measures what it claims.
+work. Scale is meant to be informative rather than incidental: larger models
+memorise more, so the gap should *widen* with scale if the probe measures what
+it claims.
+
+⚠️ **The two models currently installed are not a scale ladder.**
+devstral-small-2 is 24.0B and lfm2 is 23.8B, both Q4_K_M — same size, different
+architecture (dense vs MoE). Their 15GB/14GB on-disk footprints look like a big
+model and a small one and are not. Do not describe either as "the larger model";
+testing scale means pulling a model at a genuinely different size.
 
 ## Commands
 

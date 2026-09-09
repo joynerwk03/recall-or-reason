@@ -43,6 +43,13 @@ INK, MUTED, GRID, SURFACE = "#1c1f26", "#6a7280", "#e4e7ec", "#fcfcfb"
 SERIES = ["#1f6feb", "#b4531f"]      # validated: lightness band and contrast pass
 LIM = (0.0, 60000.0)
 
+# From `ollama show`, not from the on-disk size, which misleads: these two are
+# 15GB and 14GB and look like a big model and a small one. They are not. Same
+# parameter count to within 1%, same quantisation — the difference is dense
+# against mixture-of-experts. Any "larger model" phrasing about this pair is wrong.
+SPEC = {"devstral-small-2": "24.0B dense, Q4_K_M",
+        "lfm2": "23.8B MoE, Q4_K_M"}
+
 
 def spearman(xs, ys):
     n = len(xs)
@@ -87,7 +94,7 @@ def main():
         sys.exit(__doc__)
     runs = [load(p) for p in sys.argv[1:]]
 
-    fig, axes = plt.subplots(1, len(runs), figsize=(4.6 * len(runs), 6.0), dpi=150,
+    fig, axes = plt.subplots(1, len(runs), figsize=(4.6 * len(runs), 6.4), dpi=150,
                              sharex=True, sharey=True)
     if len(runs) == 1:
         axes = [axes]
@@ -117,7 +124,8 @@ def main():
         ax.scatter([r["_hw"] for r in outside], [r["_err"] for r in outside],
                    s=46, facecolor="none", zorder=4, edgecolor=c, linewidth=1.5)
 
-        ax.set_title(f"{model}\n{100*cov/n:.0f}% coverage  ·  rho {rho:+.2f}",
+        ax.set_title(f"{model}  ({SPEC.get(model, '?')})\n"
+                     f"{100*cov/n:.0f}% coverage  ·  rho {rho:+.2f}",
                      color=INK, fontsize=11.5, fontweight="bold", pad=11,
                      linespacing=1.6)
         ax.set_xlabel("Half-width the model asked for", color=MUTED,
@@ -143,17 +151,18 @@ def main():
     for t in leg.get_texts():
         t.set_color(INK)
 
-    fig.text(0.052, 0.975, "Asked for a range instead of a percentage, the larger "
-             "model finds its footing",
+    fig.text(0.052, 0.975, "Two 24B models, and only one of them knows what it "
+             "does not know",
              color=INK, fontsize=13.5, fontweight="bold", va="top", ha="left")
-    fig.text(0.052, 0.925,
-             "Points along the diagonal mean a model widening exactly where it is about "
-             "to be wrong.\ndevstral tracks it and covers 76% against the 80% it was "
-             "asked for; lfm2 misses two-thirds.\nBoth axes are symlog — the items mix "
-             "percentages with raw counts.",
+    fig.text(0.052, 0.928,
+             "Points along the diagonal mean a model widening exactly where it is "
+             "about to be wrong.\ndevstral tracks it and covers 76% against the 80% it "
+             "asked for; lfm2 misses two-thirds.\nSame parameter count and quantisation "
+             "— the difference is architecture, not size.\nBoth axes are symlog: the "
+             "items mix percentages with raw counts.",
              color=MUTED, fontsize=9.6, va="top", ha="left", linespacing=1.6)
 
-    fig.subplots_adjust(top=0.715, left=0.092, right=0.975, bottom=0.105, wspace=0.09)
+    fig.subplots_adjust(top=0.695, left=0.092, right=0.975, bottom=0.10, wspace=0.09)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        "results", "interval.png")
     fig.savefig(out, facecolor=SURFACE)
