@@ -32,6 +32,24 @@ Rules this file exists to enforce:
    rises on the control too, the gap on the real variants cannot be read as
    memorisation.
 
+Rejected, and why — kept here because a rejection is a result:
+
+- **extreme-poverty.** Its prompt states "In 1990, about 36% of humanity lived
+  in extreme poverty (under $3.00/day)". The World Bank series for that exact
+  line ($3.00, 2021 PPP) puts 1990 at **43.4%**; 36.2% is its figure for **2000**.
+  The item's own answer (~10%) does match 2024 (10.4%), so the item appears to
+  pair a current answer with an anchor from an older vintage or a different
+  line. That is a ground-truth problem in the bank rather than in this file, so
+  no variant is built on it until the anchor is reconciled. Flagged in LOG.md.
+  Source: https://api.worldbank.org/v2/country/WLD/indicator/SI.POV.DDAY
+
+- **Most items both models already answer well** turn out not to be perturbable
+  at all: they are single famous studies (one PHE estimate on vaping, one
+  genetics result, one exoneration study) with no other year, country or
+  subgroup to move to. Perturbation needs *repeatedly measured* quantities —
+  polls, national statistics, tracked databases. This shrinks the eligible pool
+  considerably and is the main obstacle to reaching 20 variants.
+
   ./run.sh build_variants.py
 """
 import json
@@ -110,6 +128,36 @@ VARIANTS = [
         note="Statistics Canada vital statistics, 2019: of 708 firearm-related "
              "deaths, 75% were suicides and 23% homicides. US figure is ~60%, "
              "so the direction of the difference matters as well as the size.",
+        checked="2026-09-09",
+    ),
+    dict(
+        base="scientists-god", suffix="public", kind="subgroup",
+        prompt="What share of the US general public say they believe in God or "
+               "a universal spirit / higher power?",
+        context="",
+        answer=95.0, unit="%",
+        source="https://www.pewresearch.org/religion/2009/11/05/scientists-and-belief/",
+        note="Pew 2009: 51% of AAAS scientists believe in God or a higher power "
+             "against 95% of the American public (Pew survey, July 2006), both "
+             "reported in the same write-up. A subgroup swap rather than a year "
+             "swap, and a cleaner perturbation for it — identical wording, "
+             "identical instrument, only the population moves.",
+        checked="2026-09-09",
+    ),
+    dict(
+        base="recidivism", suffix="3year", kind="horizon",
+        prompt="Of US state prisoners released in 2005, what share were "
+               "rearrested within 3 years?",
+        context="",
+        answer=68.0, unit="%",
+        source="https://bjs.ojp.gov/content/pub/pdf/18upr9yfup0514.pdf",
+        note="BJS 2018 Update on Prisoner Recidivism, 2005 cohort across 30 "
+             "states: 68% rearrested within 3 years, 79% within 6, 83% within "
+             "9. FLAGGED: the base item is framed on a 2008 cohort at 10 years, "
+             "so this moves the cohort as well as the window and is not a pure "
+             "one-variable swap. Kept because the follow-up window is the "
+             "dominant term, but it is the weakest variant in the set and "
+             "should be the first dropped if the gap ever hinges on it.",
         checked="2026-09-09",
     ),
     dict(

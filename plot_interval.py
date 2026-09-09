@@ -156,10 +156,11 @@ def main():
              color=INK, fontsize=13.5, fontweight="bold", va="top", ha="left")
     fig.text(0.052, 0.928,
              "Points along the diagonal mean a model widening exactly where it is "
-             "about to be wrong.\ndevstral tracks it and covers 76% against the 80% it "
-             "asked for; lfm2 misses two-thirds.\nSame parameter count and quantisation "
-             "— the difference is architecture, not size.\nBoth axes are symlog: the "
-             "items mix percentages with raw counts.",
+             "about to be wrong.\ndevstral tracks it and covers 72% against the 80% it "
+             "asked for; lfm2 misses nearly three-quarters.\nSame parameter count and "
+             "quantisation — the difference is architecture, not size.\nBoth axes are "
+             "symlog: the items mix percentages with raw counts. Decoding pinned to "
+             "temperature 0.",
              color=MUTED, fontsize=9.6, va="top", ha="left", linespacing=1.6)
 
     fig.subplots_adjust(top=0.695, left=0.092, right=0.975, bottom=0.10, wspace=0.09)

@@ -128,7 +128,21 @@ def list_models(host=None, cli=None):
 
 
 def ask_cli(cli, model, prompt, timeout):
-    p = subprocess.run([cli, "run", model], input=prompt, capture_output=True,
+    # `ollama run` takes no --temperature flag, so the setting goes in over
+    # stdin as a REPL command before the prompt itself.
+    #
+    # This is not a nicety. Until 2026-09-09 this function passed no sampling
+    # options at all while the HTTP path beside it set temperature 0 and carried
+    # a comment claiming determinism. On this machine the CLI path is the one
+    # that runs, so every result up to that date was a single draw from a
+    # stochastic decode. Measured: three identical calls returned 1, 2, 2
+    # unpinned, and 20, 20, 20 pinned. One item flipped from 6 to 42 between two
+    # variant runs, which moved a reported median gap from +0.51 to +0.15.
+    #
+    # If this line is ever removed, every number the harness produces silently
+    # becomes a sample of one.
+    stdin = "/set parameter temperature 0\n" + prompt
+    p = subprocess.run([cli, "run", model], input=stdin, capture_output=True,
                        text=True, timeout=timeout, errors="replace")
     if p.returncode != 0 and not p.stdout.strip():
         raise RuntimeError((p.stderr or "ollama exited " + str(p.returncode))[:200])

@@ -6,7 +6,69 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+## 2026-09-09 (later) — the harness was never deterministic. Everything below is restated.
+
+**What happened.** `ask_cli` invoked `ollama run` with no sampling options at
+all, while the HTTP function directly beneath it set `temperature: 0` and
+carried a comment reading "Deterministic, so a re-run of the same items is
+comparable." On this machine Ollama binds loopback on the Windows side, so the
+CLI path is the one that runs. **Every number in checkpoints 2, 3 and 4 was a
+single draw from a stochastic decode.**
+
+Caught because lfm2 answered `interracial-marriage@1978` with 6 in one variant
+run and 42 in the next. Confirmed directly — three identical calls returned
+1, 2, 2 unpinned and 20, 20, 20 with `/set parameter temperature 0` piped ahead
+of the prompt. That is now what the CLI path does, with a comment saying why.
+
+**Restated results, all runs pinned.**
+
+| | lfm2 | devstral-small-2 |
+|---|---|---|
+| interval coverage (asked 80%) | 27.3% [16.3, 41.8] | **72.0% [58.3, 82.5]** |
+| shuffle null | 17.0% | 16.4% |
+| margin over null | +10.3 | **+55.6** |
+| width vs error, rho raw | +0.242 | **+0.753** |
+| estimate outside its own interval | 12/44 | 1/50 |
+| unparseable | 6/50 | 0/50 |
+
+**Checkpoint 3 survives.** devstral's coverage moves 76.0% → 72.0%, and the
+interval still contains the 80% it was asked for. rho 0.761 → 0.753. The finding
+is unchanged: the model that never states below 85 on a percentage scale
+produces near-nominal intervals when asked for a range. lfm2 gets *worse* under
+pinning and its margin over the shuffle null falls to +10.3, so the scorer now
+says outright that its intervals would bracket almost any answer in the set.
+
+**Checkpoint 4 does not survive, for lfm2.** 🔴 **The null control failed
+(+0.72).** lfm2 answers the *original* plastics question exactly right and then
+misses the reworded version whose answer barely moved. That is the control
+doing its job: whatever is damaging lfm2 on the variants, it is not the need for
+a different fact, because a variant needing the *same* fact damages it too.
+
+**The lfm2 memorisation claim in the entry below is therefore retracted.** The
++0.51 median gap, the anchor echoes read as a recall signature — none of it is
+attributable while the control is failing. The echoes are still there
+descriptively (2/8 original-answer, 2/8 prompt-anchor) and they are still
+suggestive, but the probe is invalid for this model and no headline comes out
+of it. Between that, 6/50 unparseable and 12/44 incoherent intervals, lfm2 is
+too unreliable an instrument subject for a perturbation test.
+
+**devstral's checkpoint 4 result survives intact.** Control holds at +0.03,
+median gap **+0.03** over 6 eligible pairs, **0/8** anchor echoes. It tracks the
+year, country or population it was asked about instead of reciting the figure it
+holds for the original.
+
+**The lesson worth keeping.** Two paths to the same model, one configured and
+one not, with the comment about determinism sitting on the configured one. The
+untested path is the one that ran for three days. A comment asserting a property
+is not a test of that property.
+
 ## 2026-09-09 — perturbed variants: the probe separates the two models
+
+> ⚠️ **Superseded the same day. Read the entry above first.** Every number here
+> comes from an unpinned, stochastic decode. devstral's conclusion survives
+> re-running; **lfm2's does not — its null control fails, and the memorisation
+> reading below is retracted.** Kept unedited as the record of what the first
+> pass showed.
 
 **Hypothesis.** Move the question to a different year or country where the true
 answer genuinely differs. A model that reasoned should mostly survive; one that
@@ -73,6 +135,10 @@ the original, since those are the only ones that carry information. Twenty
 would make the gap quotable.
 
 ## 2026-09-09 — interval elicitation: the format was the problem, not the model
+
+> ⚠️ **Numbers restated in the 2026-09-09 (later) entry** after the decode was
+> pinned to temperature 0. The finding holds; devstral's coverage reads 72.0%
+> [58.3, 82.5] rather than 76.0%, and rho 0.753 rather than 0.761.
 
 **Hypothesis.** Checkpoint 2 found that neither model ever stated a confidence
 below 80. That has two readings, and they point opposite ways: either (a) these
