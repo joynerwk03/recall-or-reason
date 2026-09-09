@@ -6,8 +6,82 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
-## 2026-09-08 — both models: calibration tracks capability, and neither model
-## ever admits doubt
+## 2026-09-09 — interval elicitation: the format was the problem, not the model
+
+**Hypothesis.** Checkpoint 2 found that neither model ever stated a confidence
+below 80. That has two readings, and they point opposite ways: either (a) these
+models have no usable sense of their own uncertainty, or (b) the uncertainty is
+there and the *percentage format* cannot carry it. Interval elicitation
+separates them — ask for a point estimate and an 80% range instead of a choice,
+on the 50 numeric items.
+
+**A prediction recorded before the run, and wrong.** The checkpoint-2 draft
+closed by predicting the intervals would come back narrow. They did not, and
+not marginally: devstral's median interval spans 82% of the true value.
+
+**What.** 50 numeric items, both models, `--mode interval`. The item sets were
+checked rather than assumed — all 50 interval items appear in both choice-mode
+runs, so the format comparison below is on identical questions.
+
+| on the same 50 items | lfm2 | devstral-small-2 |
+|---|---|---|
+| choice: accuracy | 36.0% | 72.0% |
+| choice: ECE | 0.560 | 0.160 |
+| choice: lowest confidence ever stated | 80 | 85 |
+| interval: coverage, asked for 80% | 33.3% [21.7, 47.5] | **76.0% [62.6, 85.7]** |
+| interval: shuffle null | 17.7% | 17.4% |
+| interval: width vs error, Spearman rho | +0.312 | **+0.761** |
+| interval: estimate outside its own interval | 8/48 | 0/50 |
+| interval: unparseable | 2/50 | 0/50 |
+
+**Verdict: (b) for the larger model, (a) for the smaller one.**
+
+devstral covers 76% against the 80% it was asked for, and the confidence
+interval contains 80, so it is statistically indistinguishable from nominal. The
+same model, on the same questions, never once claimed to be less than 85% sure
+when the answer had to be a percentage. Its uncertainty was there the whole
+time. The percentage scale could not express it.
+
+lfm2 covers 33% against the same request, so it is badly overconfident in both
+formats. The format is not a free rescue — it needs a model that has something
+to express.
+
+**Two controls, because coverage on its own proves nothing.** A model answering
+[0, 100] to every question covers 100% of the time and knows nothing.
+
+1. **Shuffle null.** Score each interval against a *different* item's truth.
+   That gives 17.4% for devstral against its real 76% — a 58.6 point margin, so
+   the intervals are placed rather than merely wide. lfm2's margin is 15.6.
+2. **Subset control.** Interval mode only runs the 50 numeric items, so choice
+   mode was re-scored on exactly those 50. It came out *worse* than on the full
+   bank (ECE 0.104 → 0.160), so the contrast is not an artefact of the subset
+   being easier.
+
+**A metric bug I introduced, and the check that caught it.** The first version
+of the self-knowledge correlation used relative width against relative error,
+both divided by `max(|truth|, 1)`. Two ratios sharing a denominator correlate
+even when the underlying quantities are independent (Pearson's spurious
+correlation of ratios, 1897). The distortion here was large and had no
+consistent sign — devstral 0.761 raw → 0.281 normalised, lfm2 0.312 → 0.501 —
+so it would have **reversed the ranking of the two models**. The scorer now
+reports the raw correlation and prints the normalised one beside it purely as a
+standing warning.
+
+**What this does not settle, which is the important part.** Checkpoint 3 asked
+for the three regimes to be visibly separable. They are: `results/interval.png`
+shows devstral's answers strung along the diagonal and lfm2's smeared above it.
+But separability is not attribution. *Tight and right* is the signature of
+memorisation and of confident correct reasoning alike, and nothing in this run
+tells those two apart. The question this project exists to answer is still open.
+The checkpoint criterion was weaker than the question it stood in for, and it
+should be recorded as passed on its own terms rather than as an answer.
+
+**Next.** Perturbed variants — the same claim with a different country, year or
+subgroup, each needing its own verified answer. Recall collapses there and
+reasoning mostly survives, and that gap is the number this project was set up to
+produce.
+
+## 2026-09-08 — both models: calibration tracks capability, and neither admits doubt
 
 **What.** Full 80 items on both local models. 80/80 parsed for lfm2, 80/80 for
 devstral-small-2 (one answer carried no confidence).
