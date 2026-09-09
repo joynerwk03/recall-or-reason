@@ -224,6 +224,14 @@ def main():
     ap.add_argument("--dry-run", action="store_true",
                     help="build prompts and write a stub run, no model needed")
     ap.add_argument("--list-models", action="store_true")
+    ap.add_argument("--items", default=ITEMS,
+                    help="item file to run; defaults to the full bank. Perturbed "
+                         "variants use data/variants.jsonl, which is deliberately "
+                         "the same schema so it goes through this exact prompt "
+                         "path — a variant scored against a different prompt "
+                         "builder would not be comparable to its original.")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the run filename, e.g. --tag variants")
     a = ap.parse_args()
 
     if a.list_models:
@@ -235,7 +243,7 @@ def main():
             print("  " + m)
         return
 
-    items = [json.loads(l) for l in open(ITEMS, encoding="utf-8")]
+    items = [json.loads(l) for l in open(a.items, encoding="utf-8")]
     if a.mode == "interval":
         # Only items whose answer is a number. The rest are skipped rather than
         # coerced; inventing a numeric target for a qualitative claim would put
@@ -259,7 +267,8 @@ def main():
     os.makedirs(RESULTS, exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     tag = re.sub(r"[^a-zA-Z0-9._-]", "_", a.model)
-    suffix = ("-interval" if a.mode == "interval" else "") + ("-dry" if a.dry_run else "")
+    suffix = (("-" + re.sub(r"[^a-zA-Z0-9._-]", "_", a.tag)) if a.tag else "")
+    suffix += ("-interval" if a.mode == "interval" else "") + ("-dry" if a.dry_run else "")
     out = os.path.join(RESULTS, f"{tag}-{stamp}{suffix}.jsonl")
 
     n_ok = n_parsed = 0
@@ -289,6 +298,14 @@ def main():
                    "punctures": it["punctures"], "model": a.model,
                    "mode": a.mode, "prompt_version": PROMPT_VERSION,
                    "error": err, "raw": raw}
+
+            # Carry perturbation metadata through to the result. Without this a
+            # variant run cannot be paired back to its original and the gap is
+            # unscoreable. Absent on ordinary bank items, so this is a no-op there.
+            for k in ("base_id", "kind", "original_answer", "prompt_anchor",
+                      "source_url", "verified"):
+                if k in it:
+                    rec[k] = it[k]
 
             if a.mode == "interval":
                 est, lo, hi = parse_interval(raw) if raw else (None, None, None)

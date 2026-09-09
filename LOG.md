@@ -6,6 +6,72 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+## 2026-09-09 — perturbed variants: the probe separates the two models
+
+**Hypothesis.** Move the question to a different year or country where the true
+answer genuinely differs. A model that reasoned should mostly survive; one that
+recalled a memorised figure should not, because the figure is now wrong. The gap
+between error-on-original and error-on-variant is the number.
+
+**What.** Seven variants hand-built in `build_variants.py`, six real
+perturbations and **one null control** where the answer barely moves
+(US vs global plastics recycling, 9% → 8.7%). Every answer traces to a primary
+source recorded inline with the date checked — Gallup, Pew, EPI, Statistics
+Canada, EPA. Both models, interval mode, same prompt path as the originals via
+a new `--items` flag.
+
+| | lfm2 | devstral-small-2 |
+|---|---|---|
+| coverage on the variants | 3/7 = 42.9% | 6/7 = 85.7% |
+| coverage on the originals | 33.3% | 76.0% |
+| **median gap** (eligible pairs) | **+0.51** | **+0.03** |
+| eligible pairs | 2 of 6 | 5 of 6 |
+| echoed the original answer | 2/6 | 0/6 |
+| echoed an anchor from the prompt | 2/6 | 0/6 |
+| null control gap | +0.03 | +0.03 |
+
+**Verdict: devstral tracks the perturbation, lfm2 does not.** devstral is
+*better* on the variants than on the originals and never once fell back on a
+figure it was already holding. lfm2 failed in the most legible way possible:
+
+- `lgbt-share@2012` — answered **9.0**, which is the *current* US figure. Truth 3.5.
+- `gun-suicides@canada` — answered **55**, which is roughly the *US* share. Truth 75.
+- `ceo-pay@1989` — answered **21** with an interval of [20, 22]. The prompt says
+  the 1965 ratio was 21x. It repeated the number it had just been handed, tightly.
+- `interracial-marriage@1978` — answered **6**, against the 4% for 1958 stated in
+  the prompt. Truth 36.
+
+The last two need no recall at all; they are the prompt echoing back. Both
+models pass the null control at +0.03, so none of this is the rewording doing
+damage — it is specifically the need for a *different fact*.
+
+**A metric flaw that inverted the result before it was caught.** The first
+scoring run reported lfm2 at median **−0.05** and printed "no meaningful
+degradation", which is the opposite of the truth. Cause: lfm2 was already 60–94%
+wrong on several originals, and an item you were already wrong about has no room
+to get worse, so it scores as robust. The gap is only meaningful on pairs where
+the model got the original approximately right. Restricted to those (≤15%
+relative error), lfm2 goes from −0.05 to **+0.51** and devstral stays at +0.03.
+`BASELINE_OK` in `score_variants.py`, and the reason is in a comment there so it
+does not get "simplified" away later.
+
+**The caveat that limits all of it.** These variants were selected because a
+single primary source publishes the whole series or cross-section — that is what
+made them verifiable in one sitting. That same property makes the variant
+answers well-published. **This rules out reciting one headline figure. It does
+not rule out having memorised the whole Gallup trend table.** Testing that needs
+variants whose answers are not published anywhere, which means computing them,
+which means they can no longer be verified against a source. That tension is
+real and I do not have a way around it yet.
+
+**Also: n is 6, and 2 of them for lfm2.** The direction is clear and the failure
+mode is legible, but no interval worth printing fits around a median of two
+numbers. This is a pilot that shows the method works, not a measurement.
+
+**Next.** More variants, weighted toward items where both models score well on
+the original, since those are the only ones that carry information. Twenty
+would make the gap quotable.
+
 ## 2026-09-09 — interval elicitation: the format was the problem, not the model
 
 **Hypothesis.** Checkpoint 2 found that neither model ever stated a confidence
