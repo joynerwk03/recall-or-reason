@@ -38,6 +38,34 @@ RESULTS = os.path.join(HERE, "results")
 LETTERS = "ABCDEFGH"
 
 PROMPT_VERSION = "v1"
+
+# Interval mode. Multiple choice can be answered by elimination, and elimination
+# is not evidence of a world model. Asking for a number removes that crutch, and
+# asking for an interval around it is the actual probe: a memorised value gives
+# a tight interval that contains the truth, a reasoned estimate gives a wider one
+# that usually does, and a bluff gives a tight one that does not. The joint
+# distribution of width against error separates all three.
+#
+# There is a prior reason to expect this to be informative. In the v1 sweep
+# neither model ever stated a confidence below 80 across 159 answers, so the
+# percentage channel was barely used. An interval is a different format, and the
+# open question is whether they can express doubt in it at all.
+INTERVAL_TEMPLATE = """You are estimating a real-world statistic.
+
+{context}Question: {prompt}
+
+Answer with exactly three lines and nothing else:
+ESTIMATE: <your single best number>
+LOW: <low end of your 80% interval>
+HIGH: <high end of your 80% interval>
+
+Give {unit_hint}, digits only, no words or symbols.
+
+An 80% interval means you think there is an 80% chance the true value lies
+between LOW and HIGH. Make it as wide as it honestly needs to be. A narrow
+interval that misses is worse than a wide one that contains the answer.
+"""
+
 TEMPLATE = """You are answering a multiple-choice question about a real-world statistic.
 
 {context}Question: {prompt}
@@ -147,9 +175,49 @@ def parse(text, n_options):
     return letter, conf
 
 
+def parse_interval(text):
+    """Pull ESTIMATE, LOW and HIGH. Returns (est, lo, hi), any of which may be None.
+
+    Tolerant of drift for the same reason the choice parser is: a strict parser
+    would measure formatting compliance rather than estimation. If LOW and HIGH
+    come back inverted they are swapped, since the intent is unambiguous and
+    discarding the row would lose a real answer to a formatting slip.
+    """
+    def grab(label):
+        m = re.search(label + r"\s*:?\s*\$?(-?[\d,]*\.?\d+)", text, re.I)
+        if not m:
+            return None
+        try:
+            return float(m.group(1).replace(",", ""))
+        except ValueError:
+            return None
+
+    est, lo, hi = grab("ESTIMATE"), grab("LOW"), grab("HIGH")
+
+    # Fallback: models frequently drop the labels and emit three bare numbers in
+    # the requested order. Those are perfectly good answers, and discarding them
+    # would bias the sample toward format-compliant responses rather than
+    # accurate ones. Only used when the labelled parse is incomplete.
+    if est is None or lo is None or hi is None:
+        nums = re.findall(r"-?[\d,]*\.?\d+", text)
+        vals = []
+        for n in nums[:3]:
+            try:
+                vals.append(float(n.replace(",", "")))
+            except ValueError:
+                pass
+        if len(vals) == 3:
+            est, lo, hi = vals
+
+    if lo is not None and hi is not None and lo > hi:
+        lo, hi = hi, lo
+    return est, lo, hi
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="lfm2")
+    ap.add_argument("--mode", choices=["choice", "interval"], default="choice")
     ap.add_argument("--limit", type=int, default=0, help="0 = all items")
     ap.add_argument("--host", default=None)
     ap.add_argument("--timeout", type=int, default=180)
@@ -168,6 +236,13 @@ def main():
         return
 
     items = [json.loads(l) for l in open(ITEMS, encoding="utf-8")]
+    if a.mode == "interval":
+        # Only items whose answer is a number. The rest are skipped rather than
+        # coerced; inventing a numeric target for a qualitative claim would put
+        # a fabricated ground truth into the scoring.
+        before = len(items)
+        items = [i for i in items if i.get("numeric_answer") is not None]
+        print(f"interval mode: {len(items)} of {before} items have a numeric answer")
     if a.limit:
         items = items[:a.limit]
 
@@ -184,53 +259,82 @@ def main():
     os.makedirs(RESULTS, exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     tag = re.sub(r"[^a-zA-Z0-9._-]", "_", a.model)
-    out = os.path.join(RESULTS, f"{tag}-{stamp}{'-dry' if a.dry_run else ''}.jsonl")
+    suffix = ("-interval" if a.mode == "interval" else "") + ("-dry" if a.dry_run else "")
+    out = os.path.join(RESULTS, f"{tag}-{stamp}{suffix}.jsonl")
 
     n_ok = n_parsed = 0
     with open(out, "w", encoding="utf-8") as fh:
         for i, it in enumerate(items, 1):
-            opts = "\n".join(f"{LETTERS[j]}) {o}" for j, o in enumerate(it["options"]))
             ctx = (it.get("context") or "").strip()
-            prompt = TEMPLATE.format(prompt=it["prompt"], options=opts,
-                                     context=(ctx + "\n\n") if ctx else "")
-
-            if a.dry_run:
-                raw, err = "", "dry-run"
-                choice = conf = None
+            if a.mode == "interval":
+                unit_hint = ("a percentage between 0 and 100" if it.get("unit") == "%"
+                             else "a plain number")
+                prompt = INTERVAL_TEMPLATE.format(
+                    prompt=it["prompt"], unit_hint=unit_hint,
+                    context=(ctx + "\n\n") if ctx else "")
             else:
-                err = None
+                opts = "\n".join(f"{LETTERS[j]}) {o}" for j, o in enumerate(it["options"]))
+                prompt = TEMPLATE.format(prompt=it["prompt"], options=opts,
+                                         context=(ctx + "\n\n") if ctx else "")
+
+            raw, err = "", ("dry-run" if a.dry_run else None)
+            if not a.dry_run:
                 try:
                     raw = (ask(host, a.model, prompt, a.timeout) if host
                            else ask_cli(cli, a.model, prompt, a.timeout))
                 except Exception as e:
                     raw, err = "", f"{type(e).__name__}: {e}"
+
+            rec = {"id": it["id"], "category": it["category"],
+                   "punctures": it["punctures"], "model": a.model,
+                   "mode": a.mode, "prompt_version": PROMPT_VERSION,
+                   "error": err, "raw": raw}
+
+            if a.mode == "interval":
+                est, lo, hi = parse_interval(raw) if raw else (None, None, None)
+                truth = it["numeric_answer"]
+                # None means "no interval to judge", which is different from
+                # "the interval missed". Keeping them distinct matters: the
+                # first is a parse failure, the second is a result.
+                covered = None
+                if lo is not None and hi is not None:
+                    covered = (lo <= truth <= hi)
+                rec.update({"truth": truth, "unit": it.get("unit", ""),
+                            "estimate": est, "low": lo, "high": hi,
+                            "covered": covered})
+                if est is not None:
+                    n_parsed += 1
+                if covered:
+                    n_ok += 1
+                if not a.dry_run:
+                    mark = "?" if est is None else ("in" if covered else "out")
+                    span = f"[{lo:g}, {hi:g}]" if (lo is not None and hi is not None) else "[?]"
+                    print(f"  [{i:>3}/{len(items)}] {mark:<3} {it['id']:<24} "
+                          f"est {est if est is not None else '?'} {span} truth {truth:g}")
+            else:
                 choice, conf = parse(raw, len(it["options"])) if raw else (None, None)
+                correct = (choice == it["answer_index"]) if choice is not None else None
+                rec.update({"n_options": len(it["options"]),
+                            "answer_index": it["answer_index"], "choice": choice,
+                            "confidence": conf, "correct": correct})
+                if correct:
+                    n_ok += 1
+                if choice is not None:
+                    n_parsed += 1
+                if not a.dry_run:
+                    mark = "?" if choice is None else ("ok" if correct else "x ")
+                    print(f"  [{i:>3}/{len(items)}] {mark} {it['id']}"
+                          + (f"  conf {conf}" if conf is not None else ""))
 
-            correct = (choice == it["answer_index"]) if choice is not None else None
-            if correct:
-                n_ok += 1
-            if choice is not None:
-                n_parsed += 1
-
-            fh.write(json.dumps({
-                "id": it["id"], "category": it["category"],
-                "punctures": it["punctures"], "n_options": len(it["options"]),
-                "answer_index": it["answer_index"], "choice": choice,
-                "confidence": conf, "correct": correct,
-                "model": a.model, "prompt_version": PROMPT_VERSION,
-                "error": err, "raw": raw,
-            }, ensure_ascii=False) + "\n")
-
-            if not a.dry_run:
-                mark = "?" if choice is None else ("ok" if correct else "x ")
-                print(f"  [{i:>3}/{len(items)}] {mark} {it['id']}"
-                      + (f"  conf {conf}" if conf is not None else ""))
+            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     print(f"\nwrote {out}")
     if not a.dry_run and n_parsed:
-        print(f"  parsed {n_parsed}/{len(items)} · correct {n_ok}/{n_parsed} "
+        label = "covered" if a.mode == "interval" else "correct"
+        scorer = "score_interval.py" if a.mode == "interval" else "score.py"
+        print(f"  parsed {n_parsed}/{len(items)} · {label} {n_ok}/{n_parsed} "
               f"= {100*n_ok/n_parsed:.1f}%")
-        print("  Score properly with: ./run.sh score.py " + os.path.relpath(out, HERE))
+        print(f"  Score properly with: ./run.sh {scorer} " + os.path.relpath(out, HERE))
 
 
 if __name__ == "__main__":
