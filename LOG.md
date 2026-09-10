@@ -31,6 +31,30 @@ of the prompt. That is now what the CLI path does, with a comment saying why.
 | estimate outside its own interval | 12/44 | 1/50 |
 | unparseable | 6/50 | 0/50 |
 
+**Checkpoint 2 restated too, and one headline claim does not survive.** Choice
+mode was re-run pinned as well, because its numbers were also single draws.
+
+| choice mode, pinned | lfm2 | devstral-small-2 |
+|---|---|---|
+| accuracy | 46.2% [35.7, 57.1] | **82.5% [72.7, 89.3]** |
+| ECE | 0.471 | **0.082** |
+| lowest confidence stated | **60** | 80 |
+| distinct confidence values used | 7 | 4 |
+| answers at exactly 100 | 10 | 0 |
+
+🔴 **"Across 159 answers the lowest confidence either model ever stated was 80"
+is false under pinned decoding.** lfm2 states 70 on `life-expectancy` (wrong)
+and 60 on `private-prisons` (right). The sentence was true of the sampled run
+and is not a property of the models. It appears in the checkpoint-2 draft and
+has been corrected there.
+
+**What survives is better than what it replaces.** Across 160 pinned answers
+only **2 fall below 80 — 1.2%**. And lfm2 states **100** on ten questions, of
+which it gets **four wrong**: cannabis-dependence, clearance-rate,
+perception-gap, religious-knowledge. A model claiming certainty on contested
+statistics and missing 40% of those calls is a sharper illustration of the same
+point than a floor at 80 ever was, and it does not depend on a floor holding.
+
 **Checkpoint 3 survives.** devstral's coverage moves 76.0% → 72.0%, and the
 interval still contains the 80% it was asked for. rho 0.761 → 0.753. The finding
 is unchanged: the model that never states below 85 on a percentage scale
@@ -38,15 +62,33 @@ produces near-nominal intervals when asked for a range. lfm2 gets *worse* under
 pinning and its margin over the shuffle null falls to +10.3, so the scorer now
 says outright that its intervals would bracket almost any answer in the set.
 
-**Checkpoint 4 does not survive, for lfm2.** 🔴 **The null control failed
-(+0.72).** lfm2 answers the *original* plastics question exactly right and then
-misses the reworded version whose answer barely moved. That is the control
-doing its job: whatever is damaging lfm2 on the variants, it is not the need for
-a different fact, because a variant needing the *same* fact damages it too.
+**Checkpoint 4 does not survive, for lfm2.** 🔴 **The null control is
+UNUSABLE** — a stronger statement than the "+0.72 failure" first recorded here,
+and reached by looking at what the model actually emitted.
+
+lfm2's answer to the *original* plastics item was the bare triple `9 / 90 /
+100`. The parser's unlabelled-triple fallback reads that as estimate 9 with an
+interval of [90, 100]. The truth is 9, so a garbled answer scored a **perfect
+baseline error of 0.00** — with its own estimate sitting nowhere near its own
+interval. The variant answer was well-formed (`ESTIMATE: 15 / LOW: 10 / HIGH:
+20`) and merely wrong. The +0.72 "control failure" was therefore a well-formed
+wrong answer measured against a malformed lucky one, not evidence that
+rewording damages the model.
+
+`score_variants.py` now excludes any pair where either side puts its estimate
+outside its own interval, and says the control is unusable rather than failed.
+The correction changes nothing for devstral, whose answers are all coherent, and
+removes four of lfm2's eight pairs. **lfm2 is left with one eligible pair and no
+working control: not a weak measurement, no measurement at all.**
+
+The retraction below therefore stands, for a better reason. And there is a
+lesson in the parser: a lenient fallback that accepts unlabelled triples will
+manufacture spurious accuracy whenever the first number happens to be right.
+Leniency in parsing buys coverage and pays for it in ground truth.
 
 **The lfm2 memorisation claim in the entry below is therefore retracted.** The
 +0.51 median gap, the anchor echoes read as a recall signature — none of it is
-attributable while the control is failing. The echoes are still there
+attributable with no working control. The echoes are still there
 descriptively (2/8 original-answer, 2/8 prompt-anchor) and they are still
 suggestive, but the probe is invalid for this model and no headline comes out
 of it. Between that, 6/50 unparseable and 12/44 incoherent intervals, lfm2 is
@@ -66,9 +108,9 @@ is not a test of that property.
 
 > ⚠️ **Superseded the same day. Read the entry above first.** Every number here
 > comes from an unpinned, stochastic decode. devstral's conclusion survives
-> re-running; **lfm2's does not — its null control fails, and the memorisation
-> reading below is retracted.** Kept unedited as the record of what the first
-> pass showed.
+> re-running; **lfm2's does not — its null control turns out unusable, and the
+> memorisation reading below is retracted.** Kept unedited as the record of what
+> the first pass showed.
 
 **Hypothesis.** Move the question to a different year or country where the true
 answer genuinely differs. A model that reasoned should mostly survive; one that

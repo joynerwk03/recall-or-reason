@@ -45,6 +45,17 @@ def load(path):
         r = json.loads(line)
         if r.get("estimate") is None:
             continue
+        lo, hi = r.get("low"), r.get("high")
+        # An estimate sitting outside its own interval means the answer was
+        # malformed, and its point estimate is not a measurement. This matters
+        # more than it sounds: lfm2 answered the original plastics item with the
+        # bare triple "9 / 90 / 100", which the parser reads as estimate 9 with
+        # interval [90, 100]. The truth is 9, so that garbled answer scored a
+        # PERFECT baseline error of 0.00 — and the gap against it then read as
+        # the model being destroyed by a rewording. Counting these manufactures
+        # both spurious accuracy and spurious degradation.
+        r["_coherent"] = (lo is not None and hi is not None
+                          and lo <= r["estimate"] <= hi)
         out[r["id"]] = r
     return out
 
@@ -72,6 +83,7 @@ def main():
             e_var=rel(v["estimate"], v["truth"]),
             e_orig=rel(o["estimate"], o["truth"]),
             est=v["estimate"], truth=v["truth"],
+            coh=bool(v["_coherent"]) and bool(o["_coherent"]),
             orig_ans=v.get("original_answer"),
             anchor=v.get("prompt_anchor"),
             covered=bool(v.get("covered")),
@@ -101,7 +113,8 @@ def main():
     # when it is simply bad everywhere. On the 2026-09-09 run that ceiling
     # effect made lfm2 look untouched by the perturbation while it was in fact
     # failing every item it had previously got right.
-    elig = [r for r in real if r["e_orig"] <= BASELINE_OK]
+    elig = [r for r in real if r["e_orig"] <= BASELINE_OK and r["coh"]]
+    dropped = [r for r in real if r["e_orig"] <= BASELINE_OK and not r["coh"]]
 
     print(f"items        {len(rows)}  ({len(real)} perturbations, "
           f"{len(ctrl)} null control)\n")
@@ -119,6 +132,8 @@ def main():
             flags.append("echoed the prompt anchor")
         if not r["covered"]:
             flags.append("missed")
+        if not r["coh"]:
+            flags.append("MALFORMED, excluded")
         print(f'  {r["id"]:<28}{r["e_orig"]:>7.2f}{r["e_var"]:>8.2f}'
               f'{r["gap"]:>+9.2f}   {", ".join(flags)}')
 
@@ -139,10 +154,19 @@ def main():
                'and')
         print( '             would otherwise score as robust for being wrong twice')
 
+    if dropped:
+        print(f'             {len(dropped)} further pair(s) dropped as malformed: '
+              + ", ".join(r["id"] for r in dropped))
+
     if ctrl:
         c = ctrl[0]
         print(f'control      {c["id"]}: gap {c["gap"]:+.2f}')
-        if abs(c["gap"]) > 0.15:
+        if not c["coh"]:
+            print("             ⚠ UNUSABLE. One side of this pair put its estimate")
+            print("               outside its own interval, so the control cannot")
+            print("               certify anything and the gap above is unsupported")
+            print("               in either direction.")
+        elif abs(c["gap"]) > 0.15:
             print("             ⚠ the control moved too. The rewording alone is")
             print("               doing damage, so the gap above CANNOT be read")
             print("               as memorisation. Fix the prompt before quoting")
