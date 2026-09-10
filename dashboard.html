@@ -153,7 +153,12 @@
     problem was never the model. It was the question I was asking about the
     question.
   </p>
-  <div class="byline">William Joyner · 80 questions · two AI models · every answer checked against a primary source</div>
+  <p class="standfirst" style="margin-top:14px">
+    Then I ran the whole thing on <strong>ten</strong> models, and found that
+    where a model sits on the public ability leaderboards tells you almost
+    nothing about whether its confidence is worth believing.
+  </p>
+  <div class="byline">William Joyner · 80 questions · ten AI models · every answer checked against a primary source</div>
 </header>
 
 <!-- ---------- setup ---------- -->
@@ -165,10 +170,11 @@
     source: a government agency, a national survey, a published study.
   </p>
   <p>
-    Then I gave them to two AI models. Not the big famous ones — two free models
-    small enough to run on a home computer. Both are <strong>the same size as each
-    other</strong>, which matters later: when they behave differently, it isn't because
-    one is bigger.
+    Then I gave them to AI models. Not the big famous ones — free models small
+    enough to run on a home computer. Sections 1 to 4 compare <strong>two</strong>
+    of them that are <strong>the same size as each other</strong>, which matters:
+    when they behave differently, it isn't because one is bigger. Section 5
+    widens it to <strong>ten</strong>.
   </p>
   <p>
     Try three of the questions yourself first. It makes the rest of this page land harder.
@@ -341,9 +347,88 @@
   </div>
 </section>
 
-<!-- ---------- 5 ---------- -->
+<!-- ---------- 5b: the fleet ---------- -->
 <section>
-  <div class="shead"><span class="snum">5</span><h2>Four times my own measuring tools lied to me</h2></div>
+  <div class="shead"><span class="snum">5</span><h2>Do smarter models know themselves better?</h2></div>
+  <p>
+    Everything above is two models, which could just be those two models. So I
+    ran the whole thing on <strong>ten</strong> — every one you can download and
+    run on a home computer, from a small 4-billion-parameter model up to a
+    32-billion one.
+  </p>
+  <p>
+    There are public leaderboards that rank AI models on general ability, built
+    by combining scores from dozens of separate tests. I used one of them, from a
+    research group called Epoch, and asked a simple question:
+    <strong>if a model is higher on that leaderboard, is it also better at
+    knowing what it doesn't know?</strong>
+  </p>
+  <p>
+    You would expect yes. It's the same intuition as thinking a better student is
+    also better at judging which exam answers they got wrong.
+  </p>
+  <figure class="wide">
+    <svg id="fleet" viewBox="0 0 900 470" role="img"
+         aria-label="Ten models plotted by general ability against how well they know their own uncertainty. There is no clear relationship."></svg>
+    <figcaption>
+      Each dot is one model. Left-to-right is general ability from the public
+      leaderboard; up-and-down is how well it knows its own uncertainty. The
+      horizontal bars are the leaderboard's <em>own</em> uncertainty about where a
+      model belongs — several are wide, and hiding them would imply a precision
+      the ranking doesn't have.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      <strong>There's no clear relationship.</strong> If you knew a model's
+      leaderboard rank and had to guess how honest it was about its own
+      uncertainty, you would do about as well guessing at random.
+    </p>
+    <p class="finding">
+      The three <em>most</em> capable models here are neck-and-neck on the
+      leaderboard — within a rounding error of each other — and they score
+      <b>82</b>, <b>65</b> and <b>55</b> on knowing their own limits.
+    </p>
+    <p class="finding">
+      The best model on this test, <span class="idm">mistral-small:24b</span> at
+      <b>88</b>, is beaten on the leaderboard by four other models — including one
+      that scores <b>55</b> here.
+    </p>
+    <p class="finding">
+      And <span class="idm">llama3.1:8b</span>, near the bottom of the
+      leaderboard, matches <span class="idm">qwen3:8b</span>, which sits
+      <b>20 points</b> higher on it. Twenty points of general ability bought
+      nothing.
+    </p>
+  </div>
+  <p style="margin-top:20px">
+    <strong>This is the most useful thing on the page.</strong> If you're picking
+    a model and you care whether its confidence means anything — whether you can
+    act on "I'm 90% sure" — the leaderboard won't tell you. You have to test it
+    separately. That is the whole argument for a benchmark like this existing.
+  </p>
+  <details style="margin-top:20px;border:1px solid var(--rule)">
+    <summary>One part of it does track ability — with a catch</summary>
+    <p>Broken into its four parts, one does move with the leaderboard:
+    <b>calibration</b>, meaning whether a stated "90% sure" is right about 90% of
+    the time. That correlates at rho +0.66 with a raw p of 0.044.</p>
+    <p><b>But I tested four parts against the same axis</b>, and when you look at
+    four things, one of them clearing the usual bar by luck stops being
+    surprising. Correcting for that (Holm) moves the p to <b>0.176</b>, and it no
+    longer clears. It is recorded as worth re-testing on more models, not as a
+    result. Quoting the 0.044 on its own would be exactly the kind of error the
+    section above this one is about.</p>
+    <p>The other three parts show nothing. One — whether a model avoids repeating
+    a figure it was already holding — runs slightly <em>negative</em>, meaning
+    more capable models did it marginally more often, not less. That is what
+    you'd expect if more capable models have memorised more, but at ten models it
+    is indistinguishable from noise and I would not lean on it.</p>
+  </details>
+</section>
+
+<!-- ---------- 6 ---------- -->
+<section>
+  <div class="shead"><span class="snum">6</span><h2>Four times my own measuring tools lied to me</h2></div>
   <p>
     Every number above survived a bug that had already given me a confident, entirely
     believable, wrong result. I'm including these because they were the hardest part
@@ -402,6 +487,13 @@
       well-documented too. A model that memorised the entire table would pass my test.</li>
     <li><b>The numbers are small.</b> 80 questions, 50 with numeric answers, 8 moved
       questions. One experiment, not a replication.</li>
+    <li><b>Ten models is few for a comparison like Section 5.</b> "No relationship
+      detected" is not the same as "no relationship". The leaderboard also has its
+      own uncertainty about where each model belongs — for the smallest model, a
+      range 26 points wide — which the chart draws rather than hides.</li>
+    <li><b>Two of the models in Sections 1–4 aren't on the leaderboard at all</b>,
+      so they can't appear in Section 5. That's inconvenient rather than
+      convenient: one of them is among the best performers on this test.</li>
     <li><b>This says nothing about ChatGPT or Claude.</b> Two small models you can run
       at home, one way of phrasing the question.</li>
     <li><b>It isn't about model size.</b> The two are 24.0B and 23.8B — the same.
@@ -442,6 +534,14 @@
   Chosen over the error gap because it is defined on every item regardless of baseline
   accuracy; the gap is only defined where the model got the original right, and the
   weaker model qualifies once. Fisher exact, two-tailed: <b>p = 0.026</b>.</p>
+  <p><b>Ten-model comparison.</b> Epistemic Honesty Score against the Epoch
+  Capabilities Index, ten open-weights models spanning ECI 116.0–138.5:
+  Spearman rho = <b>+0.248</b>, permutation p = <b>0.493</b>, n = 10. Stable
+  across five weightings of the composite (rho +0.19 to +0.35, p never below
+  0.33). Per component: calibration rho +0.661 (p 0.044, <b>Holm 0.176</b>),
+  honesty +0.321, discrimination −0.006, independence −0.231. Nothing survives
+  correction for four tests. ECI pulled from
+  <code>epoch.ai/data/benchmark_data.zip</code>, not a rendered leaderboard.</p>
   <p><b>Subset control</b> — the interval run uses only the 50 numeric items, so the
   multiple-choice run was rescored on exactly those 50. Calibration error got
   <em>worse</em> (0.092 → 0.122 and 0.430 → 0.514), so the interval result is not
@@ -640,4 +740,60 @@ function bind(node,html){
     tb.appendChild(tr);
   });
 })();
+
+const FLEET=[
+ {t:"gemma3:4b",       e:116.0, lo:97.45, hi:123.39, s:33.5},
+ {t:"llama3.1:8b",     e:116.51,lo:105.95,hi:121.71, s:54.7},
+ {t:"gemma3:12b",      e:123.46,lo:116.21,hi:128.73, s:75.2},
+ {t:"mistral-small:24b",e:127.07,lo:122.41,hi:129.01,s:87.6},
+ {t:"gemma3:27b",      e:130.04,lo:124.64,hi:132.17, s:69.8},
+ {t:"phi4:14b",        e:130.42,lo:125.5, hi:132.1,  s:65.5},
+ {t:"qwen3:8b",        e:136.18,lo:129.58,hi:138.07, s:53.4},
+ {t:"gpt-oss:20b",     e:137.81,lo:132.89,hi:139.56, s:55.2},
+ {t:"qwen3:14b",       e:138.25,lo:133.68,hi:139.84, s:65.1},
+ {t:"qwen3:32b",       e:138.52,lo:135.14,hi:140.32, s:82.2}
+];
+
+/* 5b. fleet scatter */
+(function(){
+  const s=document.getElementById("fleet");
+  if(!s) return;
+  const L=96,R=812,T=34,B=372;
+  const xlo=113,xhi=142, ylo=25,yhi=95;
+  const x=v=>L+(v-xlo)/(xhi-xlo)*(R-L);
+  const y=v=>B-(v-ylo)/(yhi-ylo)*(B-T);
+  for(let v=115;v<=140;v+=5){
+    s.appendChild(el("line",{x1:x(v),y1:T,x2:x(v),y2:B,class:"grid"}));
+    const t=el("text",{x:x(v),y:B+21,"text-anchor":"middle",class:"ax"});
+    t.textContent=v;s.appendChild(t);
+  }
+  for(let v=30;v<=90;v+=15){
+    s.appendChild(el("line",{x1:L,y1:y(v),x2:R,y2:y(v),class:"grid"}));
+    const t=el("text",{x:L-12,y:y(v)+4,"text-anchor":"end",class:"ax"});
+    t.textContent=v;s.appendChild(t);
+  }
+  const xl=el("text",{x:(L+R)/2,y:B+46,"text-anchor":"middle",class:"axl"});
+  xl.textContent="general ability, from the public leaderboard  \u2192";
+  s.appendChild(xl);
+  const yl=el("text",{x:0,y:0,class:"axl","text-anchor":"middle",
+    transform:"translate(34 "+((T+B)/2)+") rotate(-90)"});
+  yl.textContent="knows what it doesn\u2019t know  \u2192";s.appendChild(yl);
+
+  const placed=[];
+  FLEET.slice().sort((a,b)=>a.e-b.e).forEach(m=>{
+    s.appendChild(el("line",{x1:x(m.lo),y1:y(m.s),x2:x(m.hi),y2:y(m.s),
+      stroke:"var(--a)",opacity:.3,"stroke-width":2,"stroke-linecap":"round"}));
+    const c=el("circle",{cx:x(m.e),cy:y(m.s),r:6.5,fill:"var(--a)",
+      stroke:"var(--surface)","stroke-width":2});
+    bind(c,"<b>"+m.t+"</b><br>ability "+m.e.toFixed(1)+
+         "<br>knows-itself score "+m.s);
+    s.appendChild(c);
+    const below=placed.some(p=>!p.b && Math.abs(m.e-p.e)<4 && Math.abs(m.s-p.s)<9);
+    const t=el("text",{x:x(m.e),y:y(m.s)+(below?22:-13),"text-anchor":"middle",
+      class:"dl"});
+    t.textContent=m.t;s.appendChild(t);
+    placed.push({e:m.e,s:m.s,b:below});
+  });
+})();
+
 </script>
