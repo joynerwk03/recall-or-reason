@@ -113,10 +113,36 @@ def find_cli():
     return None
 
 
+# Reasoning models wrap their scratchpad in <think>…</think> (Qwen3, DeepSeek-R1)
+# or emit a harmony "analysis" channel before the answer (gpt-oss). Left in, that
+# text is full of numbers, and the interval parser would happily read three of
+# them out of the model thinking aloud instead of out of its answer. Stripped
+# before any parsing, and counted, because how often a model needs a scratchpad
+# is itself worth knowing.
+THINK = re.compile(r"<think>.*?</think>|<thinking>.*?</thinking>", re.S | re.I)
+UNCLOSED = re.compile(r"<think(?:ing)?>.*\Z", re.S | re.I)
+HARMONY = re.compile(r"<\|channel\|>analysis<\|message\|>.*?"
+                     r"(?:<\|channel\|>final<\|message\|>|<\|end\|>)", re.S)
+
+
 def clean(text):
     """Strip the progress spinner. `ollama run` writes braille frames and cursor
     codes to stdout even when piped, so the raw text is unusable without this."""
     return ANSI.sub("", text).strip()
+
+
+def strip_reasoning(text):
+    """Remove a model's scratchpad. Returns (visible_answer, had_scratchpad).
+
+    An UNCLOSED <think> means the generation hit the token limit mid-thought and
+    the answer never arrived. That is a real failure and must not be dressed up
+    as one: the remaining text is dropped so the row records no answer at all
+    rather than a number scavenged out of half a thought.
+    """
+    had = bool(THINK.search(text)) or bool(HARMONY.search(text))         or bool(UNCLOSED.search(text))
+    t = HARMONY.sub("", THINK.sub("", text))
+    t = UNCLOSED.sub("", t)
+    return t.strip(), had
 
 
 def list_models(host=None, cli=None):
@@ -342,10 +368,16 @@ def main():
                 except Exception as e:
                     raw, err = "", f"{type(e).__name__}: {e}"
 
+            # Both kept: `raw` is what the model actually emitted and is the
+            # only way to re-examine a parse later without re-running; `answer`
+            # is what the parsers see.
+            answer, thought = strip_reasoning(raw) if raw else ("", False)
+
             rec = {"id": it["id"], "category": it["category"],
                    "punctures": it["punctures"], "model": a.model,
                    "mode": a.mode, "prompt_version": PROMPT_VERSION,
-                   "error": err, "raw": raw}
+                   "error": err, "raw": raw, "answer": answer,
+                   "used_scratchpad": thought}
 
             # Carry perturbation metadata through to the result. Without this a
             # variant run cannot be paired back to its original and the gap is
@@ -356,7 +388,7 @@ def main():
                     rec[k] = it[k]
 
             if a.mode == "interval":
-                est, lo, hi = parse_interval(raw) if raw else (None, None, None)
+                est, lo, hi = parse_interval(answer) if answer else (None, None, None)
                 truth = it["numeric_answer"]
                 # None means "no interval to judge", which is different from
                 # "the interval missed". Keeping them distinct matters: the
@@ -377,7 +409,7 @@ def main():
                     print(f"  [{i:>3}/{len(items)}] {mark:<3} {it['id']:<24} "
                           f"est {est if est is not None else '?'} {span} truth {truth:g}")
             else:
-                choice, conf = parse(raw, len(it["options"])) if raw else (None, None)
+                choice, conf = parse(answer, len(it["options"])) if answer else (None, None)
                 correct = (choice == it["answer_index"]) if choice is not None else None
                 rec.update({"n_options": len(it["options"]),
                             "answer_index": it["answer_index"], "choice": choice,
