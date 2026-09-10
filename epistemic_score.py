@@ -256,8 +256,22 @@ def main():
                                    "independence"), parts) if p is None]
         flags.append("missing components: " + ", ".join(miss))
 
+    # Truncation is not a neutral loss. A reasoning model runs out of budget on
+    # the items it thinks LONGEST about, which are plausibly the ones it finds
+    # hardest — so dropping them can flatter the score rather than just shrink
+    # the sample. Reported as a rate with that caveat attached, not silently
+    # absorbed into a smaller n.
+    allrows = ch + iv + va
+    trunc = sum(1 for r in allrows if r.get("used_scratchpad") and not r.get("answer"))
+    trunc_rate = trunc / max(1, len(allrows))
+    if trunc:
+        flags.append(f"{trunc} of {len(allrows)} answers ran out of token budget "
+                     f"mid-thought ({trunc_rate:.0%}) — excluded, and they are "
+                     f"likely the harder items")
+
     row = {
         "model": a.model, "ehs": round(ehs, 2) if ehs is not None else None,
+        "truncated": trunc, "truncation_rate": round(trunc_rate, 4),
         "calibration": round(cal, 2) if cal is not None else None,
         "honesty": round(hon, 2) if hon is not None else None,
         "discrimination": round(disc, 2) if disc is not None else None,

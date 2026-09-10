@@ -37,6 +37,12 @@ import re
 import subprocess
 import sys
 
+# Pin names that are the same weights as a canonical entry and would otherwise
+# appear twice. devstral-t0 was the first pin of devstral-small-2, built before
+# num_predict was set; its results are still cited in the paper, so the files
+# stay, but it is not a second model.
+SUPERSEDED = {"devstral-t0": "devstral-small-2-t0"}
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ECI = os.path.join(HERE, "data", "eci.csv")
 RESULTS = os.path.join(HERE, "results")
@@ -157,7 +163,7 @@ def main():
     # models we ran that ECI does not cover
     for p in sorted(glob.glob(os.path.join(RESULTS, "*-t0-*.jsonl"))):
         m = os.path.basename(p).split("-20")[0]
-        if m in seen or any(x["model"] == m for x in no_eci):
+        if m in seen or m in SUPERSEDED or any(x["model"] == m for x in no_eci):
             continue
         s = score_model(m)
         if s and s.get("ehs") is not None:
