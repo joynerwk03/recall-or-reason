@@ -1,42 +1,22 @@
-<title>Recall or Reason</title>
+<title>Does the AI know what it doesn't know?</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root{
-    --ground:#f4f6f9;
-    --surface:#ffffff;
-    --sunk:#eceff4;
-    --ink:#151a21;
-    --ink-2:#3d4753;
-    --muted:#6b7684;
-    --rule:#dde3ea;
-    --rule-strong:#c3ccd8;
-    --a:#1f6feb;          /* devstral */
-    --b:#b4531f;          /* lfm2 */
-    --a-wash:#1f6feb1a;
-    --b-wash:#b4531f1a;
-    --dead:#8892a01f;
-    --good:#166f4a;
-    --flag:#8c2f1d;
+    --ground:#f4f6f9; --surface:#ffffff; --sunk:#eceff4;
+    --ink:#151a21; --ink-2:#3d4753; --muted:#6b7684;
+    --rule:#dde3ea; --rule-strong:#c3ccd8;
+    --a:#1f6feb; --b:#b4531f;
+    --a-wash:#1f6feb1a; --b-wash:#b4531f1a;
+    --dead:#8892a01f; --good:#166f4a; --flag:#8c2f1d;
     --shadow:0 1px 2px #151a210d;
   }
   @media (prefers-color-scheme:dark){
     :root:not([data-theme="light"]){
-      --ground:#131519;
-      --surface:#1a1d22;
-      --sunk:#212530;
-      --ink:#e8ecf1;
-      --ink-2:#b7c0cc;
-      --muted:#8b95a3;
-      --rule:#2b3038;
-      --rule-strong:#3c434e;
-      --a:#4a8ae0;
-      --b:#cd7a3c;
-      --a-wash:#4a8ae024;
-      --b-wash:#cd7a3c24;
-      --dead:#8892a01a;
-      --good:#4fb489;
-      --flag:#d98670;
-      --shadow:0 1px 2px #0006;
+      --ground:#131519; --surface:#1a1d22; --sunk:#212530;
+      --ink:#e8ecf1; --ink-2:#b7c0cc; --muted:#8b95a3;
+      --rule:#2b3038; --rule-strong:#3c434e;
+      --a:#4a8ae0; --b:#cd7a3c; --a-wash:#4a8ae024; --b-wash:#cd7a3c24;
+      --dead:#8892a01a; --good:#4fb489; --flag:#d98670; --shadow:0 1px 2px #0006;
     }
   }
   :root[data-theme="dark"]{
@@ -50,374 +30,462 @@
   *{box-sizing:border-box}
   body{
     background:var(--ground); color:var(--ink);
-    font:400 15px/1.6 "IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-    padding:0 20px 72px;
+    font:400 16px/1.68 "IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:0 20px 80px;
   }
-  .wrap{max-width:1060px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+  .wrap{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:30px}
+  .wide{max-width:1040px;margin:0 auto;width:100%}
   h1,h2,h3{text-wrap:balance;margin:0}
-  .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;font-variant-numeric:tabular-nums}
-  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  p{margin:0}
 
-  /* ---- masthead ---- */
-  header{padding:40px 0 4px;border-bottom:1px solid var(--rule)}
-  .kicker{
-    font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.13em;
-    text-transform:uppercase;color:var(--muted);margin-bottom:14px
-  }
-  h1{
-    font-family:Newsreader,Georgia,serif;font-weight:400;
-    font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-.015em;
-  }
-  .standfirst{
-    margin-top:14px;max-width:63ch;color:var(--ink-2);font-size:17px;line-height:1.62
-  }
-  .meta{
-    display:flex;flex-wrap:wrap;gap:0 26px;margin:22px 0 18px;
-    font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)
-  }
-  .meta b{color:var(--ink-2);font-weight:500}
+  header{padding:46px 0 6px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.13em;
+          text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+  h1{font-family:Newsreader,Georgia,serif;font-weight:400;
+     font-size:clamp(31px,5vw,50px);line-height:1.08;letter-spacing:-.017em}
+  .standfirst{margin-top:18px;color:var(--ink-2);font-size:18.5px;line-height:1.6}
+  .byline{margin-top:20px;padding-top:16px;border-top:1px solid var(--rule);
+          font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
 
-  /* ---- finding tiles ---- */
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:1px;
-         background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
-  .tile{background:var(--surface);padding:20px 20px 18px;display:flex;flex-direction:column;gap:7px}
-  .tile .lab{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;
-             text-transform:uppercase;color:var(--muted)}
-  .tile .big{font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:500;
-             line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-  .tile .sub{font-size:13.5px;color:var(--ink-2);line-height:1.5}
-  .tile .sub em{font-style:normal;color:var(--muted)}
-
-  /* ---- sections ---- */
   section{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-          padding:26px 26px 24px;box-shadow:var(--shadow)}
-  .shead{display:flex;align-items:baseline;gap:13px;margin-bottom:6px}
-  .snum{font-family:Newsreader,Georgia,serif;font-size:22px;color:var(--muted);line-height:1}
-  h2{font-size:19.5px;font-weight:600;letter-spacing:-.012em}
-  .lede{color:var(--ink-2);max-width:70ch;margin:8px 0 22px;font-size:14.5px}
-  .lede strong{color:var(--ink);font-weight:600}
+          padding:30px 30px 28px;box-shadow:var(--shadow)}
+  .shead{display:flex;align-items:baseline;gap:14px;margin-bottom:12px}
+  .snum{font-family:Newsreader,Georgia,serif;font-size:24px;color:var(--muted);line-height:1;flex:none}
+  h2{font-size:23px;font-weight:600;letter-spacing:-.014em;line-height:1.25}
+  section p{color:var(--ink-2);font-size:16px}
+  section p+p{margin-top:14px}
+  section strong{color:var(--ink);font-weight:600}
+  .findings{margin-top:22px;padding-top:20px;border-top:1px solid var(--rule)}
+  .finding{font-size:17px;color:var(--ink);line-height:1.6}
+  .finding+.finding{margin-top:12px}
+  .finding b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:500}
 
-  figure{margin:0}
-  figcaption{margin-top:13px;font-size:12.5px;color:var(--muted);max-width:74ch;line-height:1.55}
+  /* try-it cards */
+  .quiz{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:14px;margin-top:20px}
+  .q{background:var(--sunk);border:1px solid var(--rule);border-radius:3px;padding:17px;
+     display:flex;flex-direction:column;gap:11px;text-align:left;font:inherit;color:inherit;
+     cursor:pointer}
+  .q:hover{border-color:var(--rule-strong)}
+  .q:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+  .q .qt{font-size:14.5px;line-height:1.5;color:var(--ink)}
+  .q .qa{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:500;
+         color:var(--muted);font-variant-numeric:tabular-nums}
+  .q[aria-pressed="true"] .qa{color:var(--a)}
+  .q .hint{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+           text-transform:uppercase;color:var(--muted)}
+
+  figure{margin:22px 0 0}
+  figcaption{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.6}
   svg{display:block;width:100%;height:auto;overflow:visible}
-  .ax{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:10.5px}
-  .axl{fill:var(--muted);font-family:"IBM Plex Sans",sans-serif;font-size:11.5px}
-  .dl{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:500;fill:var(--ink)}
+  .ax{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
+  .axl{fill:var(--muted);font-family:"IBM Plex Sans",sans-serif;font-size:12.5px}
+  .dl{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;fill:var(--ink)}
+  .dlx{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:500;fill:var(--ink)}
   .grid{stroke:var(--rule);stroke-width:1}
-  .rulez{stroke:var(--rule-strong);stroke-width:1}
 
-  /* ---- legend ---- */
-  .legend{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;
-          font-size:12.5px;color:var(--ink-2)}
-  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend{display:flex;gap:22px;flex-wrap:wrap;margin-top:20px;font-size:13.5px;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
   .sw{width:11px;height:11px;border-radius:2px;flex:none}
-  .sw.hollow{background:transparent;border:1.5px solid currentColor}
 
-  /* ---- tables ---- */
-  .tscroll{overflow-x:auto;margin-top:4px}
-  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
-  th,td{text-align:left;padding:9px 13px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  .tscroll{overflow-x:auto;margin-top:22px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:600px}
+  th,td{text-align:left;padding:11px 15px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
   th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
-     text-transform:uppercase;color:var(--muted);font-weight:500;white-space:nowrap}
+     text-transform:uppercase;color:var(--muted);font-weight:500}
   td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
   tr.echo td{background:var(--b-wash)}
-  .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
-        letter-spacing:.05em;padding:2px 7px;border-radius:2px;border:1px solid currentColor;
-        white-space:nowrap}
-  .pill.ok{color:var(--good)}
+  tr.ctrl td{color:var(--muted)}
+  .changed{color:var(--ink);font-weight:600}
+  .why{font-size:13.5px;color:var(--ink-2);line-height:1.45}
+  .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;
+        letter-spacing:.06em;padding:2px 7px;border-radius:2px;border:1px solid currentColor;
+        white-space:nowrap;text-transform:uppercase}
   .pill.no{color:var(--flag)}
-  .idm{font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+  .pill.ok{color:var(--good)}
 
-  /* ---- failures ---- */
-  .fails{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
-  .fail{display:grid;grid-template-columns:26px 1fr;gap:16px;padding:18px 0;
+  .fail{display:grid;grid-template-columns:24px 1fr;gap:15px;padding:17px 0;
         border-bottom:1px solid var(--rule)}
-  .fail .fn{font-family:Newsreader,Georgia,serif;font-size:19px;color:var(--muted);line-height:1.2}
-  .fail h3{font-size:15px;font-weight:600;margin-bottom:5px}
-  .fail p{margin:0;font-size:14px;color:var(--ink-2);max-width:72ch}
-  .fail p+p{margin-top:8px}
-  .fail code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;
-             background:var(--sunk);padding:1px 5px;border-radius:2px}
-  .took{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--muted);
-        border-left:2px solid var(--rule-strong);padding-left:11px;max-width:70ch}
+  .fail:first-of-type{border-top:1px solid var(--rule)}
+  .fail .fn{font-family:Newsreader,Georgia,serif;font-size:18px;color:var(--muted);line-height:1.3}
+  .fail h3{font-size:16px;font-weight:600;margin-bottom:6px}
+  .fail p{font-size:15px}
 
-  /* ---- caveats ---- */
-  .caveat{background:var(--sunk);border:1px solid var(--rule);border-radius:3px;
-          padding:18px 20px;font-size:13.5px;color:var(--ink-2)}
-  .caveat h3{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:9px;
-             font-family:"IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
-  .caveat ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px}
+  details{border:1px solid var(--rule);border-radius:3px;background:var(--surface);
+          padding:0 22px;box-shadow:var(--shadow)}
+  details[open]{padding-bottom:20px}
+  summary{cursor:pointer;padding:17px 0;font-weight:600;font-size:15px;list-style:none;
+          display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";font-family:"IBM Plex Mono",monospace;color:var(--muted);
+                  font-weight:400;font-size:17px}
+  details[open] summary::before{content:"−"}
+  summary:focus-visible{outline:2px solid var(--a);outline-offset:3px}
+  details table{font-size:13.5px;min-width:440px}
+  details p{font-size:14.5px;color:var(--ink-2)}
+  details p+p{margin-top:12px}
 
-  footer{color:var(--muted);font-size:12.5px;line-height:1.65;padding-top:6px}
-  footer code{font-family:"IBM Plex Mono",monospace;background:var(--sunk);
-              padding:1px 5px;border-radius:2px}
+  .caveat{background:var(--sunk);border:1px solid var(--rule);border-radius:3px;padding:24px}
+  .caveat h2{font-size:18px;margin-bottom:14px}
+  .caveat ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:11px;
+             font-size:15px;color:var(--ink-2)}
+  .caveat b{color:var(--ink)}
 
-  /* ---- tooltip ---- */
+  footer{color:var(--muted);font-size:13.5px;line-height:1.7}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--sunk);
+       padding:1px 5px;border-radius:2px}
   #tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;
-       background:var(--ink);color:var(--ground);padding:7px 10px;border-radius:3px;
-       font-family:"IBM Plex Mono",monospace;font-size:11.5px;line-height:1.5;
-       z-index:9;max-width:250px;box-shadow:0 3px 12px #0003}
-  .hit{cursor:crosshair}
+       background:var(--ink);color:var(--ground);padding:8px 11px;border-radius:3px;
+       font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;z-index:9;
+       max-width:260px;box-shadow:0 3px 12px #0003}
+  .hit{cursor:pointer}
   .hit:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-  a{color:inherit}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <div class="wrap">
 
 <header>
-  <div class="kicker">Recall or Reason · eval report · 2026-09-09</div>
-  <h1>The uncertainty was there. The percentage scale could not carry it.</h1>
+  <div class="kicker">An experiment with two AI models · September 2026</div>
+  <h1>I asked an AI how sure it was. It had no idea how to answer.</h1>
   <p class="standfirst">
-    Two 24B models answered 80 primary-sourced statistics twice — once as multiple
-    choice with a stated confidence, once as an estimate with an 80% interval.
-    Same questions, same models, same day. Only the shape of the answer box changed.
+    Then I asked it the exact same questions a slightly different way — and it
+    turned out to have known all along which of its answers were shaky. The
+    problem was never the model. It was the question I was asking about the
+    question.
   </p>
-  <div class="meta">
-    <span><b>devstral-small-2</b> · 24.0B dense · Q4_K_M</span>
-    <span><b>lfm2</b> · 23.8B MoE · Q4_K_M</span>
-    <span>decoding pinned <b>temp 0 · seed 42</b></span>
-    <span>chance baseline <b>26.8%</b></span>
-  </div>
+  <div class="byline">William Joyner · 80 questions · two AI models · every answer checked against a primary source</div>
 </header>
 
-<div class="tiles">
-  <div class="tile">
-    <div class="lab">Interval coverage · devstral</div>
-    <div class="big" style="color:var(--a)">72<span style="font-size:20px">%</span></div>
-    <div class="sub">against the <b>80%</b> it was asked for. 95% CI [58.3, 82.5]
-      <em>— contains 80.</em></div>
-  </div>
-  <div class="tile">
-    <div class="lab">Confidence floor · both models</div>
-    <div class="big">80</div>
-    <div class="sub">Lowest confidence stated across <b>160</b> answers.
-      <em>Four-fifths of the scale never touched.</em></div>
-  </div>
-  <div class="tile">
-    <div class="lab">Anchor echoes · perturbation</div>
-    <div class="big"><span style="color:var(--a)">0</span><span
-      style="color:var(--muted)">&thinsp;/&thinsp;</span><span style="color:var(--b)">5</span></div>
-    <div class="sub">of 8, devstral vs lfm2. Fisher exact <b>p = 0.026</b>.
-      <em>Answering the remembered question.</em></div>
-  </div>
-</div>
-
-<!-- ============ 1. dead zone ============ -->
+<!-- ---------- setup ---------- -->
 <section>
-  <div class="shead"><span class="snum">1</span><h2>Neither model uses the confidence scale</h2></div>
-  <p class="lede">
-    Every multiple-choice answer carried a confidence from 0 to 100. Across all 160,
-    <strong>not one fell below 80</strong> — and each model used exactly four distinct
-    values all day. A scale exercised only from 80 to 100 is not measuring confidence,
-    it is decorating an answer.
+  <div class="shead"><span class="snum">§</span><h2>The setup, in sixty seconds</h2></div>
+  <p>
+    I collected <strong>80 questions about real-world statistics</strong> — the kind
+    where most people's guess is badly wrong. Every answer traces to an original
+    source: a government agency, a national survey, a published study.
   </p>
-  <div class="legend">
-    <span style="color:var(--a)"><i class="sw" style="background:var(--a)"></i>devstral-small-2</span>
-    <span style="color:var(--b)"><i class="sw" style="background:var(--b)"></i>lfm2</span>
-    <span style="color:var(--muted)"><i class="sw" style="background:var(--dead);border:1px solid var(--rule-strong)"></i>never used</span>
-  </div>
-  <figure>
-    <svg id="deadzone" viewBox="0 0 900 200" role="img"
-         aria-label="Confidence values used. devstral used 80, 85, 90 and 95. lfm2 used 85, 90, 95 and 100. Nothing below 80 from either model."></svg>
-    <figcaption>
-      Circle area is how many answers landed on that value. The shaded band is the
-      part of the scale neither model ever entered. lfm2 was at least 85% sure on
-      every one of the 41 questions it got wrong.
-    </figcaption>
-  </figure>
+  <p>
+    Then I gave them to two AI models. Not the big famous ones — two free models
+    small enough to run on a home computer. Both are <strong>the same size as each
+    other</strong>, which matters later: when they behave differently, it isn't because
+    one is bigger.
+  </p>
+  <p>
+    Try three of the questions yourself first. It makes the rest of this page land harder.
+  </p>
+  <div class="quiz" id="quiz"></div>
+  <p style="margin-top:16px;font-size:14.5px;color:var(--muted)">
+    Most people are off by a lot. So were the models — that part isn't interesting.
+    What's interesting is whether they <em>knew</em> they were off.
+  </p>
 </section>
 
-<!-- ============ 2. coverage ============ -->
+<!-- ---------- 1 ---------- -->
 <section>
-  <div class="shead"><span class="snum">2</span><h2>Asked for a range instead, one model finds its footing</h2></div>
-  <p class="lede">
-    The same 50 numeric items, asking for an estimate and an 80% interval.
-    devstral covers <strong>72%</strong> — statistically indistinguishable from the 80%
-    requested. The rescue is not free: lfm2 covers <strong>32%</strong> and is
-    overconfident in both formats.
+  <div class="shead"><span class="snum">1</span><h2>Every answer came with "I'm very sure"</h2></div>
+  <p>
+    Each question was multiple choice, and I asked the model to add one more thing:
+    <strong>how confident are you, from 0 to 100?</strong>
   </p>
-  <figure>
-    <svg id="coverage" viewBox="0 0 900 250" role="img"
-         aria-label="Coverage against the 80 percent requested. devstral 72 percent, confidence interval 58.3 to 82.5. lfm2 32 percent, interval 20.8 to 45.8. Shuffle null 17.2 and 18.9 percent."></svg>
+  <p>
+    Think of a weather forecaster. When they say "70% chance of rain," you want it
+    to actually rain on about 70 of those hundred days. If it rains on 20, the number
+    is worthless — not because the forecaster is unlucky, but because the number
+    isn't tracking anything.
+  </p>
+  <p>
+    Across <strong>160 answers, neither model ever said a number below 80.</strong>
+    Not once. Each used four values all day and never touched the rest of the scale.
+  </p>
+  <figure class="wide">
+    <svg id="deadzone" viewBox="0 0 900 210" role="img"
+         aria-label="Confidence values the models used. One used 80, 85, 90 and 95. The other used 85, 90, 95 and 100. Neither ever went below 80."></svg>
     <figcaption>
-      Bars are measured coverage with 95% Wilson intervals. The dashed line is the 80%
-      requested. <b>The diamond is the shuffle null</b> — coverage when each interval is
-      scored against a <em>different</em> item's truth, averaged over 2000 derangements.
-      A model answering "0 to 100" every time would sit on its own null. devstral beats
-      its null by 54.8 points, so its intervals are <em>placed</em>, not merely wide.
-      lfm2 beats its null by 13.1.
+      Each circle is one confidence value; bigger circles mean more answers landed there.
+      The shaded region is the four-fifths of the scale neither model ever used.
     </figcaption>
   </figure>
-</section>
-
-<!-- ============ 3. width vs error ============ -->
-<section>
-  <div class="shead"><span class="snum">3</span><h2>Does the width mean anything?</h2></div>
-  <p class="lede">
-    Coverage says the intervals are the right <em>size</em> on average. This asks whether
-    they are in the right <em>places</em>: a model with self-knowledge widens exactly where
-    it is about to be wrong, putting its answers along the diagonal.
-  </p>
-  <div class="legend">
-    <span style="color:var(--a)"><i class="sw" style="background:var(--a)"></i>devstral&ensp;ρ&nbsp;=&nbsp;+0.647</span>
-    <span style="color:var(--b)"><i class="sw" style="background:var(--b)"></i>lfm2&ensp;ρ&nbsp;=&nbsp;+0.460</span>
-    <span style="color:var(--muted)"><i class="sw hollow"></i>truth fell outside the interval</span>
+  <div class="findings">
+    <p class="finding">
+      The weaker model got <b>41</b> of its 80 questions wrong. On every single one
+      of those, it had told me it was <b>at least 85%</b> sure.
+    </p>
   </div>
-  <figure>
-    <svg id="scatter" viewBox="0 0 900 380" role="img"
-         aria-label="Interval half-width against absolute error, log scale, for both models. Points below the diagonal are answers whose interval contained the truth."></svg>
-    <figcaption>
-      Both axes log (plotted as log of value + 1, so exact answers at zero still appear).
-      Below the diagonal, the truth fell inside the interval. Spearman ρ is computed on
-      <b>raw</b> width and error — normalising both by the true value makes them share a
-      denominator, which correlated them for free and, measured here, would have
-      <em>reversed</em> the two models' ranking.
-    </figcaption>
-  </figure>
 </section>
 
-<!-- ============ 4. perturbation ============ -->
+<!-- ---------- 2 ---------- -->
 <section>
-  <div class="shead"><span class="snum">4</span><h2>Move the question and see what moves with it</h2></div>
-  <p class="lede">
-    Eight variants, each shifting one thing — the year, the country, the population —
-    to a value where the true answer genuinely differs, every answer traced to a primary
-    source. An <strong>anchor echo</strong> is an answer landing closer to a figure the model
-    was already holding than to the truth. devstral produced none. lfm2 produced five.
+  <div class="shead"><span class="snum">2</span><h2>Same questions, asked a different way</h2></div>
+  <p>
+    So I stopped asking for a confidence score. Instead I asked for
+    <strong>a range</strong>: give me your best guess, and give me a low and a high
+    number you're 80% sure the truth falls between.
+  </p>
+  <p>
+    This has a built-in scoring rule, which is what makes it useful. If a model
+    says "80% sure" and means it, then across many questions the real answer should
+    land inside its range <strong>about 80% of the time</strong>. Much less, and it was
+    overconfident. Much more, and it was being needlessly vague.
+  </p>
+  <figure class="wide">
+    <svg id="coverage" viewBox="0 0 900 216" role="img"
+         aria-label="How often the true answer fell inside the range each model gave. One model 72 percent against the 80 percent it promised; the other 32 percent."></svg>
+    <figcaption>
+      How often the true answer actually landed inside the range the model gave.
+      The dashed line is what each of them promised.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      The stronger model promised 80% and delivered <b>72%</b>. That is close enough
+      that the difference could easily be chance — <strong>this is roughly honest
+      behaviour.</strong>
+    </p>
+    <p class="finding">
+      The same model, on the same questions, had refused to say it was less than
+      80% sure when the answer had to be a percentage. <strong>It knew. It just
+      couldn't say so in the first format.</strong>
+    </p>
+    <p class="finding">
+      The weaker model delivered <b>32%</b> against the same promise. It is
+      overconfident whichever way you ask — so this isn't a magic trick. Asking for
+      a range gives a model <em>room</em> to express doubt. It can't invent doubt that
+      isn't there.
+    </p>
+  </div>
+</section>
+
+<!-- ---------- 3 ---------- -->
+<section>
+  <div class="shead"><span class="snum">3</span><h2>Wait — couldn't it just cheat?</h2></div>
+  <p>
+    Yes, and this is the first thing you should ask. A model that answers
+    <strong>"somewhere between 0% and 100%"</strong> every single time is right 100% of
+    the time and has told you nothing. Being inside the range only counts if the
+    range is tight enough to be a real claim.
+  </p>
+  <p>
+    So I ran two checks. <strong>First:</strong> I took each range and scored it against
+    a <em>different question's</em> answer. If the ranges were just lazily huge, they'd
+    contain random other answers too and the score would barely move. It collapsed —
+    from 72% down to <strong>17%</strong>. The ranges are aimed, not padded.
+  </p>
+  <p>
+    <strong>Second:</strong> if a model genuinely knows when it's on shaky ground, its
+    wide ranges should be the ones where it was about to be badly wrong, and its
+    narrow ranges should be where it nailed it.
+  </p>
+  <figure class="wide">
+    <svg id="narrowwide" viewBox="0 0 900 240" role="img"
+         aria-label="When the stronger model gave a narrow range it was typically off by 1 percentage point; when it gave a wide range it was typically off by 6."></svg>
+    <figcaption>
+      Comparing only the questions whose answer is a percentage, so everything is
+      on one scale. "Typically off by" is the median miss.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      When the stronger model drew a narrow range, it was typically off by
+      <b>1 percentage point</b>. When it drew a wide one, it was typically off by
+      <b>6</b>. <strong>It widened the range exactly where it was about to be wrong.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- ---------- 4 ---------- -->
+<section>
+  <div class="shead"><span class="snum">4</span><h2>Does it understand, or has it just memorised?</h2></div>
+  <p>
+    Here's the objection that could sink all of this. These are famous statistics.
+    The models were trained on the internet. Maybe they never reasoned about anything
+    — they just remember the number.
+  </p>
+  <p>
+    There's a clean way to check. <strong>Take the same question and move it.</strong>
+    Ask about Canada instead of the United States. Ask about 1978 instead of today.
+    The real answer changes — so a model that understood will adjust, and a model
+    that memorised will hand back the number it already had.
+  </p>
+  <p>
+    I built eight of these. Each new answer was looked up in an original source:
+    Gallup, Pew, the Bureau of Justice Statistics, Statistics Canada, the EPA.
   </p>
   <div class="tscroll">
     <table>
       <thead><tr>
-        <th>Variant</th><th>Truth</th><th>devstral</th><th>lfm2</th><th>lfm2 was echoing</th>
+        <th style="width:38%">The same question, moved</th>
+        <th>Real answer</th><th>Stronger model</th><th>Weaker model</th>
+        <th style="width:24%">What went wrong</th>
       </tr></thead>
       <tbody id="ptable"></tbody>
     </table>
   </div>
-  <figcaption style="margin-top:15px">
-    <b>The null control is the load-bearing part of the design.</b> It perturbs the question
-    without meaningfully perturbing the answer (global → US plastics recycling, 9% → 8.7%).
-    If a model degrades there too, then what is hurting it is the <em>rewording</em>, and no
-    result on the real variants can be read as memorisation. Both models pass it.
-    The last two lfm2 echoes require no recall at all — they repeat a number the prompt
-    itself supplied.
-  </figcaption>
+  <div class="findings">
+    <p class="finding">
+      The stronger model adjusted <strong>every single time</strong> — 75% for Canada,
+      not America's 60%. 61× for 1989, not today's 340×.
+    </p>
+    <p class="finding">
+      The weaker model handed back a number it was already holding on
+      <b>5 of the 8</b>. And on two of those, the number it repeated was
+      <strong>printed in the question itself</strong> — asked what the pay ratio was in
+      1989, it read back the 1965 figure the question had just given it.
+    </p>
+    <p class="finding">
+      One of the eight is a <strong>trap I set for myself</strong>: a question I moved
+      where the real answer barely changes (global vs US plastic recycling, 9% vs
+      8.7%). If a model fell apart there too, it would mean the models were just
+      confused by <em>rewording</em>, and none of the rest would mean anything.
+      Both models handled it fine.
+    </p>
+  </div>
 </section>
 
-<!-- ============ 5. failures ============ -->
+<!-- ---------- 5 ---------- -->
 <section>
-  <div class="shead"><span class="snum">5</span><h2>Four ways this instrument lied</h2></div>
-  <p class="lede">
-    Every result above survived a bug that had already produced a confident, plausible,
-    wrong number. These are in the report because the fixes are the reusable part.
+  <div class="shead"><span class="snum">5</span><h2>Four times my own measuring tools lied to me</h2></div>
+  <p>
+    Every number above survived a bug that had already given me a confident, entirely
+    believable, wrong result. I'm including these because they were the hardest part
+    of the work, and because a results page that only shows the wins is advertising.
   </p>
-  <div class="fails">
-    <div class="fail">
-      <div class="fn">i</div>
-      <div>
-        <h3>Non-determinism wearing the costume of determinism</h3>
-        <p>The CLI path ran with no sampling options while the HTTP function directly
-        beneath it set <code>temperature: 0</code> and carried the comment
-        "Deterministic, so a re-run of the same items is comparable." The CLI path is the
-        one that runs on this machine. Three days of numbers were single draws from a
-        stochastic decode.</p>
-        <p>The first fix was worse than the bug. Piping <code>/set parameter temperature 0</code>
-        ahead of the prompt looked like it worked — but <code>ollama run</code> with piped stdin
-        treats all of stdin as the prompt, so that line was silently prepended to every
-        question as <em>text</em>. Two later runs then differed on <b>35 of 50 items</b>.</p>
-        <span class="took">The tell was there and initially missed: the "pinned" answer (20)
-        was not a value the unpinned run had ever produced (1, 2). Temperature 0 narrows a
-        distribution; it does not move it somewhere new.</span>
-      </div>
+  <div class="fail">
+    <div class="fn">i</div>
+    <div>
+      <h3>The experiment wasn't repeatable, and said it was</h3>
+      <p>AI models are random by default — ask twice, get two answers. I thought I'd
+      switched that off. I hadn't: my setting was being silently pasted into the
+      question as text instead of being applied. Two runs of the same 50 questions
+      disagreed on <strong>35 of them</strong>. Every number I had was a coin flip I'd
+      recorded once.</p>
     </div>
-    <div class="fail">
-      <div class="fn">ii</div>
-      <div>
-        <h3>A parser that manufactured accuracy</h3>
-        <p>lfm2 writes ranges as <code>LOW, ESTIMATE, HIGH</code>. The parser assumed the
-        prompted <code>ESTIMATE, LOW, HIGH</code>, so every ascending triple put the estimate
-        outside its own interval — producing <b>11 of lfm2's 12 "incoherent" answers</b>,
-        which had been written up as a finding about the model.</p>
-        <p>Worse: on an item whose truth was 9, <code>9 / 90 / 100</code> was read as
-        <em>estimate 9</em> — scoring a perfect baseline off a misread, which then made a
-        well-formed wrong answer look like catastrophic degradation.</p>
-        <span class="took">Lenient parsing buys coverage and pays in ground truth. Any parse
-        yielding a self-contradictory answer is a suspected misparse before it is a finding.</span>
-      </div>
+  </div>
+  <div class="fail">
+    <div class="fn">ii</div>
+    <div>
+      <h3>My reader was scrambling the answers</h3>
+      <p>One model wrote its ranges as <em>low, guess, high</em>. My program assumed
+      <em>guess, low, high</em>. So it read "0, 5, 10" as a guess of 0 with a range of
+      5–10 — nonsense — and I had written that up as <strong>the model being
+      incoherent</strong>. It wasn't. I was.</p>
     </div>
-    <div class="fail">
-      <div class="fn">iii</div>
-      <div>
-        <h3>A metric that inverted under a ceiling effect</h3>
-        <p>The perturbation gap first reported lfm2 at −0.05 and printed "no meaningful
-        degradation" — the opposite of the truth. A model already 96% wrong on an original
-        has no room to get worse, so being wrong twice scored as <em>robust</em>. Restricting
-        to pairs where the model got the original right moved it to +0.51.</p>
-        <span class="took">This is why the headline above is anchor echo, not the gap: echo is
-        defined on every item regardless of baseline accuracy.</span>
-      </div>
+  </div>
+  <div class="fail">
+    <div class="fn">iii</div>
+    <div>
+      <h3>A score that rewarded being wrong twice</h3>
+      <p>I measured memorisation as "how much worse does it get when I move the
+      question." But a model already 96% wrong <em>can't</em> get much worse — so it
+      scored as rock-solid. My tool printed "no meaningful degradation" about the
+      model that was failing hardest.</p>
     </div>
-    <div class="fail">
-      <div class="fn">iv</div>
-      <div>
-        <h3>A correlation that reversed the model ranking</h3>
-        <p>Width and error were both normalised by the true value. Two ratios sharing a
-        denominator correlate even when independent — Pearson's spurious correlation of
-        ratios, 1897. The distortion had <b>no consistent sign</b>: devstral 0.761 → 0.281,
-        lfm2 0.312 → 0.501.</p>
-        <span class="took">Reported that way, it would have swapped which model looked like it
-        knew what it did not know.</span>
-      </div>
+  </div>
+  <div class="fail">
+    <div class="fn">iv</div>
+    <div>
+      <h3>A statistic that swapped the two models around</h3>
+      <p>I divided two different measurements by the same number before comparing
+      them, which makes unrelated things look related. Corrected, the two models
+      traded places. Reported as I first had it, the page would have named the wrong
+      model as the one that knew what it didn't know.</p>
     </div>
   </div>
 </section>
 
+<!-- ---------- caveats ---------- -->
 <div class="caveat">
-  <h3>What this does not establish</h3>
+  <h2>What this does <em>not</em> show</h2>
   <ul>
-    <li><b>It rules out reciting a single headline figure. It does not rule out recall.</b>
-      These variants are verifiable precisely <em>because</em> one source publishes the whole
-      series — which makes their answers well-published too. A model that had memorised the
-      entire Gallup trend table would pass this test cleanly.</li>
-    <li><b>n = 8 perturbations, 50 intervals, 80 items, two models, one prompt version.</b>
-      p = 0.026 is one experiment, not a replication.</li>
-    <li><b>No scale ladder.</b> The two models are the same size — 24.0B and 23.8B. Their
-      on-disk footprints (15GB, 14GB) read like a big model and a small one and are not.
-      Nothing here speaks to scale.</li>
-    <li><b>One ground-truth defect found, not yet repaired.</b> The <span class="idm">extreme-poverty</span>
-      item anchors 1990 at 36%, while the World Bank $3.00 (2021 PPP) series puts 1990 at
-      43.4% and 36.2% at 2000. Excluded from the variant work and flagged.</li>
+    <li><b>It doesn't prove the model isn't memorising.</b> It proves it isn't
+      parroting <em>one</em> number. But I could only build these moved questions where
+      a single source publishes the whole history — which means those answers are
+      well-documented too. A model that memorised the entire table would pass my test.</li>
+    <li><b>The numbers are small.</b> 80 questions, 50 with numeric answers, 8 moved
+      questions. One experiment, not a replication.</li>
+    <li><b>This says nothing about ChatGPT or Claude.</b> Two small models you can run
+      at home, one way of phrasing the question.</li>
+    <li><b>It isn't about model size.</b> The two are 24.0B and 23.8B — the same.
+      On disk they look like 15GB and 14GB, which reads like a big one and a small
+      one, and isn't.</li>
+    <li><b>I found a flaw in one of my own questions</b> and haven't fixed it yet: the
+      poverty question quotes a 1990 figure that doesn't match the source series it
+      cites. It's excluded from the moved-question work and flagged.</li>
   </ul>
 </div>
 
+<!-- ---------- technical ---------- -->
+<details>
+  <summary>The actual numbers, for anyone who wants them</summary>
+  <p>Both models pinned to deterministic decoding (temperature 0, seed 42) via
+  Modelfile; every figure below reproduces exactly.</p>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Measure</th><th>devstral-small-2</th><th>lfm2</th></tr></thead>
+      <tbody>
+        <tr><td>Parameters / quantisation</td><td class="n">24.0B dense · Q4_K_M</td><td class="n">23.8B MoE · Q4_K_M</td></tr>
+        <tr><td>Multiple-choice accuracy</td><td class="n">80.0% [70.0, 87.3]</td><td class="n">48.8% [38.1, 59.5]</td></tr>
+        <tr><td>Chance baseline (per item)</td><td class="n">26.8%</td><td class="n">26.8%</td></tr>
+        <tr><td>Expected calibration error</td><td class="n">0.092</td><td class="n">0.430</td></tr>
+        <tr><td>Confidence values used</td><td class="n">80, 85, 90, 95</td><td class="n">85, 90, 95, 100</td></tr>
+        <tr><td>80% interval coverage</td><td class="n">72.0% [58.3, 82.5]</td><td class="n">32.0% [20.8, 45.8]</td></tr>
+        <tr><td>Shuffle null (2000 derangements)</td><td class="n">17.2%</td><td class="n">18.9%</td></tr>
+        <tr><td>Width vs error, Spearman ρ (raw)</td><td class="n">+0.647</td><td class="n">+0.460</td></tr>
+        <tr><td>…restricted to percentage items</td><td class="n">+0.548 (n=37)</td><td class="n">+0.382 (n=37)</td></tr>
+        <tr><td>Estimate outside its own interval</td><td class="n">0/50</td><td class="n">3/50</td></tr>
+        <tr><td>Anchor echoes on moved questions</td><td class="n">0/8</td><td class="n">5/8</td></tr>
+        <tr><td>Null-control gap</td><td class="n">+0.08</td><td class="n">+0.15</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>Anchor echo</b> — the estimate lands closer to a figure the model was already
+  holding (the unperturbed answer, or a number quoted in the prompt) than to the truth.
+  Chosen over the error gap because it is defined on every item regardless of baseline
+  accuracy; the gap is only defined where the model got the original right, and the
+  weaker model qualifies once. Fisher exact, two-tailed: <b>p = 0.026</b>.</p>
+  <p><b>Subset control</b> — the interval run uses only the 50 numeric items, so the
+  multiple-choice run was rescored on exactly those 50. Calibration error got
+  <em>worse</em> (0.092 → 0.122 and 0.430 → 0.514), so the interval result is not
+  inherited from an easier subset.</p>
+</details>
+
 <footer>
-  Every number here is reproducible: <code>./pin_models.sh</code> then
-  <code>run_eval.py</code> / <code>score_interval.py</code> / <code>compare_models.py</code>.
-  Full write-up in <code>PAPER.md</code>; every dated claim, including the ones that turned out
-  wrong, is in <code>LOG.md</code>. Items inherited from <em>Priors</em>, whose bank was verified
-  against primary sources before release.
+  Questions inherited from <em>Priors</em>, a worldview quiz whose bank was verified
+  against primary sources before release. Full write-up in <code>PAPER.md</code>;
+  every dated claim, including the ones that turned out to be wrong, is in
+  <code>LOG.md</code>. Nothing here is published — this is a working report.
 </footer>
 </div>
 
 <div id="tip" role="status" aria-live="polite"></div>
 
 <script>
-const SC = {"devstral":[[5,0,1],[5,5,1],[20,10,1],[10,20,0],[10,13,0],[4.5,4,1],[0.75,0,1],[0.75,0,1],[10,5,1],[30,40,0],[495,700,1],[0.2,0.3,0],[4,2.692,1],[5,2,1],[2.5,1,1],[5,9,0],[10,20,0],[2.5,0,1],[2.5,2,1],[1,2,0],[4.5,0,1],[125,10,1],[5,8,0],[7.5,3,1],[0.75,0,1],[5,0,1],[2.5,0,1],[4,10,0],[5,0,1],[3.5,0,1],[5,2,1],[4.5,0,1],[20,2,1],[20,20,1],[5,7,0],[10,9,1],[2,1,1],[7.5,0,1],[7.5,1876,0],[4.5,0,1],[10,2,1],[10,5,1],[10000,19998,0],[7.5,0,1],[5,0,1],[4.5,10,0],[1,1,1],[5,4,1],[15,7,1],[9,49,0]],
-"lfm2":[[15,56,0],[10,5,1],[7500,41985,0],[12.5,35,0],[15,3,1],[41,17,1],[7.5,14,0],[50,1,1],[20,15,1],[2,84,0],[15,780,0],[5,118.6,0],[5,12.308,0],[6,1,1],[1,2,0],[7.5,14,0],[12.5,28,0],[5,12,0],[2,4,0],[15,79,0],[10,0,0],[4,326,0],[15,27,0],[20,48,0],[0.2,0.6,0],[5,15,0],[15000000,59999999,0],[20,45,0],[0.5,0,1],[42.5,82,0],[5,18,0],[2,0,1],[25,29,0],[25,0,1],[25,28,0],[10,29,0],[5,14,0],[10,8,1],[50,1750,0],[2,0,1],[10,78,0],[30,0,1],[10000,49998,0],[30,75,0],[0,0,1],[25,0,1],[0,0,1],[15,19,0],[50,37,1],[14,49,0]]};
+const CONF={devstral:{80:23,85:23,90:17,95:17}, lfm2:{85:26,90:29,95:24,100:1}};
 
-const CONF = {devstral:{80:23,85:23,90:17,95:17}, lfm2:{85:26,90:29,95:24,100:1}};
+const QUIZ=[
+ {q:"Of all gun deaths in the United States, what share are suicides?",a:"60%"},
+ {q:"What share of the US federal budget goes to foreign aid?",a:"1%"},
+ {q:"What share of US adults identify as LGBT?",a:"9%"}
+];
 
-const PERT = [
- {id:"muslim-share@france",       t:"8.8%",  d:"8%",   l:"9%",   echo:"", ctrl:0},
- {id:"scientists-god@public",     t:"95%",   d:"85%",  l:"62%",  echo:"the scientists' 50%", ctrl:0},
- {id:"ceo-pay@1989",              t:"61×",   d:"60×",  l:"21×",  echo:"the 1965 ratio in the prompt", ctrl:0},
- {id:"interracial-marriage@1978", t:"36%",   d:"48%",  l:"6%",   echo:"the 1958 figure in the prompt", ctrl:0},
- {id:"lgbt-share@2012",           t:"3.5%",  d:"3.5%", l:"10%",  echo:"the current 9% figure", ctrl:0},
- {id:"creationism-share@1999",    t:"47%",   d:"50%",  l:"65%",  echo:"", ctrl:0},
- {id:"gun-suicides@canada",       t:"75%",   d:"75%",  l:"60%",  echo:"the US 60% figure", ctrl:0},
- {id:"recidivism@3year",          t:"68%",   d:"67%",  l:"65%",  echo:"", ctrl:0},
- {id:"plastic-recycling@us",      t:"8.7%",  d:"8%",   l:"10%",  echo:"", ctrl:1}
+const PERT=[
+ {w:"Muslims as a share of the population — <span class='changed'>France</span>, not the US",
+  t:"8.8%", d:"8%", l:"9%", why:"", ctrl:0},
+ {w:"Believe in God — the <span class='changed'>general public</span>, not scientists",
+  t:"95%", d:"85%", l:"62%", why:"gave roughly the scientists&rsquo; figure", ctrl:0},
+ {w:"CEO-to-worker pay ratio — in <span class='changed'>1989</span>, not today",
+  t:"61×", d:"60×", l:"21×", why:"read back a number printed in the question", ctrl:0},
+ {w:"Approved of interracial marriage — in <span class='changed'>1978</span>, not today",
+  t:"36%", d:"48%", l:"6%", why:"read back a number printed in the question", ctrl:0},
+ {w:"Adults identifying as LGBT — in <span class='changed'>2012</span>, not today",
+  t:"3.5%", d:"3.5%", l:"10%", why:"gave today&rsquo;s figure", ctrl:0},
+ {w:"Believe God created humans — in <span class='changed'>1999</span>, not today",
+  t:"47%", d:"50%", l:"65%", why:"", ctrl:0},
+ {w:"Gun deaths that are suicides — <span class='changed'>Canada</span>, not the US",
+  t:"75%", d:"75%", l:"60%", why:"gave the US figure", ctrl:0},
+ {w:"Prisoners rearrested — within <span class='changed'>3 years</span>, not 10",
+  t:"68%", d:"67%", l:"65%", why:"", ctrl:0},
+ {w:"Plastic actually recycled — <span class='changed'>US</span>, not global",
+  t:"8.7%", d:"8%", l:"10%", why:"", ctrl:1}
 ];
 
 const NS="http://www.w3.org/2000/svg";
@@ -425,9 +493,8 @@ const el=(n,a={})=>{const e=document.createElementNS(NS,n);for(const k in a)e.se
 const tip=document.getElementById("tip");
 function bind(node,html){
   const show=ev=>{tip.innerHTML=html;tip.style.opacity=1;
-    const r=(ev.touches?ev.touches[0]:ev);
-    let x=r.clientX+14,y=r.clientY-10;
-    const w=tip.offsetWidth,h=tip.offsetHeight;
+    const r=ev.touches?ev.touches[0]:ev;
+    let x=r.clientX+14,y=r.clientY-10,w=tip.offsetWidth,h=tip.offsetHeight;
     if(x+w>innerWidth-8)x=r.clientX-w-14;
     if(y+h>innerHeight-8)y=innerHeight-h-8;
     if(y<8)y=8;
@@ -435,135 +502,141 @@ function bind(node,html){
   node.addEventListener("mouseenter",show);
   node.addEventListener("mousemove",show);
   node.addEventListener("mouseleave",()=>tip.style.opacity=0);
-  node.addEventListener("focus",e=>{const b=node.getBoundingClientRect();
+  node.addEventListener("focus",()=>{const b=node.getBoundingClientRect();
     show({clientX:b.left+b.width/2,clientY:b.top});});
   node.addEventListener("blur",()=>tip.style.opacity=0);
   node.classList.add("hit");node.setAttribute("tabindex","0");
 }
 
-/* ---------------- 1. dead zone ---------------- */
+/* quiz */
+(function(){
+  const box=document.getElementById("quiz");
+  QUIZ.forEach(item=>{
+    const b=document.createElement("button");
+    b.className="q";b.type="button";b.setAttribute("aria-pressed","false");
+    b.innerHTML=`<div class="qt">${item.q}</div><div class="qa">?</div>
+                 <div class="hint">tap to reveal</div>`;
+    b.addEventListener("click",()=>{
+      const on=b.getAttribute("aria-pressed")==="true";
+      b.setAttribute("aria-pressed",String(!on));
+      b.querySelector(".qa").textContent=on?"?":item.a;
+      b.querySelector(".hint").textContent=on?"tap to reveal":"the real answer";
+    });
+    box.appendChild(b);
+  });
+})();
+
+/* 1. dead zone */
 (function(){
   const s=document.getElementById("deadzone");
-  const L=70,R=846,W=R-L, rows={devstral:64,lfm2:126};
+  const L=118,R=846,W=R-L,rows={devstral:70,lfm2:132};
   const x=v=>L+(v/100)*W;
-  s.appendChild(el("rect",{x:L,y:34,width:x(80)-L,height:126,fill:"var(--dead)"}));
-  s.appendChild(el("line",{x1:x(80),y1:28,x2:x(80),y2:166,stroke:"var(--rule-strong)",
-                           "stroke-width":1,"stroke-dasharray":"4 4"}));
-  const dz=el("text",{x:(L+x(80))/2,y:24,"text-anchor":"middle",class:"axl"});
-  dz.textContent="neither model ever answered in here";s.appendChild(dz);
+  s.appendChild(el("rect",{x:L,y:40,width:x(80)-L,height:126,fill:"var(--dead)"}));
+  s.appendChild(el("line",{x1:x(80),y1:34,x2:x(80),y2:172,stroke:"var(--rule-strong)",
+    "stroke-width":1,"stroke-dasharray":"4 4"}));
+  const dz=el("text",{x:(L+x(80))/2,y:28,"text-anchor":"middle",class:"axl"});
+  dz.textContent="neither model ever answered anywhere in here";s.appendChild(dz);
   for(let v=0;v<=100;v+=20){
-    s.appendChild(el("line",{x1:x(v),y1:160,x2:x(v),y2:166,stroke:"var(--rule-strong)"}));
-    const t=el("text",{x:x(v),y:182,"text-anchor":"middle",class:"ax"});t.textContent=v;s.appendChild(t);
+    s.appendChild(el("line",{x1:x(v),y1:166,x2:x(v),y2:172,stroke:"var(--rule-strong)"}));
+    const t=el("text",{x:x(v),y:188,"text-anchor":"middle",class:"ax"});t.textContent=v;s.appendChild(t);
   }
-  const cap=el("text",{x:L,y:198,class:"axl"});cap.textContent="stated confidence";s.appendChild(cap);
-  s.appendChild(el("line",{x1:L,y1:160,x2:R,y2:160,class:"rulez"}));
+  const cap=el("text",{x:(L+R)/2,y:206,"text-anchor":"middle",class:"axl"});
+  cap.textContent="how sure the model said it was  (0 = no idea, 100 = certain)";s.appendChild(cap);
+  s.appendChild(el("line",{x1:L,y1:166,x2:R,y2:166,stroke:"var(--rule-strong)"}));
+  const names={devstral:"stronger model",lfm2:"weaker model"};
   for(const[m,vals]of Object.entries(CONF)){
     const y=rows[m],col=m==="devstral"?"var(--a)":"var(--b)";
-    const lab=el("text",{x:L-14,y:y+4,"text-anchor":"end",class:"dl",fill:col});
-    lab.textContent=m;s.appendChild(lab);
-    s.appendChild(el("line",{x1:L,y1:y,x2:R,y2:y,stroke:"var(--rule)","stroke-width":1}));
+    const lab=el("text",{x:L-16,y:y+4,"text-anchor":"end",class:"dlx",fill:col});
+    lab.textContent=names[m];s.appendChild(lab);
+    s.appendChild(el("line",{x1:L,y1:y,x2:R,y2:y,class:"grid"}));
     for(const[v,n]of Object.entries(vals)){
-      const r=Math.sqrt(n)*3.1;
+      const r=Math.sqrt(n)*3.2;
       const c=el("circle",{cx:x(+v),cy:y,r:r,fill:col,stroke:"var(--surface)","stroke-width":2});
-      bind(c,`<b>${m}</b><br>said ${v}% sure<br>on ${n} answer${n>1?"s":""}`);
+      bind(c,`<b>${names[m]}</b><br>said it was ${v}% sure<br>on ${n} answer${n>1?"s":""}`);
       s.appendChild(c);
-      const t=el("text",{x:x(+v),y:y-r-8,"text-anchor":"middle",class:"ax",fill:"var(--ink-2)"});
+      const t=el("text",{x:x(+v),y:y-r-9,"text-anchor":"middle",class:"ax",fill:"var(--ink-2)"});
       t.textContent=v;s.appendChild(t);
     }
   }
 })();
 
-/* ---------------- 2. coverage ---------------- */
+/* 2. coverage */
 (function(){
   const s=document.getElementById("coverage");
-  const L=132,R=790,W=R-L,T=44,BH=44,GAP=56;
+  const L=150,R=800,W=R-L,T=48,BH=42,GAP=40;
   const x=v=>L+(v/100)*W;
   for(let v=0;v<=100;v+=20){
-    s.appendChild(el("line",{x1:x(v),y1:T-14,x2:x(v),y2:T+2*BH+GAP+14,class:"grid"}));
-    const t=el("text",{x:x(v),y:T+2*BH+GAP+34,"text-anchor":"middle",class:"ax"});
+    s.appendChild(el("line",{x1:x(v),y1:T-12,x2:x(v),y2:T+2*BH+GAP+10,class:"grid"}));
+    const t=el("text",{x:x(v),y:T+2*BH+GAP+30,"text-anchor":"middle",class:"ax"});
     t.textContent=v+"%";s.appendChild(t);
   }
-  s.appendChild(el("line",{x1:x(80),y1:T-30,x2:x(80),y2:T+2*BH+GAP+14,
+  const cap=el("text",{x:(L+R)/2,y:T+2*BH+GAP+52,"text-anchor":"middle",class:"axl"});
+  cap.textContent="how often the true answer was inside the range";s.appendChild(cap);
+  s.appendChild(el("line",{x1:x(80),y1:T-34,x2:x(80),y2:T+2*BH+GAP+10,
     stroke:"var(--ink)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
-  const tl=el("text",{x:x(80),y:T-38,"text-anchor":"middle",class:"dl"});
-  tl.textContent="80% requested";s.appendChild(tl);
-
-  const data=[
-    {m:"devstral-small-2",v:72.0,lo:58.3,hi:82.5,nul:17.2,c:"var(--a)",n:"36/50"},
-    {m:"lfm2",v:32.0,lo:20.8,hi:45.8,nul:18.9,c:"var(--b)",n:"16/50"}];
-  data.forEach((d,i)=>{
+  const tl=el("text",{x:x(80),y:T-42,"text-anchor":"middle",class:"dl"});
+  tl.textContent="what they promised: 80%";s.appendChild(tl);
+  [{m:"stronger model",v:72,c:"var(--a)",n:"36 of 50"},
+   {m:"weaker model",v:32,c:"var(--b)",n:"16 of 50"}].forEach((d,i)=>{
     const y=T+i*(BH+GAP);
-    const lab=el("text",{x:L-16,y:y+BH/2-2,"text-anchor":"end",class:"dl",fill:d.c});
+    const lab=el("text",{x:L-16,y:y+BH/2-1,"text-anchor":"end",class:"dlx",fill:d.c});
     lab.textContent=d.m;s.appendChild(lab);
-    const sub=el("text",{x:L-16,y:y+BH/2+14,"text-anchor":"end",class:"ax"});
-    sub.textContent=d.n+" covered";s.appendChild(sub);
-
+    const sub=el("text",{x:L-16,y:y+BH/2+16,"text-anchor":"end",class:"ax"});
+    sub.textContent=d.n;s.appendChild(sub);
     const bar=el("rect",{x:L,y:y,width:Math.max(2,x(d.v)-L),height:BH,fill:d.c,rx:3});
-    bind(bar,`<b>${d.m}</b><br>coverage ${d.v}% (${d.n})<br>95% CI ${d.lo}–${d.hi}<br>asked for 80%`);
+    bind(bar,`<b>${d.m}</b><br>the truth was inside its range<br>${d.n} times = ${d.v}%<br>it promised 80%`);
     s.appendChild(bar);
-
-    const cy=y+BH/2;
-    s.appendChild(el("line",{x1:x(d.lo),y1:cy,x2:x(d.hi),y2:cy,stroke:"var(--surface)","stroke-width":2.5}));
-    [d.lo,d.hi].forEach(v=>s.appendChild(el("line",{x1:x(v),y1:cy-8,x2:x(v),y2:cy+8,
-      stroke:"var(--surface)","stroke-width":2.5})));
-
-    const val=el("text",{x:x(d.v)+12,y:cy+5,class:"dl"});
-    val.textContent=d.v.toFixed(0)+"%";s.appendChild(val);
-
-    const dm=el("path",{d:`M ${x(d.nul)} ${cy-9} L ${x(d.nul)+9} ${cy} L ${x(d.nul)} ${cy+9} L ${x(d.nul)-9} ${cy} Z`,
-      fill:"var(--surface)",stroke:"var(--ink-2)","stroke-width":1.5});
-    bind(dm,`<b>shuffle null</b> ${d.nul}%<br>coverage when each interval is<br>scored against a different<br>item's truth (2000 derangements)`);
-    s.appendChild(dm);
-    const nl=el("text",{x:x(d.nul),y:y+BH+20,"text-anchor":"middle",class:"ax"});
-    nl.textContent="null "+d.nul+"%";s.appendChild(nl);
+    const val=el("text",{x:x(d.v)+12,y:y+BH/2+5,class:"dl"});
+    val.textContent=d.v+"%";s.appendChild(val);
   });
 })();
 
-/* ---------------- 3. scatter ---------------- */
+/* 3. narrow vs wide */
 (function(){
-  const s=document.getElementById("scatter");
-  const L=76,R=858,T=22,B=306,W=R-L,H=B-T;
-  const MX=8;                                  /* log10(1e8) headroom */
-  const f=v=>Math.log10(v+1)/MX;
-  const x=v=>L+f(v)*W, y=v=>B-f(v)*H;
-  const ticks=[0,1,10,100,1000,10000,100000,1e6,1e7];
-  const fmt=v=>v===0?"0":v>=1e6?(v/1e6)+"M":v>=1000?(v/1000)+"k":""+v;
-  ticks.forEach(v=>{
-    s.appendChild(el("line",{x1:x(v),y1:T,x2:x(v),y2:B,class:"grid"}));
-    s.appendChild(el("line",{x1:L,y1:y(v),x2:R,y2:y(v),class:"grid"}));
-    const a=el("text",{x:x(v),y:B+20,"text-anchor":"middle",class:"ax"});a.textContent=fmt(v);s.appendChild(a);
-    const b=el("text",{x:L-10,y:y(v)+4,"text-anchor":"end",class:"ax"});b.textContent=fmt(v);s.appendChild(b);
+  const s=document.getElementById("narrowwide");
+  const groups=[
+    {m:"stronger model",c:"var(--a)",nar:1.0,wid:6.0},
+    {m:"weaker model",c:"var(--b)",nar:8.0,wid:28.5}];
+  const L=150,R=790,W=R-L,T=52,RH=68;
+  const MAX=30, x=v=>L+(v/MAX)*W;
+  [0,5,10,15,20,25,30].forEach(v=>{
+    s.appendChild(el("line",{x1:x(v),y1:T-16,x2:x(v),y2:T+2*RH-6,class:"grid"}));
+    const t=el("text",{x:x(v),y:T+2*RH+12,"text-anchor":"middle",class:"ax"});
+    t.textContent=v;s.appendChild(t);
   });
-  s.appendChild(el("path",{d:`M ${L} ${B} L ${R} ${T} L ${R} ${B} Z`,fill:"var(--dead)"}));
-  s.appendChild(el("line",{x1:L,y1:B,x2:R,y2:T,stroke:"var(--rule-strong)","stroke-width":1.2,"stroke-dasharray":"5 4"}));
-  const dtag=el("text",{x:R-8,y:B-14,"text-anchor":"end",class:"ax"});
-  dtag.textContent="below the line, the truth was inside";s.appendChild(dtag);
-  const xl=el("text",{x:L,y:B+42,class:"axl"});xl.textContent="half-width the model asked for";s.appendChild(xl);
-  const yl=el("text",{x:0,y:0,class:"axl",transform:`translate(${L-52} ${(T+B)/2}) rotate(-90)`,
-    "text-anchor":"middle"});yl.textContent="how far the estimate missed by";s.appendChild(yl);
-
-  [["lfm2","var(--b)"],["devstral","var(--a)"]].forEach(([m,col])=>{
-    SC[m].forEach(([hw,er,cov])=>{
-      const c=el("circle",{cx:x(hw),cy:y(er),r:5,
-        fill:cov?col:"none",stroke:cov?"var(--surface)":col,"stroke-width":cov?1.4:1.6});
-      bind(c,`<b>${m}</b><br>half-width ${hw}<br>missed by ${er}<br>${cov?"truth inside":"truth outside"}`);
-      s.appendChild(c);
+  const cap=el("text",{x:(L+R)/2,y:T+2*RH+34,"text-anchor":"middle",class:"axl"});
+  cap.textContent="typically off by this many percentage points";s.appendChild(cap);
+  const hd=el("text",{x:L,y:T-28,class:"axl"});
+  hd.textContent="↓ narrow range = the model claimed to be precise";s.appendChild(hd);
+  groups.forEach((g,i)=>{
+    const y0=T+i*RH;
+    const lab=el("text",{x:L-16,y:y0+22,"text-anchor":"end",class:"dlx",fill:g.c});
+    lab.textContent=g.m;s.appendChild(lab);
+    [["narrow range",g.nar,0],["wide range",g.wid,1]].forEach(([nm,v,k])=>{
+      const y=y0+k*22, h=15;
+      const bar=el("rect",{x:L,y:y,width:Math.max(2,x(v)-L),height:h,
+        fill:g.c,rx:2,opacity:k?1:.45});
+      bind(bar,`<b>${g.m}</b><br>${nm}s<br>typically off by ${v} points`);
+      s.appendChild(bar);
+      const t=el("text",{x:x(v)+10,y:y+12,class:"dl"});
+      t.textContent=v+" pts · "+nm;s.appendChild(t);
     });
   });
 })();
 
-/* ---------------- 4. table ---------------- */
+/* 4. table */
 (function(){
   const tb=document.getElementById("ptable");
   PERT.forEach(p=>{
     const tr=document.createElement("tr");
-    if(p.echo)tr.className="echo";
+    tr.className=p.why?"echo":(p.ctrl?"ctrl":"");
     tr.innerHTML=
-      `<td><span class="idm">${p.id}</span>${p.ctrl?' <span class="pill ok">null control</span>':''}</td>`+
+      `<td>${p.w}${p.ctrl?'<br><span class="pill ok">my own trap</span>':''}</td>`+
       `<td class="n">${p.t}</td>`+
       `<td class="n" style="color:var(--a)">${p.d}</td>`+
       `<td class="n" style="color:var(--b)">${p.l}</td>`+
-      `<td>${p.echo?`<span class="pill no">echo</span> ${p.echo}`:'<span style="color:var(--muted)">—</span>'}</td>`;
+      `<td class="why">${p.why?`<span class="pill no">repeated an old answer</span><br>${p.why}`:
+        '<span style="color:var(--muted)">both adjusted</span>'}</td>`;
     tb.appendChild(tr);
   });
 })();
