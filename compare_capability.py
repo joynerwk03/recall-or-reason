@@ -211,13 +211,47 @@ def main():
         print("    a hypothesis, not a measurement.")
 
         # per-component, since the composite can hide opposing movements
-        print("\n  per component vs ECI:")
-        for k in ("calibration", "honesty", "discrimination", "independence"):
+        print()
+        print("  per component vs ECI:")
+        comps = ("calibration", "honesty", "discrimination", "independence")
+        results = []
+        for k in comps:
             v = [r[k] for r in rows]
             if all(x is not None for x in v):
                 rr = spearman(xs, v)
                 pp = perm_p(xs, v, trials=50000)
-                print(f"    {k:<16} rho {rr:+.3f}   p {pp:.3f}")
+                results.append((k, rr, pp))
+        # Four components tested against the same axis, so a p below .05 on one
+        # of them is not the same claim as a p below .05 on a single planned
+        # test. Holm-Bonferroni, reported beside the raw value, not instead.
+        order = sorted(results, key=lambda t: t[2])
+        n_t, adj, running = len(order), {}, 0.0
+        for i, (k, rr, pp) in enumerate(order):
+            running = max(running, min(1.0, pp * (n_t - i)))
+            adj[k] = running
+        for k, rr, pp in results:
+            star = "  *" if adj[k] < 0.05 else ""
+            print(f"    {k:<16} rho {rr:+.3f}   p {pp:.3f}   "
+                  f"Holm {adj[k]:.3f}{star}")
+        if results and not any(adj[k] < 0.05 for k, _, _ in results):
+            print()
+            print("    After correcting for testing four components, none")
+            print("    survives. The calibration result is the one worth")
+            print("    re-testing on a larger fleet; it is not a finding yet.")
+
+        # Does the ranking depend on the weights? If a conclusion holds only
+        # under equal weighting it is not a conclusion.
+        print()
+        print("  sensitivity — EHS vs ECI under other weightings:")
+        import epistemic_score as ES
+        for name, w in ES.WEIGHTINGS.items():
+            alt = [ES.combine((r["calibration"], r["honesty"],
+                               r["discrimination"], r["independence"]), w)
+                   for r in rows]
+            if all(x is not None for x in alt):
+                rr = spearman(xs, alt)
+                pp = perm_p(xs, alt, trials=50000)
+                print(f"    {name:<22} rho {rr:+.3f}   p {pp:.3f}")
 
     if a.json:
         with open(a.json, "w", encoding="utf-8") as fh:

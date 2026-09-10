@@ -1,9 +1,10 @@
 # Asking the same model the same question two ways
 
 **A benchmark separating expressible uncertainty from held uncertainty, and
-recall from reasoning, on 80 primary-sourced statistics**
+recall from reasoning, on 80 primary-sourced statistics — and what it finds
+across ten models**
 
-William Joyner · draft of 2026-09-09 · *not published; every number below is
+William Joyner · draft of 2026-09-10 · *not published; every number below is
 reproducible from this repository*
 
 ---
@@ -35,9 +36,19 @@ stronger model produces **0/8** anchor echoes; the weaker produces **5/8**
 2012, the US figure when asked about Canada, and twice repeating a number the
 prompt itself supplied.
 
+**Extended to ten models** spanning 22.6 points of the Epoch Capabilities Index,
+the strongest result in this paper is a null: **general capability does not
+predict epistemic honesty** (Spearman rho = +0.25, permutation p = 0.49, stable
+across five weightings of the composite). Models a leaderboard treats as
+equivalent differ by 27 points on it; a model 20 index points weaker than
+another matches it. Calibration alone trends with capability, but does not
+survive correcting for having tested four components. If you want to know
+whether a model's stated confidence means anything, its leaderboard position
+will not tell you.
+
 Finally we document four ways this instrument produced confident wrong numbers
-before those numbers were checked. We think that section is the most useful part
-of the paper.
+before those numbers were checked, and a further three found while scaling to
+ten models. We think those sections are the most useful part of the paper.
 
 ---
 
@@ -379,7 +390,134 @@ one beside it only as a standing warning.
 
 ---
 
-## 6. Limitations
+## 6. Does general capability predict epistemic honesty? Ten models
+
+Everything above concerns two models. The obvious question is whether any of it
+is a property of *models* or of *those* models — and behind that, a sharper one:
+if a better model is automatically more honest about its own uncertainty, this
+benchmark is measuring general capability the expensive way and does not need to
+exist.
+
+### 6.1 Design
+
+Ten locally-run open-weights models, spanning **116.0 to 138.5** on the
+**Epoch Capabilities Index** — 22.6 points, roughly the distance from Gemma 3 4B
+to Qwen3-32B. ECI stitches 50+ benchmarks onto one scale by comparing models
+evaluated on more than one of them, so it stays meaningful after any single
+benchmark saturates.
+
+ECI is taken from Epoch's own machine-readable release
+(`epoch.ai/data/benchmark_data.zip`), not transcribed from a rendered
+leaderboard. That was not fastidiousness: two attempts at reading interactive
+leaderboards through a page summariser returned figures that disagreed with each
+other.
+
+Each model is reduced to one **Epistemic Honesty Score** (0-100), the mean of
+four components — calibration, interval honesty scaled by sharpness,
+discrimination, and independence from anchors. **EHS contains no accuracy term
+by construction.** Had it rewarded getting answers right it would partly *be* a
+capability index, and any correlation below would be guaranteed rather than
+discovered.
+
+### 6.2 Result
+
+| model | ECI | EHS | calib | honesty | disc | indep |
+|---|---|---|---|---|---|---|
+| gemma3:4b | 116.0 | 33.5 | 8 | 20 | 30 | 75 |
+| llama3.1:8b | 116.5 | 54.7 | 56 | 39 | 37 | 88 |
+| gemma3:12b | 123.5 | 75.2 | 71 | 74 | 56 | 100 |
+| mistral-small:24b | 127.1 | **87.6** | 82 | 99 | 69 | 100 |
+| gemma3:27b | 130.0 | 69.8 | 88 | 84 | 45 | 62 |
+| phi4:14b | 130.4 | 65.5 | 66 | 61 | 35 | 100 |
+| qwen3:8b | 136.2 | 53.4 | 73 | 54 | 36 | 50 |
+| gpt-oss:20b | 137.8 | 55.2 | 67 | 53 | 26 | 75 |
+| qwen3:14b | 138.2 | 65.1 | 82 | 58 | 44 | 75 |
+| qwen3:32b | 138.5 | 82.2 | 94 | 98 | 50 | 88 |
+
+Not on the capability axis, because Epoch does not score them:
+devstral-small-2 **83.6**, lfm2 **26.7**. They are reported rather than dropped,
+but they cannot enter the correlation — which is awkward, since devstral is one
+of the strongest models in the set on this benchmark.
+
+**Spearman rho = +0.25, permutation p = 0.49, n = 10.** No relationship
+separable from chance.
+
+The conclusion does not depend on how the composite is weighted. Under five
+different weightings rho stays between +0.19 and +0.35 and p never falls below
+0.33:
+
+| weighting | rho | p |
+|---|---|---|
+| equal | +0.248 | 0.495 |
+| intervals-heavy | +0.333 | 0.351 |
+| calibration-heavy | +0.345 | 0.331 |
+| memorisation-heavy | +0.188 | 0.609 |
+| drop discrimination | +0.248 | 0.495 |
+
+### 6.3 The components move in different directions
+
+A composite can hide components pulling against each other, and here they do:
+
+| component | rho vs ECI | p | Holm-adjusted |
+|---|---|---|---|
+| calibration | **+0.661** | 0.044 | 0.176 |
+| honesty | +0.321 | 0.370 | 1.000 |
+| discrimination | -0.006 | 1.000 | 1.000 |
+| independence | **-0.231** | 0.519 | 1.000 |
+
+Calibration — does a stated 90 mean 90 — is the one component that trends with
+capability, and it is the one people usually mean by "is the model
+well-calibrated". **But four components were tested against the same axis, and
+after Holm correction the calibration result does not survive.** Reported here
+as a hypothesis worth re-testing on a larger fleet, not as a finding. Quoting
+p = 0.044 without that correction would be the multiple-comparisons version of
+every other mistake in Section 5.
+
+The independence correlation is *negative*. More capable models echoed a figure
+they were already holding slightly **more** often, not less — which is at least
+consistent with more capable models having memorised more, though at this n it
+is indistinguishable from noise and should not be leaned on.
+
+### 6.4 What the spread actually looks like
+
+The clearest way to see the null is to look at models that are close on one axis
+and far apart on the other:
+
+- **mistral-small:24b scores 87.6 at ECI 127.1.** gpt-oss:20b, **10.7 ECI points
+  more capable**, scores 55.2.
+- **qwen3:8b (ECI 136.2) scores 53.4. llama3.1:8b, 19.7 ECI points weaker,
+  scores 54.7.** Twenty points of general capability buy nothing here.
+- The three most capable models in the set — qwen3:32b, qwen3:14b, gpt-oss:20b,
+  within 0.7 ECI points of each other — score **82.2, 65.1 and 55.2**. A 27-point
+  spread among models that a capability leaderboard treats as equivalent.
+
+**The practical reading.** If you are choosing a model and you care whether its
+stated confidence means anything, its position on a general capability
+leaderboard will not tell you. That is the case for a benchmark like this one
+existing, and it is the strongest result in this paper — considerably stronger
+than anything in Sections 2 to 4, which rest on two models.
+
+### 6.5 Limits specific to this comparison
+
+- **n = 10 models.** A rank correlation on ten points has a very wide interval
+  whichever way it lands. A null at this n is "no relationship detected", not
+  "no relationship".
+- **ECI carries its own confidence intervals**, several of them more than ten
+  points wide (Gemma 3 4B: [97.5, 123.4]). The capability axis is not precise
+  either, and the chart draws those intervals rather than hiding them.
+- **Reasoning-mode ambiguity for the three Qwen models.** Epoch lists separate
+  reasoning and non-reasoning entries for some Qwen sizes but only a plain entry
+  for these, and does not state which mode it evaluated. The harness lets them
+  think and strips the scratchpad. The plain entry is the closest available
+  match; that is a limitation of the join, not something the join can fix.
+- **Truncation is not neutral.** qwen3:8b and gpt-oss:20b ran out of token
+  budget mid-thought on 3 and 5 answers respectively. Those record no answer
+  rather than a scavenged one, but a reasoning model runs out of budget on the
+  items it thinks longest about, so excluding them may flatter those two models.
+- **Everything is Q4_K_M quantised and locally run**, while ECI scores the
+  full-precision hosted model. That is a real mismatch on both axes at once.
+
+## 7. Limitations
 
 - **Two models, one prompt version, one language.** Everything here could be a
   property of this prompt.
@@ -395,10 +533,10 @@ one beside it only as a standing warning.
 - **Local quantised models.** Q4_K_M is lossy; these are not the full-precision
   models.
 
-## 7. What we would do next
+## 8. What we would do next
 
 1. **More variants**, weighted toward repeatedly-measured quantities
-   (Section 3.4) — roughly 20 would let the echo contrast carry an interval
+   (Section 3.4) - roughly 20 would let the echo contrast carry an interval
    rather than a single *p*.
 2. **A real scale ladder** — the same bank against 3B / 8B / 24B of one family,
    which is the only way to ask whether echo rate falls with scale.

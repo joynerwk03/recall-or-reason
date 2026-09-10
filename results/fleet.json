@@ -1,0 +1,607 @@
+{
+ "rows": [
+  {
+   "model": "gemma3-4b-t0",
+   "ehs": 33.45,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 8.0,
+   "honesty": 20.38,
+   "discrimination": 30.41,
+   "independence": 75.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.46,
+    "accuracy": 0.4,
+    "min_conf": 65,
+    "distinct_conf": 6,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 50,
+    "parse_rate": 1.0,
+    "coverage": 0.42,
+    "cov_ci": [
+     0.2937,
+     0.5577
+    ],
+    "shuffle_null": 0.1789,
+    "margin": 0.241,
+    "sharpness": 0.3881,
+    "rho_raw": 0.3041,
+    "median_halfwidth": 11.0,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 2,
+    "which": [
+     "ceo-pay@1989",
+     "gun-suicides@canada"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "eci": 115.97,
+   "eci_lo": 97.45,
+   "eci_hi": 123.39,
+   "eci_name": "Gemma 3 4B",
+   "org": "Google DeepMind",
+   "tag": "gemma3:4b"
+  },
+  {
+   "model": "llama3-1-8b-t0",
+   "ehs": 54.72,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 55.5,
+   "honesty": 39.2,
+   "discrimination": 36.67,
+   "independence": 87.5,
+   "choice": {
+    "n": 80,
+    "ece": 0.2225,
+    "accuracy": 0.6,
+    "min_conf": 60,
+    "distinct_conf": 5,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 50,
+    "parse_rate": 1.0,
+    "coverage": 0.54,
+    "cov_ci": [
+     0.404,
+     0.6703
+    ],
+    "shuffle_null": 0.1797,
+    "margin": 0.3603,
+    "sharpness": 0.5808,
+    "rho_raw": 0.3667,
+    "median_halfwidth": 9.75,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 1,
+    "which": [
+     "recidivism@3year"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "eci": 116.51,
+   "eci_lo": 105.95,
+   "eci_hi": 121.71,
+   "eci_name": "Llama 3.1-8B",
+   "org": "Meta AI",
+   "tag": "llama3.1:8b"
+  },
+  {
+   "model": "gemma3-12b-t0",
+   "ehs": 75.16,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 70.75,
+   "honesty": 73.72,
+   "discrimination": 56.19,
+   "independence": 100.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.1462,
+    "accuracy": 0.7125,
+    "min_conf": 60,
+    "distinct_conf": 7,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 50,
+    "parse_rate": 1.0,
+    "coverage": 0.7,
+    "cov_ci": [
+     0.5625,
+     0.809
+    ],
+    "shuffle_null": 0.165,
+    "margin": 0.535,
+    "sharpness": 0.8425,
+    "rho_raw": 0.5619,
+    "median_halfwidth": 5.5,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 0,
+    "which": [],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "eci": 123.46,
+   "eci_lo": 116.21,
+   "eci_hi": 128.73,
+   "eci_name": "Gemma 3 12B",
+   "org": "Google DeepMind",
+   "tag": "gemma3:12b"
+  },
+  {
+   "model": "mistral-small-24b-t0",
+   "ehs": 87.64,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 82.25,
+   "honesty": 98.85,
+   "discrimination": 69.45,
+   "independence": 100.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.0887,
+    "accuracy": 0.8125,
+    "min_conf": 80,
+    "distinct_conf": 4,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 49,
+    "parse_rate": 0.98,
+    "coverage": 0.7959,
+    "cov_ci": [
+     0.6636,
+     0.8852
+    ],
+    "shuffle_null": 0.1657,
+    "margin": 0.6302,
+    "sharpness": 0.9936,
+    "rho_raw": 0.6945,
+    "median_halfwidth": 5.0,
+    "incoherent": 1
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 0,
+    "which": [],
+    "control_error": 0.0805
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "eci": 127.07,
+   "eci_lo": 122.41,
+   "eci_hi": 129.01,
+   "eci_name": "Mistral Small 3",
+   "org": "Mistral AI",
+   "tag": "mistral-small:24b"
+  },
+  {
+   "model": "gemma3-27b-t0",
+   "ehs": 69.78,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 88.25,
+   "honesty": 83.71,
+   "discrimination": 44.68,
+   "independence": 62.5,
+   "choice": {
+    "n": 80,
+    "ece": 0.0587,
+    "accuracy": 0.7875,
+    "min_conf": 60,
+    "distinct_conf": 7,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 50,
+    "parse_rate": 1.0,
+    "coverage": 0.74,
+    "cov_ci": [
+     0.6045,
+     0.8413
+    ],
+    "shuffle_null": 0.1686,
+    "margin": 0.5714,
+    "sharpness": 0.905,
+    "rho_raw": 0.4468,
+    "median_halfwidth": 6.5,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 3,
+    "which": [
+     "lgbt-share@2012",
+     "creationism-share@1999",
+     "gun-suicides@canada"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "eci": 130.04,
+   "eci_lo": 124.64,
+   "eci_hi": 132.17,
+   "eci_name": "Gemma 3 27B",
+   "org": "Google DeepMind",
+   "tag": "gemma3:27b"
+  },
+  {
+   "model": "phi4-14b-t0",
+   "ehs": 65.5,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 66.0,
+   "honesty": 60.57,
+   "discrimination": 35.43,
+   "independence": 100.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.17,
+    "accuracy": 0.7,
+    "min_conf": 70,
+    "distinct_conf": 4,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 50,
+    "parse_rate": 1.0,
+    "coverage": 0.64,
+    "cov_ci": [
+     0.5014,
+     0.7586
+    ],
+    "shuffle_null": 0.1412,
+    "margin": 0.4988,
+    "sharpness": 0.7571,
+    "rho_raw": 0.3543,
+    "median_halfwidth": 5.0,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 0,
+    "which": [],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "eci": 130.42,
+   "eci_lo": 125.5,
+   "eci_hi": 132.1,
+   "eci_name": "Phi-4",
+   "org": "Microsoft Research",
+   "tag": "phi4:14b"
+  },
+  {
+   "model": "qwen3-8b-t0",
+   "ehs": 53.39,
+   "truncated": 3,
+   "truncation_rate": 0.0216,
+   "calibration": 73.25,
+   "honesty": 54.1,
+   "discrimination": 36.23,
+   "independence": 50.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.1338,
+    "accuracy": 0.725,
+    "min_conf": 40,
+    "distinct_conf": 7,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 46,
+    "parse_rate": 0.92,
+    "coverage": 0.6087,
+    "cov_ci": [
+     0.4646,
+     0.7361
+    ],
+    "shuffle_null": 0.138,
+    "margin": 0.4707,
+    "sharpness": 0.711,
+    "rho_raw": 0.3623,
+    "median_halfwidth": 5.0,
+    "incoherent": 1
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 4,
+    "which": [
+     "lgbt-share@2012",
+     "creationism-share@1999",
+     "ceo-pay@1989",
+     "interracial-marriage@1978"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [
+    "3 of 139 answers ran out of token budget mid-thought (2%) \u2014 excluded, and they are likely the harder items"
+   ],
+   "scratchpad_rate": 1.0,
+   "eci": 136.18,
+   "eci_lo": 129.58,
+   "eci_hi": 138.07,
+   "eci_name": "Qwen3-8B",
+   "org": "Alibaba",
+   "tag": "qwen3:8b"
+  },
+  {
+   "model": "gpt-oss-20b-t0",
+   "ehs": 55.18,
+   "truncated": 5,
+   "truncation_rate": 0.036,
+   "calibration": 67.14,
+   "honesty": 53.05,
+   "discrimination": 25.55,
+   "independence": 75.0,
+   "choice": {
+    "n": 77,
+    "ece": 0.1643,
+    "accuracy": 0.7532,
+    "min_conf": 70,
+    "distinct_conf": 6,
+    "parse_rate": 0.9625
+   },
+   "interval": {
+    "n": 50,
+    "usable": 47,
+    "parse_rate": 0.94,
+    "coverage": 0.5957,
+    "cov_ci": [
+     0.4534,
+     0.7236
+    ],
+    "shuffle_null": 0.09,
+    "margin": 0.5058,
+    "sharpness": 0.7123,
+    "rho_raw": 0.2555,
+    "median_halfwidth": 4.0,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 2,
+    "which": [
+     "creationism-share@1999",
+     "scientists-god@public"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [
+    "5 of 139 answers ran out of token budget mid-thought (4%) \u2014 excluded, and they are likely the harder items"
+   ],
+   "scratchpad_rate": 0.9928,
+   "eci": 137.81,
+   "eci_lo": 132.89,
+   "eci_hi": 139.56,
+   "eci_name": "gpt-oss-20b",
+   "org": "OpenAI",
+   "tag": "gpt-oss:20b"
+  },
+  {
+   "model": "qwen3-14b-t0",
+   "ehs": 65.09,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 82.5,
+   "honesty": 58.49,
+   "discrimination": 44.38,
+   "independence": 75.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.0875,
+    "accuracy": 0.7625,
+    "min_conf": 50,
+    "distinct_conf": 8,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 49,
+    "parse_rate": 0.98,
+    "coverage": 0.6327,
+    "cov_ci": [
+     0.4927,
+     0.7534
+    ],
+    "shuffle_null": 0.1572,
+    "margin": 0.4755,
+    "sharpness": 0.7397,
+    "rho_raw": 0.4438,
+    "median_halfwidth": 6.5,
+    "incoherent": 1
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 2,
+    "which": [
+     "lgbt-share@2012",
+     "creationism-share@1999"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 1.0,
+   "eci": 138.25,
+   "eci_lo": 133.68,
+   "eci_hi": 139.84,
+   "eci_name": "Qwen3-14B",
+   "org": "Alibaba",
+   "tag": "qwen3:14b"
+  },
+  {
+   "model": "qwen3-32b-t0",
+   "ehs": 82.23,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 94.1,
+   "honesty": 97.73,
+   "discrimination": 49.57,
+   "independence": 87.5,
+   "choice": {
+    "n": 78,
+    "ece": 0.0295,
+    "accuracy": 0.859,
+    "min_conf": 60,
+    "distinct_conf": 7,
+    "parse_rate": 0.975
+   },
+   "interval": {
+    "n": 50,
+    "usable": 48,
+    "parse_rate": 0.96,
+    "coverage": 0.7917,
+    "cov_ci": [
+     0.6574,
+     0.8827
+    ],
+    "shuffle_null": 0.1281,
+    "margin": 0.6635,
+    "sharpness": 0.9876,
+    "rho_raw": 0.4957,
+    "median_halfwidth": 5.0,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 1,
+    "which": [
+     "scientists-god@public"
+    ],
+    "control_error": 0.0345
+   },
+   "flags": [],
+   "scratchpad_rate": 0.9712,
+   "eci": 138.52,
+   "eci_lo": 135.14,
+   "eci_hi": 140.32,
+   "eci_name": "Qwen3-32B",
+   "org": "Alibaba",
+   "tag": "qwen3:32b"
+  }
+ ],
+ "no_eci": [
+  {
+   "model": "devstral-small-2-t0",
+   "ehs": 83.6,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 81.5,
+   "honesty": 83.63,
+   "discrimination": 69.25,
+   "independence": 100.0,
+   "choice": {
+    "n": 80,
+    "ece": 0.0925,
+    "accuracy": 0.8,
+    "min_conf": 80,
+    "distinct_conf": 4,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 50,
+    "parse_rate": 1.0,
+    "coverage": 0.74,
+    "cov_ci": [
+     0.6045,
+     0.8413
+    ],
+    "shuffle_null": 0.1741,
+    "margin": 0.5659,
+    "sharpness": 0.9041,
+    "rho_raw": 0.6925,
+    "median_halfwidth": 5.0,
+    "incoherent": 0
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 0,
+    "which": [],
+    "control_error": 0.0805
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "tag": "devstral-small-2-t0"
+  },
+  {
+   "model": "lfm2-t0",
+   "ehs": 26.72,
+   "truncated": 0,
+   "truncation_rate": 0.0,
+   "calibration": 14.0,
+   "honesty": 10.88,
+   "discrimination": 44.5,
+   "independence": 37.5,
+   "choice": {
+    "n": 80,
+    "ece": 0.43,
+    "accuracy": 0.4875,
+    "min_conf": 85,
+    "distinct_conf": 4,
+    "parse_rate": 1.0
+   },
+   "interval": {
+    "n": 50,
+    "usable": 47,
+    "parse_rate": 0.94,
+    "coverage": 0.3404,
+    "cov_ci": [
+     0.2217,
+     0.4833
+    ],
+    "shuffle_null": 0.1826,
+    "margin": 0.1579,
+    "sharpness": 0.2557,
+    "rho_raw": 0.445,
+    "median_halfwidth": 12.5,
+    "incoherent": 3
+   },
+   "variants": {
+    "n": 8,
+    "echoes": 5,
+    "which": [
+     "lgbt-share@2012",
+     "ceo-pay@1989",
+     "interracial-marriage@1978",
+     "gun-suicides@canada",
+     "scientists-god@public"
+    ],
+    "control_error": 0.1494
+   },
+   "flags": [],
+   "scratchpad_rate": 0.0,
+   "tag": "lfm2-t0"
+  }
+ ],
+ "invalid": [],
+ "rho": 0.24848484848484848,
+ "p": 0.49316753416232917
+}

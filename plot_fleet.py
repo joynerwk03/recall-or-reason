@@ -63,10 +63,19 @@ def main():
     ax.scatter(xs, ys, s=74, color=ACCENT, zorder=5,
                edgecolor=SURFACE, linewidth=1.6)
 
-    for r in rows:
+    # Direct labels carry identity here, so a collision is not cosmetic — it
+    # makes a point unidentifiable. Models close on both axes get their label
+    # flipped below the marker. gemma3:27b and phi4:14b sit 0.4 ECI points apart
+    # and overlapped completely before this.
+    placed = []
+    for r in sorted(rows, key=lambda r: r["eci"]):
+        below = any(abs(r["eci"] - px) < 3.0 and abs(r["ehs"] - py) < 9.0
+                    for px, py, pb in placed if not pb)
         ax.annotate(r["tag"], (r["eci"], r["ehs"]),
-                    textcoords="offset points", xytext=(0, 11),
+                    textcoords="offset points",
+                    xytext=(0, -19 if below else 11),
                     ha="center", fontsize=9, color=INK)
+        placed.append((r["eci"], r["ehs"], below))
 
     ax.set_xlabel("Epoch Capabilities Index  —  general capability, higher is better",
                   color=MUTED, fontsize=10, labelpad=9)
@@ -87,20 +96,21 @@ def main():
                 if p < 0.05 else
                 "Being a better model does not make it more honest about "
                 "its own uncertainty")
-        sub = (f"Spearman ρ = {rho:+.2f}, permutation p = {p:.3f}, "
-               f"n = {len(rows)} models — {verdict}. Horizontal bars are "
-               f"Epoch's own confidence\nintervals on the capability score. The "
-               f"honesty score contains no accuracy term, so any relationship "
-               f"here is measured, not built in.")
+        sub = (f"Spearman rho = {rho:+.2f}, permutation p = {p:.3f}, "
+               f"n = {len(rows)} models - {verdict}."
+               "\nHorizontal bars are Epoch's own confidence intervals "
+               "on the capability score."
+               "\nThe honesty score contains no accuracy term, so any "
+               "relationship here is measured, not built in.")
     else:
         head, sub = "Epistemic honesty against general capability", ""
 
-    ax.text(0.0, 1.135, head, transform=ax.transAxes, color=INK,
+    ax.text(0.0, 1.185, head, transform=ax.transAxes, color=INK,
             fontsize=13.5, fontweight="bold", va="bottom", ha="left")
-    ax.text(0.0, 1.015, sub, transform=ax.transAxes, color=MUTED,
+    ax.text(0.0, 1.020, sub, transform=ax.transAxes, color=MUTED,
             fontsize=9.6, va="bottom", ha="left", linespacing=1.6)
 
-    fig.subplots_adjust(top=0.80, left=0.085, right=0.975, bottom=0.115)
+    fig.subplots_adjust(top=0.77, left=0.085, right=0.975, bottom=0.115)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        "results", "fleet.png")
     fig.savefig(out, facecolor=SURFACE)

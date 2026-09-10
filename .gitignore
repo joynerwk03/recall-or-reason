@@ -1,3 +1,4 @@
 results/*.jsonl
 data/items.jsonl
 __pycache__/
+results/incomplete/
