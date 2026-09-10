@@ -33,6 +33,7 @@ import json
 import math
 import os
 import random
+import re
 import subprocess
 import sys
 
@@ -86,15 +87,25 @@ def perm_p(xs, ys, trials=200000, seed=0):
     return (hits + 1) / (trials + 1)
 
 
+# Strict filename matching, not loose globbing. Result files are
+# <model>-<stamp>[-<tag>][-interval].jsonl, and a tagged run — a repeatability
+# check, an ablation — must never be mistaken for the canonical run for a model.
+# A loose glob would have silently picked up a `-repeat-interval` file as *the*
+# interval result and no error would have appeared anywhere.
+PAT = {
+    "choice":   re.compile(r"^(?P<m>.+)-\d{8}-\d{6}\.jsonl$"),
+    "interval": re.compile(r"^(?P<m>.+)-\d{8}-\d{6}-interval\.jsonl$"),
+    "variants": re.compile(r"^(?P<m>.+)-\d{8}-\d{6}-variants-interval\.jsonl$"),
+}
+
+
 def newest(model, kind):
-    if kind == "choice":
-        c = [p for p in glob.glob(os.path.join(RESULTS, f"{model}-*.jsonl"))
-             if "interval" not in os.path.basename(p)]
-    elif kind == "interval":
-        c = [p for p in glob.glob(os.path.join(RESULTS, f"{model}-*-interval.jsonl"))
-             if "variants" not in os.path.basename(p)]
-    else:
-        c = glob.glob(os.path.join(RESULTS, f"{model}-*-variants-interval.jsonl"))
+    pat = PAT[kind]
+    c = []
+    for p in glob.glob(os.path.join(RESULTS, "*.jsonl")):
+        m = pat.match(os.path.basename(p))
+        if m and m.group("m") == model:
+            c.append(p)
     return max(c, key=os.path.getmtime) if c else None
 
 

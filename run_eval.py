@@ -120,9 +120,19 @@ def find_cli():
 # before any parsing, and counted, because how often a model needs a scratchpad
 # is itself worth knowing.
 THINK = re.compile(r"<think>.*?</think>|<thinking>.*?</thinking>", re.S | re.I)
-UNCLOSED = re.compile(r"<think(?:ing)?>.*\Z", re.S | re.I)
 HARMONY = re.compile(r"<\|channel\|>analysis<\|message\|>.*?"
                      r"(?:<\|channel\|>final<\|message\|>|<\|end\|>)", re.S)
+
+# Ollama's CLI does NOT emit <think> tags. It prints a plain-text scratchpad
+# opened by "Thinking..." and closed by "...done thinking." — no markup at all.
+# Missing this is not a cosmetic problem: the interval parser happily reads
+# three numbers out of the model reasoning aloud. On 2026-09-10 qwen3-8b was
+# scored for `police-unarmed` as estimate 2019, interval [44, 1000] — the year
+# from the question, "44,000" and "1,000", all lifted from prose. Every value
+# looked plausible and none of it was an answer.
+CLI_THINK = re.compile(r"\A\s*Thinking\.\.\..*?\.\.\.\s*done thinking\.", re.S | re.I)
+CLI_OPEN = re.compile(r"\A\s*Thinking\.\.\.", re.S | re.I)
+UNCLOSED = re.compile(r"<think(?:ing)?>.*\Z", re.S | re.I)
 
 
 def clean(text):
@@ -134,14 +144,19 @@ def clean(text):
 def strip_reasoning(text):
     """Remove a model's scratchpad. Returns (visible_answer, had_scratchpad).
 
-    An UNCLOSED <think> means the generation hit the token limit mid-thought and
-    the answer never arrived. That is a real failure and must not be dressed up
-    as one: the remaining text is dropped so the row records no answer at all
+    An UNCLOSED scratchpad means the generation hit the token limit mid-thought
+    and the answer never arrived. That is a real failure and must not be dressed
+    up as one: the remaining text is dropped so the row records no answer at all
     rather than a number scavenged out of half a thought.
     """
-    had = bool(THINK.search(text)) or bool(HARMONY.search(text))         or bool(UNCLOSED.search(text))
-    t = HARMONY.sub("", THINK.sub("", text))
-    t = UNCLOSED.sub("", t)
+    had = bool(THINK.search(text)) or bool(HARMONY.search(text))         or bool(CLI_OPEN.search(text)) or bool(UNCLOSED.search(text))
+
+    t = CLI_THINK.sub("", text)
+    if CLI_OPEN.search(t):          # opened but never closed -> truncated
+        return "", True
+    t = HARMONY.sub("", THINK.sub("", t))
+    if UNCLOSED.search(t):
+        return "", True
     return t.strip(), had
 
 

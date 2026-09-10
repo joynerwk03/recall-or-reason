@@ -33,7 +33,7 @@ pin () {
     echo "SKIP  $src  (not pulled)"
     return
   fi
-  printf 'FROM %s\nPARAMETER temperature 0\nPARAMETER top_p 1\nPARAMETER top_k 1\nPARAMETER seed 42\nPARAMETER num_predict 900\n' \
+  printf 'FROM %s\nPARAMETER temperature 0\nPARAMETER top_p 1\nPARAMETER top_k 1\nPARAMETER seed 42\nPARAMETER num_predict 2500\n' \
     "$src" > "/tmp/Modelfile.$dst"
   if "$O" create "$dst" -f "/tmp/Modelfile.$dst" >/dev/null 2>&1; then
     echo "PIN   $src -> $dst"
