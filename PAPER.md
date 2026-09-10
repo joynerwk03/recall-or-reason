@@ -90,10 +90,28 @@ different size to have one.
 
 All quoted numbers come from models with sampling pinned in the model itself
 (`temperature 0`, `top_p 1`, `top_k 1`, `seed 42`) via a Modelfile — the `-t0`
-variants built by `pin_models.sh`. Verified deterministic: three identical calls
-on the full harness prompt return identical text, where the unpinned model
-returns two different answers in three tries. Section 5.1 explains why this is
-not the throwaway methods sentence it appears to be.
+variants built by `pin_models.sh`. Section 5.1 explains why this is not the
+throwaway methods sentence it appears to be.
+
+🔴 **Correction, 2026-09-10: pinning does not buy full reproducibility, and it
+is model-dependent.** An earlier version of this section claimed the runs were
+"verified deterministic" on the strength of three identical calls on one prompt.
+Measured across the whole bank:
+
+| | repeat runs | items differing |
+|---|---|---|
+| gemma3:4b | 3 | **0 / 50** |
+| devstral-small-2 | 2 | **6 / 50** |
+
+Same weights, same pin, same parameters. The small model is bit-reproducible;
+the 24B model is not — almost certainly non-associative floating-point reduction
+whose order depends on batch and KV-cache state, which the larger model reaches
+by a different execution path on this hardware. The practical consequence is
+that **every devstral figure in this paper carries run-to-run noise**, measured
+at roughly 2.4 points of the composite score in Section 8. Differences smaller
+than that are not differences between models. A single verified prompt was not
+evidence of determinism, and generalising from it was the same mistake as 5.1
+in a smaller costume.
 
 ---
 

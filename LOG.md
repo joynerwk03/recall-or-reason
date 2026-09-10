@@ -6,6 +6,87 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+
+## 2026-09-10 — scaling to a fleet: two instrument failures found before they scored anything
+
+**Goal.** A scalar score per model, and a comparison against a general
+capability index, across up to ten models.
+
+**Capability axis.** Epoch Capabilities Index, taken from Epoch's own
+`benchmark_data.zip` rather than transcribed off a leaderboard. Two attempts at
+reading interactive leaderboards through a page summariser returned figures that
+disagreed with each other — one gave Llama 3.3 70B as 8, another implied a
+completely different scale — so the machine-readable source is the only
+defensible option. `fetch_eci.py` writes `data/eci.csv` with per-model CIs and
+refuses to run if a display name it expects has moved.
+
+Ten locally-runnable models are covered, spanning **116.0 to 138.5 ECI** —
+22.6 points. **Devstral and LFM2 are not in the ECI table at all**, so the two
+models this project has used throughout cannot be placed on the capability axis.
+They are run and reported separately rather than dropped quietly.
+
+**The scalar deliberately excludes accuracy.** EHS averages four components —
+calibration, interval honesty (scaled by sharpness, so coverage bought with wide
+intervals earns nothing), discrimination, and independence from anchors. If it
+rewarded getting answers right it would partly *be* a capability index and any
+correlation with ECI would be built in rather than discovered.
+
+### Failure 1: the parser was reading the model's reasoning
+
+Ollama's CLI does not emit `<think>` tags. It prints a plain-text scratchpad
+opened by `Thinking...` and closed by `...done thinking.` — no markup — so the
+stripper missed it and the interval parser read three numbers straight out of
+the model reasoning aloud.
+
+`qwen3-8b` on `police-unarmed` scored **estimate 2019, interval [44, 1000]**.
+The question is *"In 2019, how many unarmed Black people were fatally shot by
+police?"* — so that is the year from the question, "44,000" and "1,000", all
+lifted from prose. Truth is 15. Every figure looked plausible and none of them
+was an answer. Nothing flagged it.
+
+Had the fleet swept before this was found, **every reasoning model in the
+comparison would have carried believable garbage**, and the headline correlation
+would have been computed over it.
+
+Fixed, plus `num_predict` 900 → 2500: qwen3 spends ~800 tokens thinking, so some
+items were running out of budget mid-thought. Those now record *no answer*
+rather than a number scavenged from half a thought.
+
+### Failure 2: determinism is model-dependent, and the paper said otherwise
+
+The paper claimed the runs were "verified deterministic" on the strength of
+three identical calls on one prompt. Measured across the whole bank:
+
+| | repeats | items differing |
+|---|---|---|
+| gemma3:4b | 3 | **0 / 50** |
+| devstral-small-2 | 2 | **6 / 50** |
+
+Same weights, same pin, same sampling parameters. The 4B model is
+bit-reproducible; the 24B model is not. Almost certainly non-associative
+floating-point reduction whose order depends on batch and KV-cache state, which
+the larger model reaches by a different execution path on this hardware.
+
+So **every devstral number in this project carries run-to-run noise**, measured
+at about **2.4 points of EHS** (81.2 vs 83.6 on two runs). Differences smaller
+than that are not differences between models. Corrected in the paper.
+
+Generalising from one verified prompt was the same mistake as the 2026-09-09
+determinism bug wearing a smaller costume.
+
+### Checked rather than assumed
+
+- lfm2 produced **byte-identical output on 8/8 items** across the `num_predict`
+  pin change, so its existing runs stay valid and did not need re-running.
+- Result-file selection moved from loose globbing to strict filename patterns,
+  after noticing a glob would have silently picked a tagged repeatability run as
+  the canonical interval result for a model.
+
+**Next.** Finish the sweep, then the EHS-vs-ECI correlation with a permutation
+test, and a scatter. Direction of the result is genuinely open: if EHS tracks
+ECI, this benchmark is measuring capability the expensive way and does not need
+to exist.
+
 ## 2026-09-09 (later) — the harness was never deterministic. Everything below is restated.
 
 **What happened.** `ask_cli` invoked `ollama run` with no sampling options at
