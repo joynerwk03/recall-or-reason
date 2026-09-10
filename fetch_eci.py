@@ -38,18 +38,25 @@ OUT = os.path.join(HERE, "data", "eci.csv")
 
 # ollama tag -> exact ECI "Display name".
 #
-# Qwen3 ships reasoning on by default and ECI scores the reasoning and
-# non-reasoning variants separately. The harness disables thinking (see
-# run_eval.py), so these map to the plain entries, NOT the "-Thinking" ones.
-# Getting that backwards would silently credit each Qwen model with a score it
-# did not earn under the conditions we ran it in.
+# ⚠️ Qwen3 ships reasoning on by default and the harness does NOT turn it off —
+# it lets the model think and strips the scratchpad before parsing, because that
+# is the behaviour a user actually gets. Epoch lists plain "Qwen3-8B" alongside
+# separate "-Thinking" and "-Instruct" entries for other sizes, and which mode
+# the plain entry was evaluated in is not stated. These map to the plain entries
+# as the closest available match, and that ambiguity is a real limitation of the
+# capability axis for the three Qwen models rather than something this map can
+# resolve.
 MAP = {
     "gemma3:4b":         "Gemma 3 4B",
     "llama3.1:8b":       "Llama 3.1-8B",
     "gemma3:12b":        "Gemma 3 12B",
     "gemma3:27b":        "Gemma 3 27B",
     "phi4:14b":          "Phi-4",
-    "mistral-small:24b": "Mistral Small 3.2",
+    # NOT 3.2. The ollama `24b` tag resolves to `24b-instruct-2501` — January
+    # 2025 — which is Mistral Small 3, and Epoch dates its "Mistral Small 3"
+    # entry 2025-01-30. Mapping this to 3.2 would have moved the model 4.7 ECI
+    # points up the capability axis with nothing to show it was wrong.
+    "mistral-small:24b": "Mistral Small 3",
     "qwen3:8b":          "Qwen3-8B",
     "qwen3:14b":         "Qwen3-14B",
     "qwen3:32b":         "Qwen3-32B",
