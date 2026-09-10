@@ -128,21 +128,23 @@ def list_models(host=None, cli=None):
 
 
 def ask_cli(cli, model, prompt, timeout):
-    # `ollama run` takes no --temperature flag, so the setting goes in over
-    # stdin as a REPL command before the prompt itself.
-    #
-    # This is not a nicety. Until 2026-09-09 this function passed no sampling
-    # options at all while the HTTP path beside it set temperature 0 and carried
-    # a comment claiming determinism. On this machine the CLI path is the one
-    # that runs, so every result up to that date was a single draw from a
-    # stochastic decode. Measured: three identical calls returned 1, 2, 2
-    # unpinned, and 20, 20, 20 pinned. One item flipped from 6 to 42 between two
-    # variant runs, which moved a reported median gap from +0.51 to +0.15.
-    #
-    # If this line is ever removed, every number the harness produces silently
-    # becomes a sample of one.
-    stdin = "/set parameter temperature 0\n" + prompt
-    p = subprocess.run([cli, "run", model], input=stdin, capture_output=True,
+    """Drive the Ollama CLI. Sampling is NOT set here — it cannot be.
+
+    `ollama run` with piped stdin treats the whole of stdin as the prompt, so a
+    leading `/set parameter temperature 0` is not a REPL command: it is silently
+    prepended to the question as text. That was tried on 2026-09-09 and it
+    contaminated every prompt while appearing to work, because the contaminated
+    prompt happened to give stable short answers on the toy case used to test it.
+    The giveaway was that the "pinned" answer (20) was not one of the values the
+    unpinned run ever produced (1, 2) — temperature 0 narrows a distribution, it
+    does not move it somewhere new. Two later runs of the real bank then differed
+    on 35 of 50 items.
+
+    Sampling is pinned instead in the model itself, via a Modelfile that sets
+    temperature, top_p, top_k and seed. See `pin_models.sh`; use the `-t0`
+    models for anything whose numbers get quoted.
+    """
+    p = subprocess.run([cli, "run", model], input=prompt, capture_output=True,
                        text=True, timeout=timeout, errors="replace")
     if p.returncode != 0 and not p.stdout.strip():
         raise RuntimeError((p.stderr or "ollama exited " + str(p.returncode))[:200])
@@ -220,8 +222,40 @@ def parse_interval(text):
                 vals.append(float(n.replace(",", "")))
             except ValueError:
                 pass
+
         if len(vals) == 3:
-            est, lo, hi = vals
+            a, b, c = vals
+            # Two conventions turn up, and assuming the wrong one silently
+            # corrupts the answer. Disambiguate by ordering rather than by
+            # model, because the test is a property of the numbers:
+            #
+            #   57, 52, 63  first value sits inside the other two -> the
+            #               prompted ESTIMATE, LOW, HIGH order with the labels
+            #               dropped
+            #   0, 5, 10    strictly ascending -> LOW, ESTIMATE, HIGH, the
+            #               ordinary way of writing a range
+            #
+            # Reading an ascending triple as (est, lo, hi) puts the estimate
+            # outside its own interval every time. That self-contradiction is
+            # evidence of a misparse, not of an incoherent model. Before this
+            # check, 8 of lfm2's 12 "incoherent" answers on 2026-09-09 were
+            # simply this bug, and one of them (9 / 90 / 100 on an item whose
+            # truth was 9) scored a perfect baseline off a misread.
+            if min(b, c) <= a <= max(b, c):
+                est, lo, hi = a, b, c
+            elif a <= b <= c:
+                lo, est, hi = a, b, c
+            else:
+                # Neither convention fits; keep the prompted reading and let the
+                # coherence check downstream flag it as the genuine mess it is.
+                est, lo, hi = a, b, c
+
+        elif len(vals) == 1 and est is None:
+            # A bare point estimate with no range. Previously discarded whole,
+            # which threw away a real answer and mislabelled a model that
+            # answered-but-gave-no-interval as one that failed to answer. Keep
+            # the estimate; lo/hi stay None so it is excluded from coverage.
+            est = vals[0]
 
     if lo is not None and hi is not None and lo > hi:
         lo, hi = hi, lo
