@@ -176,8 +176,11 @@ def main():
                         "org": e["org"], "original_ten": tag in ORIGINAL_TEN})
             rows.append(row)
         elif bad:
-            excluded.append({"tag": tag, "eci": float(e["eci"]),
-                             "flags": sorted({f for r in bad for f in r["flags"]})})
+            xr = summarise(tag, bad)
+            xr.update({"eci": float(e["eci"]), "eci_lo": float(e["eci_ci_low"]),
+                       "eci_hi": float(e["eci_ci_high"]), "eci_name": e["eci_name"],
+                       "original_ten": tag in ORIGINAL_TEN})
+            excluded.append(xr)
         else:
             pending.append(tag)
     rows.sort(key=lambda r: r["eci"])
@@ -280,6 +283,19 @@ def main():
                 sens.append({"w": name, "rho": rr, "p": pp})
                 print(f"    {name:<22} rho {rr:+.3f}   p {pp:.3f}")
         report["sensitivity"] = sens
+
+        # The exclusion rule was fixed before the re-runs finished (LOG
+        # 2026-09-11). Putting the excluded models back shows whether the rule
+        # drives the answer. Their unparseable items are already dropped.
+        if excluded:
+            plus = rows + excluded
+            rp = spearman([r["eci"] for r in plus], [r["ehs"] for r in plus])
+            print()
+            print(f"robustness   with the {len(excluded)} excluded model(s) put back: "
+                  f"rho {rp:+.3f}, n = {len(plus)}")
+            print("             the exclusion rule was fixed in advance; this shows")
+            print("             whether it is what drives the answer")
+            report["rho_with_excluded"] = rp
 
         print(f"\n  ⚠ n = {len(rows)} models. Read the full-uncertainty interval, not")
         print("    the point estimate. A null that wide is an absence of evidence.")

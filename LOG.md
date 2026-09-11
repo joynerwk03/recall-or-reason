@@ -6,6 +6,101 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+## 2026-09-11 — extending the range for free, and what doing it properly turned up
+
+**Why.** The ten-model null (rho +0.25) carried a bootstrap 95% interval of
+[-0.64, +0.86] — compatible with a strong negative and a strong positive
+relationship — and had been written up as "capability does not predict
+honesty". It supports "not detected" and nothing stronger. Two fixes cost
+nothing: widen the capability range, and give every model its own error bar.
+
+**Range.** Six more open models, each matched to an exact Epoch display name that
+the fetch validates: Llama 3.2 1B (ECI 102.4) up to Qwen3.6-27B (146.5). The span
+goes from 22.6 to 44.1 points. Parameter counts checked with `ollama show`. One
+mismatch noted rather than fixed: ollama ships Llama 3.2 1B at Q8_0, while the
+rest of the fleet is Q4_K_M.
+
+**Truncation, again, and much bigger.** At a 2,500-token budget the new reasoning
+models ran out of room mid-thought. Measured across every run:
+
+| model | answers truncated |
+|---|---|
+| qwen3.5:9b | 174 / 278 (63%) |
+| gemma4:26b | 107 / 211 (51%) |
+| gemma4:31b | 16 / 130 |
+| gpt-oss:20b | 14 / 278 |
+| qwen3.6:35b-a3b | 14 / 130 |
+| qwen3.6:27b | 7 / 130 |
+| qwen3:8b | 6 / 278 |
+| all nine others | 0 |
+
+Every unparsed answer from the new models was truncation, not format — read, not
+assumed. **Gemma 4 thinks, although ollama's own tag page lists it as
+non-reasoning.** That was only found by measuring.
+
+This matters beyond the lost rows. Truncation lands on the items a model thinks
+longest about, and the newest models are the most capable, so it biased exactly
+the top of the range that had just been added. Budget raised to 8,192 and the
+seven re-run from scratch. Their 28 run files at the old budget are kept in
+`results/budget2500/` so the size of the distortion can be measured, not
+guessed. Models that never hit the ceiling keep their runs: under greedy
+decoding the output up to end-of-sequence is identical at any budget it never
+reached.
+
+**The smallest model cannot be measured at all.** llama3.2:1b answers 36 of 80
+multiple-choice questions in prose — "suicides account for about 2 in 5" — and
+never picks a letter. Excluded by the pre-set parse-rate rule. Below some size
+the benchmark cannot measure calibration, which is a finding about the method
+rather than a hole in the data.
+
+**Discrimination now computed within one scale** (percentage items only). Pooling
+percentages with raw counts manufactured correlation from magnitude. It shrank
+for every model checked: devstral 0.69 to 0.63, gemma3:4b 0.30 to 0.22, qwen3:32b
+0.50 to 0.39.
+
+**Ground truth audited** — see `AUDIT.md`. Four items excluded from scoring:
+`police-unarmed` (the bank says 15; its own text says 14; the Washington Post
+database it cites gives 12 in its v1 snapshot and 11 in v2), `extreme-poverty`
+(a wrong 1990 anchor in the prompt), `rifles-share` (question and answer use
+different denominators, established from the item's own figures) and `ceo-pay`
+(asks "now", answers for 2022 — a penalty that lands on the newest and most
+capable models). `top1-tax-share` has the right number and the wrong link. The
+Priors bank is not edited from here.
+
+**Five new perturbed variants**, each from the same primary source as its
+original after checking the original against it. Thirteen perturbations plus
+the null control.
+
+**Process failures worth keeping.**
+- `pkill -f run_eval.py` matched its own wrapper shell, whose command line
+  contains the same string, and killed itself. An earlier "3 processes still
+  running" count was partly the checking shell. Fixed with a pattern that cannot
+  match itself: `run_[e]val`.
+- Stopping the first driver did not stop its in-flight run. Caught before the
+  replacement driver started, which would have put two jobs on one GPU — and on
+  the larger models, shared batch state is exactly what breaks reproducibility.
+- `run.sh` had been borrowing ConceptChess's virtualenv, so the plots here
+  depended on another project's environment. Now it has its own, swapped in only
+  after verifying it imports matplotlib, because the overnight driver calls
+  `run.sh` for every unit.
+- Variables were eaten crossing the Git Bash to WSL boundary twice more. The
+  runbook rule — write a script file — was right both times it was ignored.
+
+**Pre-registered before any re-run finished.** gemma4:26b still runs past the
+new budget: 6 of its first 25 answers exceeded 8,192 tokens, one reaching about
+32,000 characters. The rule for that is fixed now, so it cannot be tuned to the
+result: **8,192 tokens, the same for every model, never raised per model.** A
+model whose truncation drags its parse rate below 80% is excluded as "reasoning
+exceeds the budget", with its truncation rate reported, and is not re-run with
+a bigger budget until it passes. Raising the ceiling model by model until each
+one looks measurable would be choosing the conditions after seeing the outcome.
+As a robustness check the correlation is also reported with such models put
+back, truncated items dropped, so the rule can be seen not to be what drives the
+answer.
+
+**Next.** The re-runs at the new budget, then the full canonical fleet, then
+repeats; then the correlation with both intervals and the range check.
+
 
 ## 2026-09-10 — scaling to a fleet: two instrument failures found before they scored anything
 
