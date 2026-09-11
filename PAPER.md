@@ -746,6 +746,12 @@ than anything in Sections 2 to 4, which rest on two models.
 4. **A second capability axis.** Everything in Section 6 is joined to one index.
    A second machine-readable aggregate — not a rendered leaderboard — would show
    whether the answer is about capability or about ECI.
+5. **A second null control.** One item carries the whole control for the
+   perturbation experiment. When a model misses it, that model's independence
+   score becomes unattributable rather than bad — the rewording might be what
+   hurt it — and with a single control there is no way to tell which. Two or
+   three would separate "thrown by rewording in general" from "thrown by this
+   particular rewording".
 
 ---
 

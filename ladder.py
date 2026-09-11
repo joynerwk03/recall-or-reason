@@ -94,10 +94,15 @@ def main():
                 print(f"    {k:<16}{direction(vals)}")
             seps = [separated(x, y) for x, y in zip(rows, rows[1:])]
             fam_out["ehs_adjacent_separated"] = seps
-            words = ["yes" if s else ("no" if s is not None else "n/a, single run")
+            words = ["yes" if s else ("no" if s is not None else "n/a")
                      for s in seps]
-            print(f"    EHS gap between adjacent sizes larger than repeat spread: "
-                  f"{', '.join(words)}")
+            pairs = [f"{x[0]} -> {y[0]}" for x, y in zip(members, members[1:])]
+            print("    EHS gap larger than repeat spread:")
+            for pair, word in zip(pairs, words):
+                print(f"      {pair:<28}{word}")
+            if "n/a" in words:
+                print("      (n/a: one of the two has a single complete run, "
+                      "so there is no spread to compare)")
         out[fam] = fam_out
 
     print("\n  Three sizes per family: a description, not a test.")
