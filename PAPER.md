@@ -85,17 +85,58 @@ the skew tally is a diagnostic, never a target.
 
 ### 1.2 Models
 
+Sections 2 and 3 compare two models in depth. Section 6 runs the whole
+instrument across **eighteen**, so the fleet is listed here once.
+
+**The pair in Sections 2 and 3.**
+
 | | devstral-small-2 | lfm2 |
 |---|---|---|
 | parameters | 24.0B | 23.8B |
 | architecture | `mistral3`, dense | `lfm2moe`, mixture-of-experts |
 | quantisation | Q4_K_M | Q4_K_M |
 
-**These models are the same size.** Their on-disk footprints (15GB and 14GB)
-read like a large model and a small one and are not; the difference is
-architecture. Any result below that looks like a scale effect is not one — this
-study contains no scale ladder, and would need a model pulled at a genuinely
-different size to have one.
+**These two are the same size.** Their on-disk footprints (15GB and 14GB) read
+like a large model and a small one and are not; the difference is architecture.
+Nothing in Sections 2 and 3 is a scale result.
+
+**The fleet in Section 6.** Eighteen models run locally through Ollama, 1.2B to
+35.5B parameters. Parameter counts and quantisation come from `ollama show`,
+never from the on-disk footprint. Capability is the Epoch Capabilities Index,
+read from Epoch's own machine-readable release
+(`epoch.ai/data/benchmark_data.zip`) together with the interval Epoch publishes
+for each model.
+
+| model | params | quant | ECI | Epoch's interval |
+|---|---|---|---|---|
+| llama3.2:1b | 1.2B | Q8_0 | 102.4 | [91.2, 109.9] |
+| gemma3:4b | 4.3B | Q4_K_M | 116.0 | [97.5, 123.4] |
+| llama3.1:8b | 8.0B | Q4_K_M | 116.5 | [106.0, 121.7] |
+| gemma3:12b | 12.2B | Q4_K_M | 123.5 | [116.2, 128.7] |
+| mistral-small:24b | 23.6B | Q4_K_M | 127.1 | [122.4, 129.0] |
+| gemma3:27b | 27.4B | Q4_K_M | 130.0 | [124.6, 132.2] |
+| phi4:14b | 14.7B | Q4_K_M | 130.4 | [125.5, 132.1] |
+| qwen3:8b | 8.2B | Q4_K_M | 136.2 | [129.6, 138.1] |
+| gpt-oss:20b | 20.9B | *unknown* | 137.8 | [132.9, 139.6] |
+| qwen3:14b | 14.8B | Q4_K_M | 138.3 | [133.7, 139.8] |
+| qwen3:32b | 32.8B | Q4_K_M | 138.5 | [135.1, 140.3] |
+| qwen3.5:9b | 9.7B | Q4_K_M | 139.5 | [136.6, 141.1] |
+| gemma4:26b | 25.2B | Q4_K_M | 141.9 | [138.6, 143.6] |
+| gemma4:31b | 31.3B | Q4_K_M | 142.7 | [140.3, 144.8] |
+| qwen3.6:35b-a3b | 35.5B | Q4_K_M | 143.9 | [141.3, 146.0] |
+| qwen3.6:27b | 27.3B | Q4_K_M | 146.5 | [144.5, 147.8] |
+| devstral-small-2 | 24.0B | Q4_K_M | — | not in Epoch's table |
+| lfm2 | 23.8B | Q4_K_M | — | not in Epoch's table |
+
+**The span is 44.1 ECI points.** Three things the table makes visible. Several
+of Epoch's own intervals are **more than ten points wide** — Gemma 3 4B is
+[97.5, 123.4] — so the capability axis is not precise either, and every figure
+in Section 6 propagates that. The quantisation is not uniform: llama3.2:1b ships
+Q8_0 and gpt-oss:20b reports its quantisation as `unknown`, while the rest are
+Q4_K_M. And two families appear at three sizes of one generation — Gemma 3
+(4.3B, 12.2B, 27.4B) and Qwen3 (8.2B, 14.8B, 32.8B) — which Section 6 uses as
+within-family size ladders, since they hold the training recipe roughly fixed in
+a way the cross-family capability axis cannot.
 
 ### 1.3 Decoding
 
@@ -123,6 +164,32 @@ at roughly 2.4 points of the composite score in Section 8. Differences smaller
 than that are not differences between models. A single verified prompt was not
 evidence of determinism, and generalising from it was the same mistake as 5.1
 in a smaller costume.
+
+🔴 **Second correction, 2026-09-11: the token budget was silently deleting the
+answers of the models that think.** Runs were capped at 2,500 tokens, which
+neither 24B model ever approached. The reasoning models added for Section 6 hit
+it constantly — qwen3.5:9b was cut off mid-thought on **63%** of its answers,
+gemma4:26b on **51%** — and a truncated answer records no answer at all. That is
+not noise. It removes the items a model thought longest about, which are
+plausibly its hardest, and it fell hardest on the newest and most capable models
+in the fleet, which is exactly where Section 6 needed the data.
+
+The budget is now **8,192 tokens for every model**, and the seven affected
+models were re-run from scratch. Their runs at the old budget are kept in
+`results/budget2500/` so the distortion can be measured rather than asserted
+(`budget_effect.py`). Models that never reached the old ceiling keep their
+original runs: under greedy decoding, output up to end-of-sequence is identical
+at any budget the run never hit.
+
+**The rule was fixed before the re-runs finished**, because one model runs past
+8,192 as well, and raising the ceiling model by model until each one looks
+measurable is how a result gets chosen after the fact:
+
+> 8,192 tokens, the same for every model, never raised for one model. A model
+> whose truncation drags its parse rate below 80% is excluded from scoring as
+> *reasoning exceeds the budget*, with its truncation rate reported. Section 6
+> also reports the correlation with excluded models put back, truncated items
+> dropped, so the rule can be seen not to be what drives the answer.
 
 ---
 
@@ -229,6 +296,10 @@ question without meaningfully perturbing the answer. If a model degrades there
 too, then whatever is hurting it is the *rewording*, and no gap on the real
 variants can be read as memorisation. Both models pass it.
 
+**The set has since grown to twenty perturbations plus the null control**
+(Section 3.4). This section is the original eight, as they were run; Section 6
+scores the fleet on all twenty-one.
+
 ### 3.2 Anchor echo, and why it is the measure that survives
 
 The natural headline is the **gap**: relative error on the variant minus
@@ -285,7 +356,7 @@ be papered over.
 **n = 8, and 8 is small.** The direction is clear, the failure mode is legible,
 and *p* = 0.026 is one experiment rather than a replication.
 
-### 3.4 Why 8 and not 20
+### 3.4 Why 8 was hard, and what got it to 20
 
 Scaling the variant set is harder than it looks, for a structural reason worth
 recording. We ranked all 50 numeric items by how well *both* models answered the
@@ -298,6 +369,25 @@ Perturbation needs *repeatedly measured* quantities: polls, national statistics,
 tracked databases. A bank assembled for interest and evidential quality is not
 automatically a bank of time series, and this constrains the method more than
 the labour of sourcing does.
+
+**What got past it** (2026-09-11): stop looking for another *year* of the same
+series, and look for another *population in the same table*. Twelve more
+variants were built that way — cocaine instead of cannabis in the sentence of
+the NESARC paper that also gives the original's figure, adults under 30 instead
+of all adults in the same Gallup release, federal instead of all prisoners in
+the same BJS summary, the bottom 50% and the top 10% of earners in the same tax
+table, the poorest half and the richest tenth in the same Federal Reserve file.
+A subgroup swap inside one published table is the cleanest perturbation
+available: same instrument, same year, same wording, one variable moved. Their
+prompts are built as swaps on the original item's own text, so the wording
+cannot drift.
+
+Twenty perturbations and the null control now. Two are flagged in
+`build_variants.py` as looser than the rest and would be the first dropped:
+`mobility@canada`, where the Canadian figure is a different study quoted inside
+Chetty's sentence, and `iq-heritability@age9`, which comes from a different
+paper than the original cites. The caveat in Section 3.3 does not shrink with
+the count.
 
 ---
 
@@ -313,7 +403,7 @@ and we decline to interpret it.
 
 ---
 
-## 5. Four ways this instrument lied, and how each was caught
+## 5. Nine ways this instrument lied, and how each was caught
 
 Every result above survived a bug that had already produced a confident,
 plausible, wrong number. We list them because the fixes are the reusable part.
@@ -387,6 +477,70 @@ large and had **no consistent sign**: devstral 0.761 raw -> 0.281 normalised,
 lfm2 0.312 -> 0.501. Reported that way it would have reversed the two models'
 ranking. The scorer now reports the raw correlation and prints the normalised
 one beside it only as a standing warning.
+
+### 5.5 A result file that exists is not a result
+
+Completeness was checked by asking whether a run file existed. Four interrupted
+runs — 0, 9, 11 and 24 rows against an 80-row bank — passed that check and went
+into a comparison table that had to be retracted. The check now counts rows
+against the current item set (`have_complete.py`), which is also what makes the
+sweep resumable: re-running it is how you continue it.
+
+> **The lesson.** A check that can be satisfied by a file that exists will
+> eventually be satisfied by a file that is empty.
+
+### 5.6 A limit that had never bound
+
+The 2,500-token budget was set against two models that never came close to it,
+and was then carried unchanged onto reasoning models that hit it on most
+answers (Section 1.3). Truncation does not look like an error: the run
+completes, the file is full length, and the rows simply say no answer.
+
+> **The lesson.** A limit that never binds on the models you started with is not
+> a limit you have tested. Measure it again on every new class of subject.
+
+### 5.7 A capability axis joined on a name
+
+The capability join matched `mistral-small:24b` to Epoch's *Mistral Small 3.2*.
+The local model is the 24B-instruct-2501 build, which is Epoch's *Mistral Small
+3* — a different row, and a different number. The fetch now carries an explicit
+tag-to-name map and fails loudly when a name is missing rather than guessing.
+The earlier route was worse: two reads of rendered leaderboards through a page
+summariser returned figures that disagreed with each other, which is why every
+capability number now comes from a machine-readable release.
+
+> **The lesson.** Joining two datasets on a human-readable name is a silent data
+> error waiting to happen. Make the join explicit and make a miss fail.
+
+### 5.8 A component that was measuring the scale, not the model
+
+Discrimination — does interval width track error — was computed across items on
+wildly different scales, percentages next to raw counts. Magnitude alone
+produces rank agreement, so part of the component was arithmetic rather than
+self-knowledge. Restricted to percentage items it fell for every model checked:
+devstral 0.69 to 0.63, gemma3:4b 0.30 to 0.22, qwen3:32b 0.50 to 0.39.
+
+> **The lesson.** A correlation computed across incommensurable units is partly
+> measuring the units.
+
+### 5.9 The answer key had defects of its own
+
+Every item touched while building variants was checked against its own cited
+source. Four did not survive and are excluded from scoring: an answer no vintage
+of its cited database supports, a prompt anchored to a figure from a different
+series, a question and answer using different denominators, and an item that
+asks what a ratio is *now* while answering for 2022. A fifth has the right
+number and a link to the wrong page. The evidence is in `AUDIT.md`; the bank is
+a separate project and is not edited from here.
+
+One of those matters for Section 6 specifically. The `ceo-pay` item penalises
+models that answer with a *more current* figure, and training recency tracks
+capability — so scoring it would have tilted the very correlation this paper
+reports.
+
+> **The lesson.** Check the ground truth of an inherited dataset before
+> reporting anything about models — and record the checks that passed too, since
+> a defect count from a non-random sample is not a defect rate.
 
 ---
 
@@ -519,40 +673,76 @@ than anything in Sections 2 to 4, which rest on two models.
 
 ## 7. Limitations
 
-- **Two models, one prompt version, one language.** Everything here could be a
-  property of this prompt.
-- **n = 80 items; n = 50 for intervals; n = 8 for perturbations.**
-- **No scale ladder.** The two models are the same size. Nothing here speaks to
-  how any of this varies with scale.
+- **One prompt version, one language.** Every number here could be a property of
+  this prompt. Nothing in the design tests paraphrase robustness, and that is
+  the largest untested threat to the paper.
+- **n = 80 items; 50 for intervals; 21 for the perturbation set** (20 plus the
+  null control). Sections 2 and 3 rest on two models.
 - **The perturbation caveat of Section 3.3**, which more items will not fix.
-- **One ground-truth defect found and not yet repaired:** the `extreme-poverty`
-  item states a 1990 anchor of 36% while the World Bank's $3.00 (2021 PPP)
-  series puts 1990 at 43.4% and 36.2% at 2000. The item appears to pair a
-  current answer with an anchor from another vintage. It is excluded from the
-  variant work and flagged for repair.
-- **Local quantised models.** Q4_K_M is lossy; these are not the full-precision
-  models.
+- **Four ground-truth defects found and excluded, not repaired** (Section 5.9,
+  `AUDIT.md`). The items were not sampled at random — most were checked because
+  a variant needed them — so the count is not a defect rate for the bank.
+- **Present-tense drift.** Much of the bank asks about the present without a
+  date, and several of those quantities move year to year (LGBT identification
+  per Gallup: 7.1% in 2021, 9.3% in 2024, 9.0% in 2025). A model with an older
+  training cutoff answers with an older figure and scores as a miss. That
+  penalty tracks training recency, and recency tracks capability, so it pushes
+  *toward* a positive capability-honesty correlation: it works against the
+  Section 6 result rather than for it.
+- **Local quantised models.** Q4_K_M for all but two (Section 1.2), against an
+  index that scores the full-precision hosted model. Both axes are mismatched at
+  once.
+- **Exclusions are never neutral.** Two models are dropped by rules fixed in
+  advance — one cannot follow the answer format, one thinks past the token
+  budget — and both sit at the ends of the range where they would carry the most
+  weight. Section 6 reports the correlation with them put back.
+- **Scale is described, not tested.** The two within-family ladders have three
+  sizes each. Three points show a direction; they do not test one.
 
 ## 8. What we would do next
 
-1. **More variants**, weighted toward repeatedly-measured quantities
-   (Section 3.4) - roughly 20 would let the echo contrast carry an interval
-   rather than a single *p*.
-2. **A real scale ladder** — the same bank against 3B / 8B / 24B of one family,
-   which is the only way to ask whether echo rate falls with scale.
-3. **A frontier API model**, to test whether the format effect survives at the
-   capability level people actually deploy.
-4. **Elicit the interval first, the choice second**, to check the format effect
-   is not an ordering effect.
+1. **Frontier API models.** Even extended, this fleet stops roughly 20 ECI
+   points below the frontier, and range restriction attenuates correlations — so
+   part of Section 6's answer may be an artefact of testing only what runs on
+   one desktop. Four to six hosted models would roughly double the span and
+   remove the quantisation mismatch for those points. It is the only item here
+   that costs money.
+2. **A paraphrase pass.** The same fleet on a second wording of both prompts. If
+   the ranking moves, every number here is a property of one prompt.
+3. **More variants from repeatedly measured tables** (Section 3.4), to get the
+   independence component off a base of twenty.
+4. **A second capability axis.** Everything in Section 6 is joined to one index.
+   A second machine-readable aggregate — not a rendered leaderboard — would show
+   whether the answer is about capability or about ECI.
 
 ---
 
 ## Reproducing
 
+Setup, then the fleet:
+
 ```bash
-./pin_models.sh                                    # build the -t0 models
-./run.sh extract_items.py                          # bank -> data/items.jsonl
-./run.sh build_variants.py                         # -> data/variants.jsonl
+bash pin_models.sh                     # the -t0 models: temperature 0, seed 42, 8192
+./run.sh extract_items.py              # Priors bank -> data/items.jsonl
+./run.sh build_variants.py             # -> data/variants.jsonl (21 rows)
+./run.sh fetch_eci.py                  # Epoch ECI -> data/eci.csv
+
+.\sweep_windows.ps1                    # the whole sweep, from Windows PowerShell
+
+./run.sh fleet_status.py               # what is complete, counted by rows
+./run.sh compare_capability.py --json results/fleet.json
+./run.sh plot_fleet.py results/fleet.json
+./run.sh ladder.py results/fleet.json
+./run.sh budget_effect.py              # what the 2,500-token budget distorted
+```
+
+The sweep lives on the Windows side because WSL2 shuts the distro down under
+long invocations; each call runs one model in one mode, and any unit already
+complete by row count is skipped, so re-running the sweep is how you resume it.
+
+One model at a time, which is how Sections 2 and 3 were produced:
+
+```bash
 ./run.sh run_eval.py --mode choice   --model devstral-t0
 ./run.sh run_eval.py --mode interval --model devstral-t0
 ./run.sh run_eval.py --mode interval --model devstral-t0 \
