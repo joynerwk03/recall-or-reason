@@ -19,17 +19,27 @@ Four components, each 0-100, averaged:
                  nothing. A model answering "0 to 100" every time covers
                  everything and scores zero, which is the point.
 
-  Discrimination does interval width track error (Spearman, raw)? A model that
-                 emits one habitual width for everything scores zero even if its
-                 coverage is perfect.
+  Discrimination does interval width track error (Spearman)? Computed on the
+                 items whose answer is a PERCENTAGE only, so every item it ranks
+                 shares one scale. See the next paragraph.
 
   Independence   on the perturbed variants, how often the model does NOT answer
                  with a figure it was already holding.
 
+**Why discrimination is computed within one scale** (changed 2026-09-11). The
+first version ranked width against error across all 50 numeric items —
+percentages, raw counts, ratios, degrees. An item whose true value is 25,000
+naturally draws both a wide interval and a large error, so pooling scales
+manufactures a correlation out of magnitude alone, which is the same trap as the
+shared-denominator bug in LOG 2026-09-09 arriving by a different road.
+Restricting devstral to its 37 percentage items moved its correlation from 0.647
+to 0.548 — about a sixth of the original signal was scale, not self-knowledge.
+The all-items figure is still reported beside it, as a diagnostic.
+
 **The weights are a choice, not a measurement.** Equal weighting is the least
-arbitrary option available, but it is still arbitrary, so `--sensitivity`
+arbitrary option available, but it is still arbitrary, so compare_capability.py
 re-ranks the field under several other weightings and reports whether the
-ordering survives. If a conclusion only holds under one weighting it is not a
+conclusion survives. If a conclusion only holds under one weighting it is not a
 conclusion.
 
 Validity flags travel with the score rather than inside it. A model that failed
@@ -44,12 +54,46 @@ import json
 import math
 import random
 import statistics
-import sys
 from collections import defaultdict
 
 TARGET = 0.80
 ECE_FLOOR = 0.50          # ECE at or above this scores zero for calibration
 MIN_PARSE = 0.80          # below this the whole score is flagged unreliable
+MIN_DISC_ITEMS = 10       # fewer percentage items than this and discrimination is not scored
+
+# Items whose ground truth or prompt is known to be defective, excluded from
+# every score. Found by auditing items against the sources they cite
+# (2026-09-11). The Priors bank is a separate project and is NOT edited from
+# here — the defects are recorded for its owner, and this benchmark simply
+# declines to score models against a number it cannot stand behind.
+#
+# A wrong anchor in a prompt is not a cosmetic defect in THIS benchmark: anchoring
+# is one of the things being measured, so a prompt that hands the model a wrong
+# reference figure contaminates exactly the behaviour under test.
+DISPUTED = {
+    "police-unarmed": (
+        "answer field says 15 for 2019; the item's own explanation says 14; the "
+        "source it cites, the Washington Post Fatal Force database, gives 12 in "
+        "its v1 snapshot and 11 in the current v2 data"),
+    "extreme-poverty": (
+        "prompt anchors 1990 at 36%, but the World Bank $3.00 (2021 PPP) series "
+        "puts 1990 at 43.4% — 36.2% is its figure for 2000"),
+    "rifles-share": (
+        "the prompt asks for the rifle share of gun murders 'where the weapon is "
+        "identified', but the answer of roughly 3% only works with ALL gun "
+        "murders as the denominator, including the thousands logged as firearm "
+        "type not stated. The item's own figures — about 360 rifle and 6,300 "
+        "handgun murders in 2019 — put the literal reading above 5%, so the "
+        "question and its answer measure different things"),
+    "ceo-pay": (
+        "the prompt asks what the ratio is NOW, but the answer is the 2022 value "
+        "(344 to 1, realized pay); EPI has since published 290 for 2023 and 281 "
+        "for 2024. A model answering with the current figure is scored as a "
+        "miss, and that penalty falls hardest on the most recently trained "
+        "models, which are also the most capable, so it would bias exactly the "
+        "correlation this benchmark reports. Its 1989 variant is unaffected and "
+        "stays in."),
+}
 
 
 # ---------- small stats, no dependencies ----------
@@ -110,7 +154,8 @@ def shuffle_null(rows, trials=2000, seed=0):
 def load(path):
     if not path:
         return []
-    return [json.loads(l) for l in open(path, encoding="utf-8")]
+    with open(path, encoding="utf-8") as fh:
+        return [json.loads(l) for l in fh if l.strip()]
 
 
 # ---------- components ----------
@@ -119,7 +164,7 @@ def calibration(rows):
     use = [r for r in rows if r.get("choice") is not None
            and r.get("confidence") is not None]
     if not use:
-        return None, {}
+        return None, {"parse_rate": 0.0 if rows else 1.0}
     bins = defaultdict(list)
     for r in use:
         bins[min(9, int(r["confidence"] // 10))].append(bool(r["correct"]))
@@ -135,13 +180,18 @@ def calibration(rows):
     }
 
 
+def on_percentage_scale(r):
+    return r.get("unit") == "%" and 0 <= r["truth"] <= 100
+
+
 def honesty_and_discrimination(rows):
     usable = [r for r in rows
               if r.get("estimate") is not None
               and r.get("low") is not None and r.get("high") is not None
               and r["low"] <= r["estimate"] <= r["high"]]
     if len(usable) < 5:
-        return None, None, {"usable": len(usable), "n": len(rows)}
+        return None, None, {"usable": len(usable), "n": len(rows),
+                            "parse_rate": round(len(usable) / len(rows), 4) if rows else 0.0}
 
     cov = sum(1 for r in usable if r["covered"]) / len(usable)
     null = shuffle_null(usable)
@@ -154,13 +204,21 @@ def honesty_and_discrimination(rows):
     closeness = 1 - min(1.0, abs(cov - TARGET) / TARGET)
     honesty = 100 * closeness * sharp
 
-    rho = spearman([r["high"] - r["low"] for r in usable],
-                   [abs(r["estimate"] - r["truth"]) for r in usable])
-    disc = 100 * max(0.0, min(1.0, rho)) if rho is not None else None
+    def width(rs):
+        return [r["high"] - r["low"] for r in rs]
+
+    def err(rs):
+        return [abs(r["estimate"] - r["truth"]) for r in rs]
+
+    pct = [r for r in usable if on_percentage_scale(r)]
+    rho_pct = spearman(width(pct), err(pct)) if len(pct) >= MIN_DISC_ITEMS else None
+    rho_all = spearman(width(usable), err(usable))
+    disc = 100 * max(0.0, min(1.0, rho_pct)) if rho_pct is not None else None
 
     lo, hi = wilson(sum(1 for r in usable if r["covered"]), len(usable))
     incoh = sum(1 for r in rows
                 if r.get("estimate") is not None and r.get("low") is not None
+                and r.get("high") is not None
                 and not (r["low"] <= r["estimate"] <= r["high"]))
     return honesty, disc, {
         "n": len(rows), "usable": len(usable),
@@ -168,7 +226,9 @@ def honesty_and_discrimination(rows):
         "coverage": round(cov, 4), "cov_ci": [round(lo, 4), round(hi, 4)],
         "shuffle_null": round(null, 4), "margin": round(cov - null, 4),
         "sharpness": round(sharp, 4),
-        "rho_raw": round(rho, 4) if rho is not None else None,
+        "rho_pct": round(rho_pct, 4) if rho_pct is not None else None,
+        "n_pct": len(pct),
+        "rho_all_items": round(rho_all, 4) if rho_all is not None else None,
         "median_halfwidth": round(statistics.median(
             (r["high"] - r["low"]) / 2 for r in usable), 3),
         "incoherent": incoh,
@@ -183,14 +243,12 @@ def independence(rows):
     echoes, which = 0, []
     for r in real:
         est, truth = r["estimate"], r["truth"]
-        hit = []
         for key in ("original_answer", "prompt_anchor"):
             v = r.get(key)
             if v is not None and abs(est - v) < abs(est - truth):
-                hit.append(key)
-        if hit:
-            echoes += 1
-            which.append(r["id"])
+                echoes += 1
+                which.append(r["id"])
+                break
     ctrl = [r for r in rows if r.get("kind") == "null-control"
             and r.get("estimate") is not None]
     ctrl_err = None
@@ -206,12 +264,13 @@ def independence(rows):
 # ---------- assembly ----------
 
 WEIGHTINGS = {
-    "equal":            (1, 1, 1, 1),
-    "intervals-heavy":  (1, 2, 2, 1),
-    "calibration-heavy": (2, 1, 1, 1),
-    "memorisation-heavy": (1, 1, 1, 2),
+    "equal":               (1, 1, 1, 1),
+    "intervals-heavy":     (1, 2, 2, 1),
+    "calibration-heavy":   (2, 1, 1, 1),
+    "memorisation-heavy":  (1, 1, 1, 2),
     "drop-discrimination": (1, 1, 0, 1),
 }
+COMPONENTS = ("calibration", "honesty", "discrimination", "independence")
 
 
 def combine(parts, weights):
@@ -221,20 +280,20 @@ def combine(parts, weights):
     return sum(p * w for p, w in have) / sum(w for _, w in have)
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--model", required=True)
-    ap.add_argument("--choice")
-    ap.add_argument("--interval")
-    ap.add_argument("--variants")
-    ap.add_argument("--json", action="store_true")
-    a = ap.parse_args()
-
-    ch, iv, va = load(a.choice), load(a.interval), load(a.variants)
+def score_files(model, choice=None, interval=None, variants=None):
+    """Score one model from one run of each mode. Returns a dict."""
+    ch, iv, va = load(choice), load(interval), load(variants)
+    # Disputed items are dropped from choice and interval scoring. Variants are
+    # NOT dropped for having a disputed original: each variant carries its own
+    # independently sourced answer, and the echo test only needs to know what
+    # figure the model was holding for the original, not whether that figure is
+    # current. (The first version dropped them, which would have silently removed
+    # ceo-pay@1989, a clean and verified variant.)
+    ch = [r for r in ch if r.get("id") not in DISPUTED]
+    iv = [r for r in iv if r.get("id") not in DISPUTED]
     cal, cald = calibration(ch)
     hon, disc, ivd = honesty_and_discrimination(iv)
     ind, ind_d = independence(va)
-
     parts = (cal, hon, disc, ind)
     ehs = combine(parts, WEIGHTINGS["equal"])
 
@@ -251,16 +310,14 @@ def main():
     if ind_d.get("control_error") is not None and ind_d["control_error"] > 0.15:
         flags.append(f"null control off by {ind_d['control_error']:.0%} "
                      f"— perturbation result not attributable")
-    if any(p is None for p in parts):
-        miss = [n for n, p in zip(("calibration", "honesty", "discrimination",
-                                   "independence"), parts) if p is None]
-        flags.append("missing components: " + ", ".join(miss))
+    missing = [n for n, p in zip(COMPONENTS, parts) if p is None]
+    if missing:
+        flags.append("missing components: " + ", ".join(missing))
 
     # Truncation is not a neutral loss. A reasoning model runs out of budget on
     # the items it thinks LONGEST about, which are plausibly the ones it finds
     # hardest — so dropping them can flatter the score rather than just shrink
-    # the sample. Reported as a rate with that caveat attached, not silently
-    # absorbed into a smaller n.
+    # the sample. Reported as a rate with that caveat attached.
     allrows = ch + iv + va
     trunc = sum(1 for r in allrows if r.get("used_scratchpad") and not r.get("answer"))
     trunc_rate = trunc / max(1, len(allrows))
@@ -269,24 +326,36 @@ def main():
                      f"mid-thought ({trunc_rate:.0%}) — excluded, and they are "
                      f"likely the harder items")
 
-    row = {
-        "model": a.model, "ehs": round(ehs, 2) if ehs is not None else None,
-        "truncated": trunc, "truncation_rate": round(trunc_rate, 4),
-        "calibration": round(cal, 2) if cal is not None else None,
-        "honesty": round(hon, 2) if hon is not None else None,
-        "discrimination": round(disc, 2) if disc is not None else None,
-        "independence": round(ind, 2) if ind is not None else None,
+    def r2(x):
+        return round(x, 2) if x is not None else None
+
+    return {
+        "model": model, "ehs": r2(ehs),
+        "calibration": r2(cal), "honesty": r2(hon),
+        "discrimination": r2(disc), "independence": r2(ind),
         "choice": cald, "interval": ivd, "variants": ind_d,
-        "flags": flags,
+        "flags": flags, "truncated": trunc,
+        "truncation_rate": round(trunc_rate, 4),
         "scratchpad_rate": round(
-            sum(1 for r in (ch + iv + va) if r.get("used_scratchpad")) /
-            max(1, len(ch + iv + va)), 4),
+            sum(1 for r in allrows if r.get("used_scratchpad")) / max(1, len(allrows)), 4),
     }
 
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", required=True)
+    ap.add_argument("--choice")
+    ap.add_argument("--interval")
+    ap.add_argument("--variants")
+    ap.add_argument("--json", action="store_true")
+    a = ap.parse_args()
+
+    row = score_files(a.model, a.choice, a.interval, a.variants)
     if a.json:
         print(json.dumps(row))
         return
 
+    cald, ivd, ind_d = row["choice"], row["interval"], row["variants"]
     print(f"model           {a.model}")
     print(f"EHS             {row['ehs']}  (0-100, equal weights)")
     print(f"  calibration    {row['calibration']}   ECE {cald.get('ece')}, "
@@ -294,14 +363,14 @@ def main():
     print(f"  honesty        {row['honesty']}   coverage {ivd.get('coverage')} "
           f"vs {TARGET} asked, null {ivd.get('shuffle_null')}, "
           f"sharpness {ivd.get('sharpness')}")
-    print(f"  discrimination {row['discrimination']}   rho {ivd.get('rho_raw')}")
+    print(f"  discrimination {row['discrimination']}   rho {ivd.get('rho_pct')} on "
+          f"{ivd.get('n_pct')} percentage items "
+          f"(all items, diagnostic only: {ivd.get('rho_all_items')})")
     print(f"  independence   {row['independence']}   echoes "
           f"{ind_d.get('echoes')}/{ind_d.get('n')}")
-    print(f"\nparse rates     choice {pr_c:.0%}  interval {pr_i:.0%}  "
-          f"scratchpad used on {row['scratchpad_rate']:.0%} of answers")
-    if flags:
+    if row["flags"]:
         print("\nFLAGS")
-        for f in flags:
+        for f in row["flags"]:
             print("  ! " + f)
 
 

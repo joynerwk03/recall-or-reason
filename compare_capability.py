@@ -5,80 +5,76 @@ The question: **is knowing what you don't know just another face of being
 smart, or is it a separate axis?**
 
 If EHS tracks ECI closely, this benchmark is measuring general capability by a
-more expensive route and does not need to exist. If it doesn't, then a model's
-epistemic honesty is not predictable from its leaderboard position, which is
-worth knowing before anyone reads a confidence number off a model and acts on it.
+more expensive route and does not need to exist. If it doesn't, a model's
+epistemic honesty is not predictable from its leaderboard position — worth
+knowing before anyone reads a confidence number off a model and acts on it.
 
-Design notes that matter for reading the output:
+What changed on 2026-09-11, and why each matters for reading the output:
 
-* **EHS deliberately contains no accuracy term.** Any correlation found here is
-  discovered, not built in. See `epistemic_score.py`.
-* **n is the number of models, not the number of questions.** Ten models is a
-  small sample for a correlation, so the p-value comes from an exact permutation
-  test rather than a normal approximation, and the interval is wide no matter
-  what the point estimate says.
-* **Models without an ECI score are excluded from the correlation and reported
-  separately.** They are not plotted at zero and not dropped silently.
-* **Models whose runs failed validity checks are excluded from the correlation**
-  and listed. A model that could not produce parseable answers has a meaningless
-  score, not a low one.
+* **The headline carries a bootstrap confidence interval.** The ten-model
+  result was rho = +0.25 with a 95% interval of [-0.64, +0.86] — compatible
+  with a strong negative and a strong positive relationship alike. It had been
+  written up as "capability does not predict honesty", which the data did not
+  support. A null at small n is "not detected", and the interval says so.
+* **Two intervals are reported.** `sampling` resamples models only. `full` also
+  draws each model's score from its repeat runs and jitters its ECI within
+  Epoch's own interval, so measurement noise on BOTH axes propagates into the
+  correlation instead of being assumed away.
+* **Each model's score is the mean of its complete repeat runs**, with the
+  min-max across repeats as its error bar. Run-to-run noise at temperature 0 is
+  model-dependent, so one band drawn for every model was an extrapolation.
+* **Range restriction is checked directly.** The first ten models spanned the
+  bottom 22.6 points of a scale whose frontier is ~50 points higher, and
+  restricting a predictor's range attenuates correlation with it. The original
+  ten are re-scored beside the extended fleet so the effect is measured.
+* **Files are chosen by have_complete.complete_file**, which counts rows. A
+  newest-by-mtime file can be an interrupted run; that bug already produced one
+  retracted table.
+* **Unreliable is not pending.** A model whose runs are complete but whose
+  answers mostly failed to parse is listed as excluded, with the reason — never
+  folded silently into "no data yet".
 
-  ./run.sh compare_capability.py             # table
-  ./run.sh compare_capability.py --json OUT  # write data for the dashboard
+EHS deliberately contains no accuracy term, so any relationship found here is
+discovered, not built in. See epistemic_score.py.
+
+  ./run.sh compare_capability.py             # report
+  ./run.sh compare_capability.py --json OUT  # also write data for plot + dashboard
 """
 import argparse
 import csv
-import glob
 import json
-import math
 import os
 import random
-import re
-import subprocess
+import statistics
 import sys
 
-# Pin names that are the same weights as a canonical entry and would otherwise
-# appear twice. devstral-t0 was the first pin of devstral-small-2, built before
-# num_predict was set; its results are still cited in the paper, so the files
-# stay, but it is not a second model.
-SUPERSEDED = {"devstral-t0": "devstral-small-2-t0"}
-
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import epistemic_score as ES          # noqa: E402
+import have_complete as HC            # noqa: E402
+
 ECI = os.path.join(HERE, "data", "eci.csv")
-RESULTS = os.path.join(HERE, "results")
+REPS = [None, "r2", "r3", "r4"]
+KINDS = ("choice", "interval", "variants")
+
+# Run, but Epoch does not score them, so they cannot enter the correlation.
+EXTRA = ["devstral-small-2-t0", "lfm2-t0"]
+
+# The fleet as it stood on 2026-09-10, before range extension. Kept so the
+# effect of widening the capability range is measured, not asserted.
+ORIGINAL_TEN = {"gemma3:4b", "llama3.1:8b", "gemma3:12b", "gemma3:27b",
+                "phi4:14b", "mistral-small:24b", "qwen3:8b", "qwen3:14b",
+                "qwen3:32b", "gpt-oss:20b"}
+
+spearman = ES.spearman
 
 
-def spearman(xs, ys):
-    n = len(xs)
-    if n < 3:
-        return None
-
-    def rank(v):
-        order = sorted(range(n), key=lambda i: v[i])
-        r = [0.0] * n
-        i = 0
-        while i < n:
-            j = i
-            while j + 1 < n and v[order[j + 1]] == v[order[i]]:
-                j += 1
-            for k in range(i, j + 1):
-                r[order[k]] = (i + j) / 2.0 + 1
-            i = j + 1
-        return r
-
-    rx, ry = rank(xs), rank(ys)
-    mx, my = sum(rx) / n, sum(ry) / n
-    num = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
-    den = math.sqrt(sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry))
-    return num / den if den else None
+def pinned(tag):
+    return tag.replace(":latest", "").replace(":", "-").replace(".", "-") + "-t0"
 
 
-def perm_p(xs, ys, trials=200000, seed=0):
-    """Two-tailed permutation p for a rank correlation.
-
-    With ten models the normal approximation for Spearman is not trustworthy,
-    and shuffling one axis is both exact in spirit and easy to explain.
-    """
+def perm_p(xs, ys, trials=100000, seed=0):
+    """Two-tailed permutation p for a rank correlation."""
     obs = spearman(xs, ys)
     if obs is None:
         return None
@@ -93,45 +89,76 @@ def perm_p(xs, ys, trials=200000, seed=0):
     return (hits + 1) / (trials + 1)
 
 
-# Strict filename matching, not loose globbing. Result files are
-# <model>-<stamp>[-<tag>][-interval].jsonl, and a tagged run — a repeatability
-# check, an ablation — must never be mistaken for the canonical run for a model.
-# A loose glob would have silently picked up a `-repeat-interval` file as *the*
-# interval result and no error would have appeared anywhere.
-PAT = {
-    "choice":   re.compile(r"^(?P<m>.+)-\d{8}-\d{6}\.jsonl$"),
-    "interval": re.compile(r"^(?P<m>.+)-\d{8}-\d{6}-interval\.jsonl$"),
-    "variants": re.compile(r"^(?P<m>.+)-\d{8}-\d{6}-variants-interval\.jsonl$"),
-}
+def model_reps(model):
+    """Score every COMPLETE repeat of a model. Returns (reliable, unreliable)."""
+    good, bad = [], []
+    for rep in REPS:
+        files = {k: HC.complete_file(model, k, rep) for k in KINDS}
+        if not all(files.values()):
+            continue
+        s = ES.score_files(model, files["choice"], files["interval"], files["variants"])
+        if s.get("ehs") is None:
+            continue
+        s["rep"] = rep or "r1"
+        (bad if any("unreliable" in f for f in s["flags"]) else good).append(s)
+    return good, bad
 
 
-def newest(model, kind):
-    pat = PAT[kind]
-    c = []
-    for p in glob.glob(os.path.join(RESULTS, "*.jsonl")):
-        m = pat.match(os.path.basename(p))
-        if m and m.group("m") == model:
-            c.append(p)
-    return max(c, key=os.path.getmtime) if c else None
+def summarise(tag, reps):
+    """Point estimate = mean over complete repeats; error bar = min..max."""
+    ehs = [r["ehs"] for r in reps]
+    row = {
+        "tag": tag, "model": reps[0]["model"], "n_reps": len(reps),
+        "ehs": round(statistics.mean(ehs), 2),
+        "ehs_lo": round(min(ehs), 2), "ehs_hi": round(max(ehs), 2),
+        "ehs_reps": ehs,
+        "flags": sorted({f for r in reps for f in r["flags"]}),
+        "truncated": sum(r["truncated"] for r in reps),
+    }
+    for k in ES.COMPONENTS:
+        vals = [r[k] for r in reps if r[k] is not None]
+        row[k] = round(statistics.mean(vals), 2) if vals else None
+    return row
 
 
-def score_model(model):
-    args = [sys.executable, os.path.join(HERE, "epistemic_score.py"),
-            "--model", model, "--json"]
-    for kind, flag in (("choice", "--choice"), ("interval", "--interval"),
-                       ("variants", "--variants")):
-        p = newest(model, kind)
-        if p:
-            args += [flag, p]
-    out = subprocess.run(args, capture_output=True, text=True)
-    if out.returncode != 0 or not out.stdout.strip():
-        return None
-    return json.loads(out.stdout)
+def jitter_eci(rng, r):
+    """Draw an ECI from Epoch's own interval (split normal: the CIs are
+    asymmetric, so each side gets its own spread)."""
+    z = rng.gauss(0.0, 1.0)
+    side = (r["eci"] - r["eci_lo"]) if z < 0 else (r["eci_hi"] - r["eci"])
+    return r["eci"] + z * side / 1.96
+
+
+def boot_ci(rows, full, trials=20000, seed=1):
+    rng = random.Random(seed)
+    n, out = len(rows), []
+    for _ in range(trials):
+        pick = [rows[rng.randrange(n)] for _ in range(n)]
+        if full:
+            xs = [jitter_eci(rng, r) for r in pick]
+            ys = [rng.choice(r["ehs_reps"]) for r in pick]
+        else:
+            xs = [r["eci"] for r in pick]
+            ys = [r["ehs"] for r in pick]
+        v = spearman(xs, ys)
+        if v is not None:
+            out.append(v)
+    out.sort()
+    return out[int(0.025 * len(out))], out[int(0.975 * len(out))], out
+
+
+def holm(results):
+    order = sorted(results, key=lambda t: t[2])
+    adj, running, n = {}, 0.0, len(order)
+    for i, (k, _, p) in enumerate(order):
+        running = max(running, min(1.0, p * (n - i)))
+        adj[k] = running
+    return adj
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--json", help="write joined rows here for the dashboard")
+    ap.add_argument("--json", help="write joined rows here for plot + dashboard")
     a = ap.parse_args()
 
     eci = {}
@@ -139,128 +166,127 @@ def main():
         for r in csv.DictReader(fh):
             eci[r["ollama_tag"]] = r
 
-    # ollama tag -> the -t0 model name the sweep produced
-    def pinned(tag):
-        return tag.replace(":latest", "").replace(":", "-").replace(".", "-") + "-t0"
-
-    rows, no_eci, invalid = [], [], []
-    seen = set()
+    rows, pending, excluded = [], [], []
     for tag, e in eci.items():
-        m = pinned(tag)
-        seen.add(m)
-        s = score_model(m)
-        if s is None or s.get("ehs") is None:
-            continue
-        s["eci"] = float(e["eci"])
-        s["eci_lo"] = float(e["eci_ci_low"])
-        s["eci_hi"] = float(e["eci_ci_high"])
-        s["eci_name"] = e["eci_name"]
-        s["org"] = e["org"]
-        s["tag"] = tag
-        blocking = [f for f in s["flags"] if "unreliable" in f]
-        (invalid if blocking else rows).append(s)
-
-    # models we ran that ECI does not cover
-    for p in sorted(glob.glob(os.path.join(RESULTS, "*-t0-*.jsonl"))):
-        m = os.path.basename(p).split("-20")[0]
-        if m in seen or m in SUPERSEDED or any(x["model"] == m for x in no_eci):
-            continue
-        s = score_model(m)
-        if s and s.get("ehs") is not None:
-            s["tag"] = m
-            no_eci.append(s)
-
+        good, bad = model_reps(pinned(tag))
+        if good:
+            row = summarise(tag, good)
+            row.update({"eci": float(e["eci"]), "eci_lo": float(e["eci_ci_low"]),
+                        "eci_hi": float(e["eci_ci_high"]), "eci_name": e["eci_name"],
+                        "org": e["org"], "original_ten": tag in ORIGINAL_TEN})
+            rows.append(row)
+        elif bad:
+            excluded.append({"tag": tag, "eci": float(e["eci"]),
+                             "flags": sorted({f for r in bad for f in r["flags"]})})
+        else:
+            pending.append(tag)
     rows.sort(key=lambda r: r["eci"])
 
-    w = 22
-    print(f"{'model':<{w}}{'ECI':>8}{'EHS':>7}{'calib':>7}{'hon':>7}"
-          f"{'disc':>7}{'indep':>7}   flags")
-    print("-" * (w + 43 + 8))
+    no_eci = []
+    for m in EXTRA:
+        good, _ = model_reps(m)
+        if good:
+            no_eci.append(summarise(m, good))
+
+    # ---------- table ----------
+    w = 20
+    print(f"{'model':<{w}}{'ECI':>7}{'EHS':>7}{'  range':>13}{'reps':>5}"
+          f"{'cal':>6}{'hon':>6}{'disc':>6}{'ind':>6}")
+    print("-" * (w + 56))
     for r in rows:
-        print(f"{r['tag']:<{w}}{r['eci']:>8.1f}{r['ehs']:>7.1f}"
-              f"{r['calibration'] or 0:>7.0f}{r['honesty'] or 0:>7.0f}"
-              f"{r['discrimination'] or 0:>7.0f}{r['independence'] or 0:>7.0f}"
-              f"   {'; '.join(r['flags'])[:44]}")
-
+        rng_s = f"[{r['ehs_lo']:.0f},{r['ehs_hi']:.0f}]" if r["n_reps"] > 1 else "   single"
+        print(f"{r['tag']:<{w}}{r['eci']:>7.1f}{r['ehs']:>7.1f}{rng_s:>13}"
+              f"{r['n_reps']:>5}"
+              + "".join(f"{(r[k] if r[k] is not None else float('nan')):>6.0f}"
+                        for k in ES.COMPONENTS))
     if no_eci:
-        print(f"\nrun but not in the ECI table (excluded from the correlation):")
+        print("\nrun but not in the ECI table (excluded from the correlation):")
         for r in no_eci:
-            print(f"  {r['tag']:<{w}}{'—':>8}{r['ehs']:>7.1f}")
-    if invalid:
-        print(f"\nexcluded — runs failed validity checks:")
-        for r in invalid:
-            print(f"  {r['tag']:<{w}}  {'; '.join(r['flags'])}")
+            print(f"  {r['tag']:<{w}}  EHS {r['ehs']:5.1f}  reps {r['n_reps']}")
+    if excluded:
+        print("\nEXCLUDED — complete runs, but the answers cannot be trusted:")
+        for r in excluded:
+            print(f"  {r['tag']:<{w}}  ECI {r['eci']:5.1f}  {'; '.join(r['flags'])}")
+    if pending:
+        print("\nno complete run yet: " + ", ".join(pending))
 
-    if len(rows) >= 3:
+    flagged = [(r["tag"], f) for r in rows for f in r["flags"]]
+    if flagged:
+        print("\nflags on included models:")
+        for t, f in flagged:
+            print(f"  {t:<{w}} {f}")
+
+    report = {"rows": rows, "no_eci": no_eci, "pending": pending, "excluded": excluded}
+    if len(rows) >= 4:
         xs = [r["eci"] for r in rows]
         ys = [r["ehs"] for r in rows]
         rho = spearman(xs, ys)
         p = perm_p(xs, ys)
-        print(f"\nEHS vs ECI       Spearman rho = {rho:+.3f}   "
-              f"permutation p = {p:.4f}   n = {len(rows)} models")
-        if p is not None and p < 0.05:
-            print("                 Epistemic honesty tracks general capability on")
-            print("                 this sample: the leaderboard largely predicts it.")
+        s_lo, s_hi, _ = boot_ci(rows, full=False)
+        f_lo, f_hi, fdist = boot_ci(rows, full=True)
+        share_strong = sum(1 for v in fdist if v > 0.5) / len(fdist)
+        span = max(xs) - min(xs)
+        print(f"\nEHS vs ECI   rho = {rho:+.3f}   permutation p = {p:.4f}   "
+              f"n = {len(rows)} models spanning {span:.1f} ECI points")
+        print(f"             95% CI, sampling only       [{s_lo:+.2f}, {s_hi:+.2f}]")
+        print(f"             95% CI, full uncertainty    [{f_lo:+.2f}, {f_hi:+.2f}]"
+              f"   (models + repeat noise + Epoch's own ECI intervals)")
+        print(f"             draws with rho > +0.5: {share_strong:.0%}")
+        if f_lo > 0:
+            verdict = "capability predicts honesty: the interval excludes zero"
+        elif f_hi < 0:
+            verdict = "capability predicts LESS honesty: the interval excludes zero"
+        elif f_hi - f_lo > 1.0:
+            verdict = ("NOT DETECTED, and the interval is too wide to call it absent. "
+                       "This sample cannot say whether capability predicts honesty.")
         else:
-            print("                 **Not separable from chance at this n.** Position on")
-            print("                 a general capability index does not predict how")
-            print("                 honestly a model reports its own uncertainty here.")
-        print(f"\n  ⚠ n = {len(rows)} models. A rank correlation on ten points has a very")
-        print("    wide interval whichever way it lands, and ECI itself carries")
-        print("    confidence intervals several points wide. Treat the direction as")
-        print("    a hypothesis, not a measurement.")
+            verdict = "no relationship detected; the interval is narrow enough to bound it"
+        print(f"             {verdict}")
+        report.update({"rho": rho, "p": p, "ci_sampling": [s_lo, s_hi],
+                       "ci_full": [f_lo, f_hi], "share_rho_gt_half": share_strong,
+                       "span": span, "verdict": verdict})
 
-        # per-component, since the composite can hide opposing movements
-        print()
-        print("  per component vs ECI:")
-        comps = ("calibration", "honesty", "discrimination", "independence")
-        results = []
-        for k in comps:
+        orig = [r for r in rows if r["original_ten"]]
+        if 4 <= len(orig) < len(rows):
+            ro = spearman([r["eci"] for r in orig], [r["ehs"] for r in orig])
+            o_span = max(r["eci"] for r in orig) - min(r["eci"] for r in orig)
+            print(f"\nrange check  original {len(orig)} models ({o_span:.1f} ECI points): "
+                  f"rho {ro:+.3f}")
+            print(f"             extended {len(rows)} models ({span:.1f} ECI points): "
+                  f"rho {rho:+.3f}")
+            report.update({"rho_original": ro, "span_original": o_span,
+                           "n_original": len(orig)})
+
+        print("\nper component vs ECI (Holm-corrected across the four):")
+        comp = []
+        for k in ES.COMPONENTS:
             v = [r[k] for r in rows]
             if all(x is not None for x in v):
-                rr = spearman(xs, v)
-                pp = perm_p(xs, v, trials=50000)
-                results.append((k, rr, pp))
-        # Four components tested against the same axis, so a p below .05 on one
-        # of them is not the same claim as a p below .05 on a single planned
-        # test. Holm-Bonferroni, reported beside the raw value, not instead.
-        order = sorted(results, key=lambda t: t[2])
-        n_t, adj, running = len(order), {}, 0.0
-        for i, (k, rr, pp) in enumerate(order):
-            running = max(running, min(1.0, pp * (n_t - i)))
-            adj[k] = running
-        for k, rr, pp in results:
+                comp.append((k, spearman(xs, v), perm_p(xs, v, trials=40000)))
+        adj = holm(comp)
+        for k, rr, pp in comp:
             star = "  *" if adj[k] < 0.05 else ""
-            print(f"    {k:<16} rho {rr:+.3f}   p {pp:.3f}   "
-                  f"Holm {adj[k]:.3f}{star}")
-        if results and not any(adj[k] < 0.05 for k, _, _ in results):
-            print()
-            print("    After correcting for testing four components, none")
-            print("    survives. The calibration result is the one worth")
-            print("    re-testing on a larger fleet; it is not a finding yet.")
+            print(f"    {k:<16} rho {rr:+.3f}   p {pp:.3f}   Holm {adj[k]:.3f}{star}")
+        report["components"] = [{"k": k, "rho": rr, "p": pp, "holm": adj[k]}
+                                for k, rr, pp in comp]
 
-        # Does the ranking depend on the weights? If a conclusion holds only
-        # under equal weighting it is not a conclusion.
-        print()
-        print("  sensitivity — EHS vs ECI under other weightings:")
-        import epistemic_score as ES
-        for name, w in ES.WEIGHTINGS.items():
-            alt = [ES.combine((r["calibration"], r["honesty"],
-                               r["discrimination"], r["independence"]), w)
-                   for r in rows]
+        print("\nsensitivity to the weighting of the composite:")
+        sens = []
+        for name, wts in ES.WEIGHTINGS.items():
+            alt = [ES.combine(tuple(r[k] for k in ES.COMPONENTS), wts) for r in rows]
             if all(x is not None for x in alt):
                 rr = spearman(xs, alt)
-                pp = perm_p(xs, alt, trials=50000)
+                pp = perm_p(xs, alt, trials=40000)
+                sens.append({"w": name, "rho": rr, "p": pp})
                 print(f"    {name:<22} rho {rr:+.3f}   p {pp:.3f}")
+        report["sensitivity"] = sens
+
+        print(f"\n  ⚠ n = {len(rows)} models. Read the full-uncertainty interval, not")
+        print("    the point estimate. A null that wide is an absence of evidence.")
 
     if a.json:
         with open(a.json, "w", encoding="utf-8") as fh:
-            json.dump({"rows": rows, "no_eci": no_eci, "invalid": invalid,
-                       "rho": spearman([r["eci"] for r in rows],
-                                       [r["ehs"] for r in rows]) if len(rows) >= 3 else None,
-                       "p": perm_p([r["eci"] for r in rows],
-                                   [r["ehs"] for r in rows]) if len(rows) >= 3 else None},
-                      fh, indent=1)
+            json.dump(report, fh, indent=1)
         print(f"\nwrote {a.json}")
 
 

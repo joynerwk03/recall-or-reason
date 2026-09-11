@@ -9,7 +9,7 @@
 # that a reasoning model spends the whole budget inside <think> and never emits
 # an answer — which arrives downstream looking like a model that could not
 # answer rather than one that was cut off. 900 is enough for a scratchpad plus
-# three lines; anything still truncated is recorded as truncated.
+# ran out mid-thought on up to 48 of 50 items. Anything still cut off is recorded.
 #
 # Ollama layers are content-addressed, so `FROM <existing>` reuses the same
 # weight blobs and only writes a new manifest. The size ollama reports per copy
@@ -23,6 +23,7 @@ MODELS=(
   gemma3:4b llama3.1:8b qwen3:8b gemma3:12b phi4:14b
   qwen3:14b mistral-small:24b gpt-oss:20b gemma3:27b qwen3:32b
   devstral-small-2:latest lfm2:latest
+  llama3.2:1b qwen3.5:9b gemma4:26b gemma4:31b qwen3.6:35b-a3b qwen3.6:27b
 )
 
 pin () {
@@ -33,7 +34,7 @@ pin () {
     echo "SKIP  $src  (not pulled)"
     return
   fi
-  printf 'FROM %s\nPARAMETER temperature 0\nPARAMETER top_p 1\nPARAMETER top_k 1\nPARAMETER seed 42\nPARAMETER num_predict 2500\n' \
+  printf 'FROM %s\nPARAMETER temperature 0\nPARAMETER top_p 1\nPARAMETER top_k 1\nPARAMETER seed 42\nPARAMETER num_predict 8192\n' \
     "$src" > "/tmp/Modelfile.$dst"
   if "$O" create "$dst" -f "/tmp/Modelfile.$dst" >/dev/null 2>&1; then
     echo "PIN   $src -> $dst"

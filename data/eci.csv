@@ -1,4 +1,5 @@
 ollama_tag,eci_name,eci,eci_ci_low,eci_ci_high,released,org,source
+llama3.2:1b,Llama 3.2 1B,102.43,91.24,109.91,2024-09-24,Meta AI,https://epoch.ai/data/benchmark_data.zip
 gemma3:4b,Gemma 3 4B,115.97,97.45,123.39,2025-03-12,Google DeepMind,https://epoch.ai/data/benchmark_data.zip
 llama3.1:8b,Llama 3.1-8B,116.51,105.95,121.71,2024-07-23,Meta AI,https://epoch.ai/data/benchmark_data.zip
 gemma3:12b,Gemma 3 12B,123.46,116.21,128.73,2025-03-12,Google DeepMind,https://epoch.ai/data/benchmark_data.zip
@@ -9,3 +10,8 @@ qwen3:8b,Qwen3-8B,136.18,129.58,138.07,2025-04-28,Alibaba,https://epoch.ai/data/
 gpt-oss:20b,gpt-oss-20b,137.81,132.89,139.56,2025-08-05,OpenAI,https://epoch.ai/data/benchmark_data.zip
 qwen3:14b,Qwen3-14B,138.25,133.68,139.84,2025-04-29,Alibaba,https://epoch.ai/data/benchmark_data.zip
 qwen3:32b,Qwen3-32B,138.52,135.14,140.32,2025-04-29,Alibaba,https://epoch.ai/data/benchmark_data.zip
+qwen3.5:9b,Qwen3.5-9B,139.45,136.59,141.07,2026-02-24,Alibaba,https://epoch.ai/data/benchmark_data.zip
+gemma4:26b,Gemma 4 26B A4B,141.87,138.55,143.58,2026-04-02,Google DeepMind,https://epoch.ai/data/benchmark_data.zip
+gemma4:31b,Gemma 4 31B IT,142.68,140.28,144.75,2026-04-02,Google DeepMind,https://epoch.ai/data/benchmark_data.zip
+qwen3.6:35b-a3b,Qwen 3.6 35B-A3B,143.87,141.31,146.0,2026-04-14,Alibaba,https://epoch.ai/data/benchmark_data.zip
+qwen3.6:27b,Qwen3.6 27B,146.51,144.53,147.8,2026-04-22,Alibaba,https://epoch.ai/data/benchmark_data.zip

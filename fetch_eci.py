@@ -61,6 +61,26 @@ MAP = {
     "qwen3:14b":         "Qwen3-14B",
     "qwen3:32b":         "Qwen3-32B",
     "gpt-oss:20b":       "gpt-oss-20b",
+
+    # Range extension, added 2026-09-11. The first ten models spanned ECI
+    # 116.0-138.5, the bottom slice of a scale whose frontier sits near 166, and
+    # restricting the range of a predictor attenuates any correlation with it.
+    # These six are free to run and take the span to 102.4-146.5.
+    #
+    # Tags are explicit where ollama's are ambiguous: `qwen3.6:35b` and
+    # `qwen3.6:35b-a3b` are the same size on ollama's tag page, and the explicit
+    # form removes the guess. Exact ECI display names are validated at fetch
+    # time, so a wrong string fails loudly rather than joining to nothing.
+    #
+    # Same reasoning-mode caveat as the Qwen3 entries above applies to the
+    # Qwen3.5 and Qwen3.6 models: Epoch lists one entry each and does not say
+    # which mode it evaluated.
+    "llama3.2:1b":       "Llama 3.2 1B",
+    "qwen3.5:9b":        "Qwen3.5-9B",
+    "gemma4:26b":        "Gemma 4 26B A4B",
+    "gemma4:31b":        "Gemma 4 31B IT",
+    "qwen3.6:35b-a3b":   "Qwen 3.6 35B-A3B",
+    "qwen3.6:27b":       "Qwen3.6 27B",
 }
 
 # Run but not plottable: Epoch does not score these, so they have no capability

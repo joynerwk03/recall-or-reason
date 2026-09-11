@@ -160,6 +160,85 @@ VARIANTS = [
              "should be the first dropped if the gap ever hinges on it.",
         checked="2026-09-09",
     ),
+    # --- added 2026-09-11. Each is drawn from the SAME source as its original
+    # --- item, and each original was checked against that source first: a
+    # --- variant built on an original that disagrees with its own citation
+    # --- would be measuring the defect, not the model.
+    dict(
+        base="depression-prevalence", suffix="adolescents", kind="subgroup",
+        prompt="In a given year, what share of US adolescents aged 12 to 17 "
+               "experience a major depressive episode (two weeks or more of "
+               "depressed mood or loss of interest, plus other symptoms)?",
+        context="",
+        answer=20.1, unit="%",
+        source="https://www.nimh.nih.gov/health/statistics/major-depression",
+        note="NIMH, from the 2021 NSDUH: 8.3% of US adults and 20.1% of "
+             "adolescents aged 12-17 had at least one major depressive episode "
+             "in the past year. The original item's 8% is the adult figure from "
+             "the same page and year, so only the population moves.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="abortion-timing", suffix="13weeks", kind="subgroup",
+        prompt="What share of US abortions occur at or before 13 weeks of "
+               "pregnancy?",
+        context="",
+        answer=92.8, unit="%",
+        source="https://www.cdc.gov/mmwr/volumes/73/ss/ss7307a1.htm",
+        note="CDC Abortion Surveillance, 2022 data: 92.8% at <=13 weeks, 6.1% at "
+             "14-20 weeks, 1.1% at >=21 weeks. The original item's 1% is the "
+             ">=21-week figure from the same table. A model reciting the famous "
+             "late-abortion figure would answer near 1 here; the truth is near 93.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="replication-crisis", suffix="economics", kind="subgroup",
+        prompt="Researchers rigorously re-ran 18 published laboratory "
+               "experiments from top economics journals. What share produced a "
+               "statistically significant effect in the same direction the "
+               "second time?",
+        context="",
+        answer=61.1, unit="%",
+        source="https://www.science.org/doi/10.1126/science.aaf0918",
+        note="Camerer et al., Science 2016: 11 of 18 replications (61.1%) found "
+             "a significant effect in the same direction, against 36% for "
+             "psychology in the Open Science Collaboration (2015) — the original "
+             "item. FLAGGED as a field swap across two papers rather than a swap "
+             "within one table: the designs are parallel (pre-registered, high "
+             "power) but not identical, so this is the loosest new variant.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="wealth-top1", suffix="bottom50", kind="subgroup",
+        prompt="What share of all US household wealth is owned by the poorest "
+               "half of households?",
+        context="",
+        answer=2.5, unit="%",
+        source="https://www.federalreserve.gov/releases/z1/dataviz/download/zips/dfa.zip",
+        note="Federal Reserve Distributional Financial Accounts, net-worth "
+             "shares, 2024:Q1. Top 0.1% 13.8 + remaining top 1% 16.8 = 30.6% for "
+             "the top 1%, matching the original item (which cites Q1 2024, "
+             "~30.5%); the bottom 50% held 2.5% in the same quarter. Read from "
+             "the Fed's machine-readable release rather than the interactive "
+             "chart the original cites, which does not render without script.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="top1-tax-share", suffix="top10", kind="subgroup",
+        prompt="What share of all federal income taxes is paid by the top 10% "
+               "of earners?",
+        context="",
+        answer=70.5, unit="%",
+        source="https://taxfoundation.org/data/all/federal/who-pays-federal-income-taxes-tax-year-2023/",
+        note="Tax Foundation summary of IRS data, tax year 2023: the top 1% paid "
+             "38.40%, the top 10% 70.54%, the bottom 50% 3.26%. The original "
+             "item's 38% is the top-1% figure on this page. NOTE: the original "
+             "cites a different Tax Foundation page — the '2025' summary, which "
+             "covers tax year 2022 and shows 40.4%. Its number is right for 2023 "
+             "but its link points at the wrong year, so this variant is built "
+             "from the page that actually contains the original's figure.",
+        checked="2026-09-11",
+    ),
     dict(
         base="plastic-recycling", suffix="us", kind="null-control",
         prompt="Of all the plastic waste the United States generates, what "
