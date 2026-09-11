@@ -47,6 +47,15 @@ guessed. Models that never hit the ceiling keep their runs: under greedy
 decoding the output up to end-of-sequence is identical at any budget it never
 reached.
 
+**What the old budget cost, now that the re-runs are in** (`budget_effect.py`):
+across the five models where all three comparable components exist at both
+budgets, the median change is **+2.5** points and the largest **+4.6**, three of
+five upward — the same order as measured run-to-run noise. For the other two the
+old number was not a score at all: at 2,500 tokens qwen3.5:9b and gemma4:26b
+kept too few interval answers to compute two of the three components, so their
+"scores" were calibration alone. That is the worse failure. Not a shifted
+number, a number measuring something else.
+
 **The smallest model cannot be measured at all.** llama3.2:1b answers 36 of 80
 multiple-choice questions in prose — "suicides account for about 2 in 5" — and
 never picks a letter. Excluded by the pre-set parse-rate rule. Below some size

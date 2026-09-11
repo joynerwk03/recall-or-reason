@@ -496,8 +496,40 @@ and was then carried unchanged onto reasoning models that hit it on most
 answers (Section 1.3). Truncation does not look like an error: the run
 completes, the file is full length, and the rows simply say no answer.
 
+**The distortion, measured rather than asserted.** `budget_effect.py` scores
+every re-run model at both budgets on the three components computed identically
+under each (independence is left out: the variant set grew from 9 items to 21
+between the two runs, so a difference there would mix the budget with the items).
+
+| model | truncated, then → now | 3-part score, then → now |
+|---|---|---|
+| qwen3:8b | 3 → 0 | 54.2 → 54.1 |
+| gpt-oss:20b | 4 → 4 | 43.0 → 46.6 |
+| gemma4:31b | 13 → 1 | 75.0 → 79.6 |
+| qwen3.6:35b-a3b | 13 → 0 | 83.0 → 79.6 |
+| qwen3.6:27b | 7 → 1 | 73.8 → 76.3 |
+| qwen3.5:9b | 72 → 12 | *not comparable* |
+| gemma4:26b | 71 → 34 | *not comparable* |
+
+For the five models comparable at both budgets the median change is **+2.5
+points**, the largest **+4.6**, and three of five moved up. That is the same
+order as one model's measured run-to-run spread, so for models the ceiling
+rarely touched the old numbers were not wildly wrong.
+
+**The two marked *not comparable* are the real finding.** At 2,500 tokens
+qwen3.5:9b kept so few interval answers that two of the three components could
+not be computed at all, so its "89.2" was a calibration score standing in for a
+composite. Differencing that against a full score reports a 22-point drop that
+is mostly the missing components — which is exactly what the first version of
+this comparison printed, until it was made to require all three components at
+both budgets before reporting a difference. gemma4:26b is the same story and
+still fails the parse bar at 8,192, so Section 6 excludes it under the
+pre-registered rule.
+
 > **The lesson.** A limit that never binds on the models you started with is not
-> a limit you have tested. Measure it again on every new class of subject.
+> a limit you have tested. Measure it again on every new class of subject — and
+> when a score loses a component, it stops being the same score, whatever the
+> column header says.
 
 ### 5.7 A capability axis joined on a name
 
