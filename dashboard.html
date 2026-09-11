@@ -759,18 +759,28 @@ const FLEET=[
   const s=document.getElementById("fleet");
   if(!s) return;
   const L=96,R=812,T=34,B=372;
-  const xlo=113,xhi=142, ylo=25,yhi=95;
+  /* Bounds come from the data. They used to be hard-coded for the ten models
+     this chart was first drawn for; a model outside that range would have been
+     drawn outside the plot, silently. */
+  const lo=m=>m.slo==null?m.s:m.slo, hi=m=>m.shi==null?m.s:m.shi;
+  const xv=FLEET.flatMap(m=>[m.lo,m.hi]);
+  const yv=FLEET.flatMap(m=>[lo(m),hi(m)]);
+  const xlo=Math.min(...xv)-1.5, xhi=Math.max(...xv)+1.5;
+  const ylo=Math.max(0,Math.min(...yv)-8), yhi=Math.min(100,Math.max(...yv)+8);
   const x=v=>L+(v-xlo)/(xhi-xlo)*(R-L);
   const y=v=>B-(v-ylo)/(yhi-ylo)*(B-T);
-  for(let v=115;v<=140;v+=5){
+  const step=(a,b)=>{const raw=(b-a)/5, p=Math.pow(10,Math.floor(Math.log10(raw)));
+    return [1,2,2.5,5,10].map(k=>k*p).find(v=>v>=raw)||p*10;};
+  const sx=step(xlo,xhi), sy=step(ylo,yhi);
+  for(let v=Math.ceil(xlo/sx)*sx;v<=xhi;v+=sx){
     s.appendChild(el("line",{x1:x(v),y1:T,x2:x(v),y2:B,class:"grid"}));
     const t=el("text",{x:x(v),y:B+21,"text-anchor":"middle",class:"ax"});
-    t.textContent=v;s.appendChild(t);
+    t.textContent=Math.round(v);s.appendChild(t);
   }
-  for(let v=30;v<=90;v+=15){
+  for(let v=Math.ceil(ylo/sy)*sy;v<=yhi;v+=sy){
     s.appendChild(el("line",{x1:L,y1:y(v),x2:R,y2:y(v),class:"grid"}));
     const t=el("text",{x:L-12,y:y(v)+4,"text-anchor":"end",class:"ax"});
-    t.textContent=v;s.appendChild(t);
+    t.textContent=Math.round(v);s.appendChild(t);
   }
   const xl=el("text",{x:(L+R)/2,y:B+46,"text-anchor":"middle",class:"axl"});
   xl.textContent="general ability, from the public leaderboard  \u2192";
@@ -781,14 +791,26 @@ const FLEET=[
 
   const placed=[];
   FLEET.slice().sort((a,b)=>a.e-b.e).forEach(m=>{
+    /* horizontal: the leaderboard's own uncertainty about this model */
     s.appendChild(el("line",{x1:x(m.lo),y1:y(m.s),x2:x(m.hi),y2:y(m.s),
       stroke:"var(--a)",opacity:.3,"stroke-width":2,"stroke-linecap":"round"}));
-    const c=el("circle",{cx:x(m.e),cy:y(m.s),r:6.5,fill:"var(--a)",
-      stroke:"var(--surface)","stroke-width":2});
+    /* vertical: how much this model's own score moved between repeat runs */
+    if(m.slo!=null && m.shi!=null && m.shi>m.slo){
+      s.appendChild(el("line",{x1:x(m.e),y1:y(m.slo),x2:x(m.e),y2:y(m.shi),
+        stroke:"var(--a)",opacity:.55,"stroke-width":3,"stroke-linecap":"round"}));
+    }
+    const c=el("circle",{cx:x(m.e),cy:y(m.s),r:6.5,
+      fill:m.add?"var(--surface)":"var(--a)",
+      stroke:m.add?"var(--a)":"var(--surface)","stroke-width":2});
     bind(c,"<b>"+m.t+"</b><br>ability "+m.e.toFixed(1)+
-         "<br>knows-itself score "+m.s);
+         "<br>knows-itself score "+m.s+
+         (m.shi!=null&&m.slo!=null&&m.shi>m.slo
+            ? "<br>across repeat runs: "+m.slo+" to "+m.shi : ""));
     s.appendChild(c);
-    const below=placed.some(p=>!p.b && Math.abs(m.e-p.e)<4 && Math.abs(m.s-p.s)<9);
+    /* Collision is measured in pixels, not data units: the axis range is no
+       longer fixed, so a gap of "4 points" is a different distance each time. */
+    const below=placed.some(p=>!p.b && Math.abs(x(m.e)-x(p.e))<74
+                                   && Math.abs(y(m.s)-y(p.s))<24);
     const t=el("text",{x:x(m.e),y:y(m.s)+(below?22:-13),"text-anchor":"middle",
       class:"dl"});
     t.textContent=m.t;s.appendChild(t);
