@@ -108,8 +108,9 @@ def main():
 
     if deltas:
         print()
-        print(f"{rows_done} model(s) compared. Median change in the 3-part score: "
-              f"{statistics.median(deltas):+.1f} points; largest: "
+        print(f"{rows_done} model(s) compared at both budgets; {len(deltas)} have all "
+              f"three components at both. Median change over those "
+              f"{len(deltas)}: {statistics.median(deltas):+.1f} points; largest: "
               f"{max(deltas, key=abs):+.1f}.")
         up = sum(1 for x in deltas if x > 0)
         print(f"Scores went UP with the bigger budget for {up} of {len(deltas)}. "
