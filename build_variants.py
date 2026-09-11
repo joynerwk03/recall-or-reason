@@ -25,6 +25,12 @@ Rules this file exists to enforce:
    variant is a different *question*, not a perturbation, and the comparison
    means nothing.
 
+   The second batch added on 2026-09-11 states each prompt as a swap on the
+   original's own text, `(old, new)`, so the wording cannot drift from the
+   original's. `SAME_CONTEXT` carries the original's context over verbatim
+   where it applies equally to the variant; it is dropped where it describes
+   only the original's target, or would hand the model the variant's answer.
+
 4. **One null control is included on purpose** (`plastic-recycling@us`), where
    the perturbed answer is ~the same as the original. It separates two failure
    modes that otherwise look identical: a model thrown by needing a *different
@@ -43,12 +49,20 @@ Rejected, and why — kept here because a rejection is a result:
   no variant is built on it until the anchor is reconciled. Flagged in LOG.md.
   Source: https://api.worldbank.org/v2/country/WLD/indicator/SI.POV.DDAY
 
+- **ocean-plastic-rivers.** The obvious variant was a continent swap (Africa
+  for Asia), but the cited paper (Meijer et al., Science Advances 2021) states
+  no share by continent in its main text or its Table 1, so there is no
+  sourced number to swap to. The "80%" in its title is a different quantity:
+  the share of global emissions from its top 1,656 rivers. Recorded in AUDIT.md.
+
 - **Most items both models already answer well** turn out not to be perturbable
   at all: they are single famous studies (one PHE estimate on vaping, one
   genetics result, one exoneration study) with no other year, country or
   subgroup to move to. Perturbation needs *repeatedly measured* quantities —
   polls, national statistics, tracked databases. This shrinks the eligible pool
-  considerably and is the main obstacle to reaching 20 variants.
+  considerably and was the main obstacle to reaching 20 variants. The way
+  past it, on 2026-09-11, was subgroup swaps inside a single published
+  sentence or table that also holds the original's figure.
 
   ./run.sh build_variants.py
 """
@@ -59,6 +73,9 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ITEMS = os.path.join(HERE, "data", "items.jsonl")
 OUT = os.path.join(HERE, "data", "variants.jsonl")
+
+# Resolved at build time to the original item's context, verbatim (rule 3).
+SAME_CONTEXT = "<the original's context, verbatim>"
 
 # base_id, suffix, kind, prompt, context, answer, unit, source, note, checked
 VARIANTS = [
@@ -239,6 +256,118 @@ VARIANTS = [
              "from the page that actually contains the original's figure.",
         checked="2026-09-11",
     ),
+    # --- second batch, added 2026-09-11, taking the set from 13 perturbations
+    # --- to 20. Five of the seven move only the population inside one
+    # --- published sentence or table that also holds the original's figure:
+    # --- same instrument, same year, one variable. The other two are flagged.
+    dict(
+        base="cannabis-dependence", suffix="cocaine", kind="subgroup",
+        prompt=("cannabis", "cocaine"),
+        context=SAME_CONTEXT,
+        answer=20.9, unit="%",
+        source="https://pubmed.ncbi.nlm.nih.gov/21145178/",
+        note="Lopez-Quintero et al., Drug and Alcohol Dependence 2011 (NESARC): "
+             "'The cumulative probability estimate of transition to dependence "
+             "was 67.5% for nicotine users, 22.7% for alcohol users, 20.9% for "
+             "cocaine users, and 8.9% for cannabis users' (abstract, read via "
+             "Europe PMC). The original's 9% and both of its context anchors "
+             "come from that one sentence, so the context is kept. No "
+             "prompt_anchor is recorded: the alcohol anchor (22.7) sits within "
+             "two points of the truth, so an anchor test could not tell echoing "
+             "the context from answering correctly. Only an echo of the "
+             "cannabis figure is tested.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="mobility", suffix="canada", kind="country",
+        prompt=("US households", "Canadian households"),
+        context=SAME_CONTEXT,
+        answer=13.4, unit="%",
+        source="https://opportunityinsights.org/wp-content/uploads/2018/03/mobility_geo.pdf",
+        note="Chetty, Hendren, Kline and Saez, 'Where is the Land of "
+             "Opportunity?' (QJE 2014), on the quintile transition matrix: the "
+             "bottom-to-top probability 'is 7.5% in the U.S., compared with "
+             "11.7% in Denmark (Boserup, Kopczuk and Kreiner 2013) and 13.4% in "
+             "Canada (Corak and Heisz 1999).' Same sentence as the original's "
+             "figure. FLAGGED: the Canadian estimate is Corak and Heisz's, on "
+             "earlier cohorts, quoted by Chetty rather than computed from the "
+             "same data, so this is a cross-study comparison inside one "
+             "sentence. The context's 20% is a no-mobility benchmark shared by "
+             "both questions, not a figure for the original, so it is not "
+             "recorded as a prompt_anchor.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="lgbt-share", suffix="under30", kind="subgroup",
+        prompt=("US adults", "US adults under age 30"),
+        context="",
+        answer=23.0, unit="%",
+        source="https://news.gallup.com/poll/702206/lgbtq-identification-holds.aspx",
+        note="Gallup, 'LGBTQ+ Identification Holds at 9% in U.S.' (February "
+             "2026, 2025 data): 9% of all US adults and 23% of adults under 30. "
+             "Same article as the original. The original's context (the public "
+             "guesses about 23%) is dropped on purpose: here it would hand the "
+             "model the answer.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="private-prisons", suffix="federal2015", kind="subgroup",
+        prompt="In 2015, what share of US federal prisoners were held in "
+               "private, for-profit prisons?",
+        context=SAME_CONTEXT,
+        answer=18.0, unit="%",
+        source="https://www.pewresearch.org/short-reads/2017/04/11/u-s-private-prison-population-has-declined-in-recent-years/",
+        note="Pew Research Center, from BJS National Prisoner Statistics: in "
+             "2015, 8% of the nearly 1.53 million state and federal prisoners "
+             "were in private facilities (the original item's figure) and "
+             "'nearly 18%' of federal prisoners. Same article, same year. The "
+             "year is written into the prompt because the federal share is set "
+             "by policy and moves, so an undated question would not have one "
+             "answer.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="iq-heritability", suffix="age9", kind="subgroup",
+        prompt=("By adulthood", "At age 9"),
+        context=SAME_CONTEXT,
+        answer=41.0, unit="%",
+        source="https://pubmed.ncbi.nlm.nih.gov/19488046/",
+        note="Haworth et al., Molecular Psychiatry 2010, 11,000 twin pairs from "
+             "four countries: heritability of general cognitive ability rises "
+             "'from 41% in childhood (9 years) to 55% in adolescence (12 years) "
+             "and to 66% in young adulthood (17 years)' (abstract, read via "
+             "Europe PMC). FLAGGED as a cross-paper swap: the original cites "
+             "Bouchard 2013, whose abstract puts the adult asymptote near 0.80 "
+             "but gives no age-9 figure. The unit is set to % although the "
+             "original's is blank, so the model is told the scale; a 0-to-1 "
+             "answer would otherwise make an echo of 0.7 undetectable.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="top1-tax-share", suffix="bottom50", kind="subgroup",
+        prompt=("top 1% of earners", "bottom 50% of earners"),
+        context="",
+        answer=3.26, unit="%",
+        source="https://taxfoundation.org/data/all/federal/who-pays-federal-income-taxes-tax-year-2023/",
+        note="Tax Foundation, tax year 2023, Table 1, share of total income "
+             "taxes paid: top 1% 38.3980, top 10% 70.5426, bottom 50% 3.2601. "
+             "Same table as the original and as top1-tax-share@top10. The "
+             "original's context describes the top 1% only and is dropped.",
+        checked="2026-09-11",
+    ),
+    dict(
+        base="wealth-top1", suffix="top10", kind="subgroup",
+        prompt=("richest 1%", "richest 10%"),
+        context="",
+        answer=67.1, unit="%",
+        source="https://www.federalreserve.gov/releases/z1/dataviz/download/zips/dfa.zip",
+        note="Federal Reserve DFA net-worth shares, 2024:Q1, the same file and "
+             "quarter as the original and as wealth-top1@bottom50: top 0.1% "
+             "13.8 + rest of the top 1% 16.8 + next 9% 36.5 = 67.1%. The "
+             "original's context (an even split gives the top 1% 1%) describes "
+             "the top 1% only and is dropped.",
+        checked="2026-09-11",
+    ),
     dict(
         base="plastic-recycling", suffix="us", kind="null-control",
         prompt="Of all the plastic waste the United States generates, what "
@@ -274,6 +403,15 @@ def main():
             if b.get("numeric_answer") is None:
                 sys.exit(f"{v['base']} has no numeric answer; it cannot be "
                          f"perturbed in interval mode")
+            prompt, context = v["prompt"], v["context"]
+            if isinstance(prompt, tuple):
+                old, repl = prompt
+                if b["prompt"].count(old) != 1:
+                    sys.exit(f'{v["base"]}: swap text {old!r} must occur exactly '
+                             f'once in the original prompt')
+                prompt = b["prompt"].replace(old, repl)
+            if context == SAME_CONTEXT:
+                context = b.get("context") or ""
             rec = {
                 "id": f'{v["base"]}@{v["suffix"]}',
                 "base_id": v["base"],
@@ -281,8 +419,8 @@ def main():
                 # joined from the base item, never retyped
                 "category": b["category"],
                 "punctures": b["punctures"],
-                "prompt": v["prompt"],
-                "context": v["context"],
+                "prompt": prompt,
+                "context": context,
                 "options": [],
                 "answer_index": None,
                 "answer_text": "",

@@ -8,7 +8,7 @@ measured rather than asserted. This measures it.
 
 Only the three components computed identically under both budgets are compared:
 calibration (choice mode), and honesty and discrimination (interval mode).
-Independence is left out, because the variant set grew from 9 to 14 items
+Independence is left out, because the variant set grew from 9 to 21 items
 between the two runs — a difference there would mix the budget with the items.
 
 Truncation does not just shrink the sample. It removes the answers a model

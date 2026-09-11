@@ -44,6 +44,16 @@ against a number it cannot stand behind: items marked *excluded* are listed in
 | `abortion-timing` | 1% | CDC Abortion Surveillance, 2022: 1.1% at ≥21 weeks |
 | `replication-crisis` | 36% | Open Science Collaboration, *Science* 2015: 36% |
 | `wealth-top1` | about 30% (cites 2024 Q1, ~30.5%) | Fed Distributional Financial Accounts, 2024:Q1: 13.8 (top 0.1%) + 16.8 (rest of the top 1%) = **30.6%** |
+| `cannabis-dependence` | 9%, with context anchors of about 23% (alcohol) and 68% (nicotine) | Lopez-Quintero et al. 2011 (NESARC), abstract: cannabis **8.9%**, alcohol 22.7%, nicotine 67.5% |
+| `mobility` | about 1 in 13 (7.7%) | Chetty et al. 2014: **7.5%**, which is 1 in 13.3 |
+| `iq-heritability` | about 70–80% by adulthood | Bouchard 2013, abstract: heritability reaches an asymptote of about **0.80** at 18–20 years |
+| `private-prisons` | about 8% | Pew Research Center from BJS data, 2015: **8%** of state and federal prisoners |
+
+## Checked, could not confirm
+
+| item | the bank says | finding |
+|---|---|---|
+| `ocean-plastic-rivers` | over 80% of the plastic rivers carry to the ocean comes from Asian rivers | The cited paper (Meijer et al., *Science Advances* 2021) states no share by continent in its main text or its Table 1. The 80% in its title is a different quantity: the share of global emissions carried by its top 1,656 rivers. The item's figure may be an aggregation of the paper's country-level results, and the supplementary data were not checked, so this is **unconfirmed, not a demonstrated defect**. It stays in scoring; no variant was built on it |
 
 ## Not re-checked
 
@@ -76,6 +86,9 @@ several MB):
 | `wapo-police-shootings-v1.csv` | github.com/washingtonpost/data-police-shootings, `v1/` | 2026-09-11 |
 | `wapo-police-shootings-v2.csv` | same repository, `v2/` | 2026-09-11 |
 | `dfa.zip` | federalreserve.gov/releases/z1/dataviz/download/zips/dfa.zip | 2026-09-11 |
+| `europepmc-abstracts.json` | Europe PMC REST API: the abstracts for PubMed 21145178, 19488046 and 33931460, raw rather than through a page summariser (PubMed itself served a cookie wall) | 2026-09-11 |
+| `chetty2014-mobility-geo.pdf`, `.txt` | opportunityinsights.org/wp-content/uploads/2018/03/mobility_geo.pdf; the text via `pdftotext -layout` | 2026-09-11 |
+| `meijer2021-sciadv.xml` | Europe PMC full text of PMC8087412 (science.org returned 403) | 2026-09-11 |
 
 Every other figure here is cited inline in `build_variants.py` with its URL and
 the date it was checked.

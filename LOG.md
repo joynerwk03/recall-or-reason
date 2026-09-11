@@ -67,9 +67,26 @@ different denominators, established from the item's own figures) and `ceo-pay`
 capable models). `top1-tax-share` has the right number and the wrong link. The
 Priors bank is not edited from here.
 
-**Five new perturbed variants**, each from the same primary source as its
-original after checking the original against it. Thirteen perturbations plus
-the null control.
+**Twelve new perturbed variants in two batches: twenty perturbations plus the
+null control.** Each comes from the same primary source as its original, after
+checking the original against that source first. The second batch of seven went
+in before the variants pass began, so every model runs the same 21 items. Five
+of the seven move only the population inside one published sentence or table
+that also holds the original's figure: cocaine for cannabis in the same NESARC
+sentence, adults under 30 in the same Gallup article, federal prisoners in the
+same Pew piece, the bottom 50% and the top 10% in the same tax table and wealth
+file. The loosest two are flagged in `build_variants.py`: Canada's mobility
+figure is another study quoted by Chetty, and the age-9 heritability figure
+comes from a different paper than the original's. New variants state their
+prompt as a swap on the original's own text, so the wording cannot drift.
+
+Two checks worth keeping. Chetty et al. give Canada **13.4%**; the figure from
+memory was 13.5. Small, but it is the difference between a sourced number and a
+remembered one, and it was caught only because the paper was read rather than
+recalled. And `ocean-plastic-rivers` could not be confirmed: its cited paper
+gives no share by continent, and the 80% in its title is a different quantity
+(the share carried by its top 1,656 rivers). Recorded in `AUDIT.md` as
+unconfirmed, not as a defect.
 
 **Process failures worth keeping.**
 - `pkill -f run_eval.py` matched its own wrapper shell, whose command line
