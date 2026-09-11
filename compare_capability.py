@@ -284,6 +284,23 @@ def main():
                 print(f"    {name:<22} rho {rr:+.3f}   p {pp:.3f}")
         report["sensitivity"] = sens
 
+        # Leave-one-out: does any single model carry the result? A model that
+        # only just cleared the parse bar, or one whose ECI interval is wide,
+        # could move a rank correlation on this many points by itself.
+        loo = []
+        for i, r in enumerate(rows):
+            rest = rows[:i] + rows[i + 1:]
+            v = spearman([q["eci"] for q in rest], [q["ehs"] for q in rest])
+            if v is not None:
+                loo.append((v, r["tag"]))
+        if loo:
+            (lo_v, lo_t), (hi_v, hi_t) = min(loo), max(loo)
+            print()
+            print(f"leave-one-out rho from {lo_v:+.3f} (without {lo_t}) "
+                  f"to {hi_v:+.3f} (without {hi_t})")
+            report["loo"] = {"min": lo_v, "min_without": lo_t,
+                             "max": hi_v, "max_without": hi_t}
+
         # The exclusion rule was fixed before the re-runs finished (LOG
         # 2026-09-11). Putting the excluded models back shows whether the rule
         # drives the answer. Their unparseable items are already dropped.
