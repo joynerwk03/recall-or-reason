@@ -80,6 +80,7 @@
   .ax{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
   .axl{fill:var(--muted);font-family:"IBM Plex Sans",sans-serif;font-size:12.5px}
   .dl{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;fill:var(--ink)}
+  .idm{font-family:"IBM Plex Mono",monospace;font-size:.92em;color:var(--ink)}
   .dlx{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:500;fill:var(--ink)}
   .grid{stroke:var(--rule);stroke-width:1}
 
@@ -158,7 +159,7 @@
     where a model sits on the public ability leaderboards tells you almost
     nothing about whether its confidence is worth believing.
   </p>
-  <div class="byline">William Joyner · 80 questions · ten AI models · every answer checked against a primary source</div>
+  <div class="byline">William Joyner · 80 questions · ten AI models · every answer traced to its own source, and four that failed that check excluded</div>
 </header>
 
 <!-- ---------- setup ---------- -->
@@ -428,7 +429,7 @@
 
 <!-- ---------- 6 ---------- -->
 <section>
-  <div class="shead"><span class="snum">6</span><h2>Four times my own measuring tools lied to me</h2></div>
+  <div class="shead"><span class="snum">6</span><h2>Nine times my own measuring tools lied to me</h2></div>
   <p>
     Every number above survived a bug that had already given me a confident, entirely
     believable, wrong result. I'm including these because they were the hardest part
@@ -475,6 +476,68 @@
       model as the one that knew what it didn't know.</p>
     </div>
   </div>
+  <div class="fail">
+    <div class="fn">v</div>
+    <div>
+      <h3>My limit on answer length was deleting the answers of the models that think</h3>
+      <p>Newer models work through a problem in writing before answering. I had
+      capped how much they could write — a cap set for two older models that never
+      came near it. The newer ones hit it constantly: one was cut off mid-thought on
+      <strong>63% of its answers</strong>, and a cut-off answer records as no answer
+      at all. So it was quietly deleting the questions each model thought hardest
+      about, from the newest and strongest models — exactly the ones Section 5
+      needed. Raising the cap changed scores by up to 5 points, and for two models
+      the old score had been measuring something else entirely.</p>
+    </div>
+  </div>
+  <div class="fail">
+    <div class="fn">vi</div>
+    <div>
+      <h3>A file that looked finished and was a third of a run</h3>
+      <p>My check for "has this model been tested yet?" asked whether a results file
+      existed. Four interrupted runs had left files holding 0, 9, 11 and 24 answers
+      where 80 were expected. All four passed the check, and I built a comparison
+      table on them and had to retract it. It counts rows now.</p>
+    </div>
+  </div>
+  <div class="fail">
+    <div class="fn">vii</div>
+    <div>
+      <h3>I matched a model to the wrong row on the leaderboard</h3>
+      <p>The leaderboard lists several releases of the same model family under
+      similar names. I joined mine to the wrong one — same family, different
+      release, different score — which would have moved a point sideways on the
+      chart in Section 5 for no reason at all. The match is now written out model by
+      model, and a missing name stops the program instead of being guessed at.</p>
+    </div>
+  </div>
+  <div class="fail">
+    <div class="fn">viii</div>
+    <div>
+      <h3>A measure that was partly measuring the size of the numbers</h3>
+      <p>One of my four measures asks whether a model draws wider ranges on the
+      questions it gets more wrong. I was computing it across questions answered in
+      percentages and questions answered in raw counts at once — and big numbers
+      track big numbers regardless of who is answering. Restricted to a single
+      scale, every model's score on that measure fell.</p>
+    </div>
+  </div>
+  <div class="fail">
+    <div class="fn">ix</div>
+    <div>
+      <h3>My own answer key had four bad questions in it</h3>
+      <p>Every question I touched, I re-checked against the source it cites. Four
+      didn't survive: one whose answer no version of its cited database supports,
+      one whose question and answer count different things, one quoting a figure
+      from a different data series than its own prompt, and one that asks what a
+      ratio is <em>now</em> while answering for 2022. All four are excluded from
+      scoring.</p>
+      <p>The last one matters more than it looks. It penalises any model that
+      answers with a <em>more current</em> figure — and models trained more recently
+      are also the more capable ones, so scoring it would have quietly tilted the
+      comparison in Section 5.</p>
+    </div>
+  </div>
 </section>
 
 <!-- ---------- caveats ---------- -->
@@ -499,9 +562,12 @@
     <li><b>It isn't about model size.</b> The two are 24.0B and 23.8B — the same.
       On disk they look like 15GB and 14GB, which reads like a big one and a small
       one, and isn't.</li>
-    <li><b>I found a flaw in one of my own questions</b> and haven't fixed it yet: the
-      poverty question quotes a 1990 figure that doesn't match the source series it
-      cites. It's excluded from the moved-question work and flagged.</li>
+    <li><b>Four of my own questions didn't survive a check against their own
+      sources.</b> They're excluded from scoring and written up with the evidence,
+      but not fixed — the question bank is a separate project. A fifth has the right
+      number and a link to the wrong page, and one more I could not confirm either
+      way. These were the questions I happened to check rather than a random sample,
+      so four is a count, not a rate.</li>
   </ul>
 </div>
 
