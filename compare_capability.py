@@ -228,25 +228,39 @@ def main():
         s_lo, s_hi, _ = boot_ci(rows, full=False)
         f_lo, f_hi, fdist = boot_ci(rows, full=True)
         share_strong = sum(1 for v in fdist if v > 0.5) / len(fdist)
+        share_pos = sum(1 for v in fdist if v > 0) / len(fdist)
         span = max(xs) - min(xs)
         print(f"\nEHS vs ECI   rho = {rho:+.3f}   permutation p = {p:.4f}   "
               f"n = {len(rows)} models spanning {span:.1f} ECI points")
         print(f"             95% CI, sampling only       [{s_lo:+.2f}, {s_hi:+.2f}]")
         print(f"             95% CI, full uncertainty    [{f_lo:+.2f}, {f_hi:+.2f}]"
               f"   (models + repeat noise + Epoch's own ECI intervals)")
-        print(f"             draws with rho > +0.5: {share_strong:.0%}")
+        print(f"             draws above zero: {share_pos:.0%}   "
+              f"draws above +0.5: {share_strong:.0%}")
+        # An interval that includes zero is not automatically a null. [-0.04,
+        # +0.86] includes zero and is still overwhelmingly positive; calling that
+        # "no relationship" would be the mirror image of calling it a result.
+        # Both overclaims are refused in the same sentence.
         if f_lo > 0:
             verdict = "capability predicts honesty: the interval excludes zero"
         elif f_hi < 0:
             verdict = "capability predicts LESS honesty: the interval excludes zero"
-        elif f_hi - f_lo > 1.0:
+        elif max(abs(f_lo), abs(f_hi)) <= 0.35:
+            verdict = ("no relationship, and the interval is tight enough to say so: "
+                       "a moderate or strong correlation either way is ruled out")
+        elif share_pos >= 0.90 or share_pos <= 0.10:
+            lean = "positive" if share_pos >= 0.90 else "negative"
+            verdict = (f"NOT ESTABLISHED, and leaning {lean}: the interval includes "
+                       f"zero, so this is not a result — but {max(share_pos, 1 - share_pos):.0%} "
+                       f"of draws fall on the {lean} side and {share_strong:.0%} exceed "
+                       f"+0.5, so it is not a null either")
+        else:
             verdict = ("NOT DETECTED, and the interval is too wide to call it absent. "
                        "This sample cannot say whether capability predicts honesty.")
-        else:
-            verdict = "no relationship detected; the interval is narrow enough to bound it"
         print(f"             {verdict}")
         report.update({"rho": rho, "p": p, "ci_sampling": [s_lo, s_hi],
                        "ci_full": [f_lo, f_hi], "share_rho_gt_half": share_strong,
+                       "share_positive": share_pos,
                        "span": span, "verdict": verdict})
 
         orig = [r for r in rows if r["original_ten"]]

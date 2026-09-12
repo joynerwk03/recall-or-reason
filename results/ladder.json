@@ -1,0 +1,116 @@
+{
+ "Gemma 3": {
+  "members": [
+   "gemma3:4b",
+   "gemma3:12b",
+   "gemma3:27b"
+  ],
+  "params_b": [
+   4.3,
+   12.2,
+   27.4
+  ],
+  "complete": true,
+  "ehs": {
+   "values": [
+    32.44,
+    70.1,
+    68.79
+   ],
+   "direction": "no consistent direction"
+  },
+  "calibration": {
+   "values": [
+    11.84,
+    72.11,
+    87.37
+   ],
+   "direction": "rises with size"
+  },
+  "honesty": {
+   "values": [
+    25.26,
+    72.69,
+    77.89
+   ],
+   "direction": "rises with size"
+  },
+  "discrimination": {
+   "values": [
+    22.65,
+    55.6,
+    39.92
+   ],
+   "direction": "no consistent direction"
+  },
+  "independence": {
+   "values": [
+    70.0,
+    80.0,
+    70.0
+   ],
+   "direction": "no consistent direction"
+  },
+  "ehs_adjacent_separated": [
+   true,
+   true
+  ]
+ },
+ "Qwen3": {
+  "members": [
+   "qwen3:8b",
+   "qwen3:14b",
+   "qwen3:32b"
+  ],
+  "params_b": [
+   8.2,
+   14.8,
+   32.8
+  ],
+  "complete": true,
+  "ehs": {
+   "values": [
+    54.34,
+    61.88,
+    78.36
+   ],
+   "direction": "rises with size"
+  },
+  "calibration": {
+   "values": [
+    73.68,
+    85.26,
+    97.03
+   ],
+   "direction": "rises with size"
+  },
+  "honesty": {
+   "values": [
+    47.98,
+    66.2,
+    100.0
+   ],
+   "direction": "rises with size"
+  },
+  "discrimination": {
+   "values": [
+    40.7,
+    26.07,
+    36.42
+   ],
+   "direction": "no consistent direction"
+  },
+  "independence": {
+   "values": [
+    55.0,
+    70.0,
+    80.0
+   ],
+   "direction": "rises with size"
+  },
+  "ehs_adjacent_separated": [
+   null,
+   null
+  ]
+ }
+}

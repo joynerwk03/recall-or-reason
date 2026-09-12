@@ -26,6 +26,7 @@ What is drawn, and why each piece is there:
 import json
 import os
 import sys
+import textwrap
 
 import matplotlib
 matplotlib.use("Agg")
@@ -36,11 +37,20 @@ INK, MUTED, GRID, SURFACE = "#1c1f26", "#6a7280", "#e4e7ec", "#fcfcfb"
 ACCENT = "#1f6feb"
 
 
-def verdict_title(ci):
+def verdict_title(ci, share_pos=None):
+    """The title states what the interval supports, and no more. An interval
+    that includes zero but sits almost entirely on one side of it is neither a
+    result nor a null, and the title says so rather than picking one."""
     if ci and ci[0] > 0:
         return "More capable models are more honest about their own uncertainty"
     if ci and ci[1] < 0:
         return "More capable models are less honest about their own uncertainty"
+    if ci and share_pos is not None and share_pos >= 0.90 and ci[1] > 0.5:
+        return ("More capable models look more honest about their own uncertainty "
+                "— but the interval still touches zero")
+    if ci and share_pos is not None and share_pos <= 0.10 and ci[0] < -0.5:
+        return ("More capable models look less honest about their own uncertainty "
+                "— but the interval still touches zero")
     return ("Does a more capable model know better what it doesn't know? "
             "This sample can't tell")
 
@@ -75,21 +85,11 @@ def main():
                    edgecolor=SURFACE if original else ACCENT,
                    linewidth=1.6 if original else 2.0)
 
-    # Direct labels carry identity, so a collision makes a point unidentifiable.
-    # Models close on both axes get their label flipped below the marker.
-    placed = []
-    for r in sorted(rows, key=lambda r: r["eci"]):
-        below = any(abs(r["eci"] - px) < 3.2 and abs(r["ehs"] - py) < 8.0
-                    for px, py, pb in placed if not pb)
-        ax.annotate(r["tag"], (r["eci"], r["ehs"]), textcoords="offset points",
-                    xytext=(0, -20 if below else 11), ha="center",
-                    fontsize=8.8, color=INK)
-        placed.append((r["eci"], r["ehs"], below))
-
     ys = [r["ehs"] for r in rows] + [r["ehs_lo"] for r in rows] + [r["ehs_hi"] for r in rows]
     xs = [r["eci_lo"] for r in rows] + [r["eci_hi"] for r in rows]
     ax.set_ylim(max(0, min(ys) - 10), min(100, max(ys) + 12))
-    ax.set_xlim(min(xs) - 1.5, max(xs) + 1.5)
+    xspan = max(xs) - min(xs)
+    ax.set_xlim(min(xs) - 0.03 * xspan, max(xs) + 0.07 * xspan)
     ax.set_xlabel("Epoch Capabilities Index  —  general capability, higher is better",
                   color=MUTED, fontsize=10, labelpad=9)
     ax.set_ylabel("Epistemic Honesty Score  —  knowing what it does not know",
@@ -111,7 +111,7 @@ def main():
     for t in leg.get_texts():
         t.set_color(INK)
 
-    head = verdict_title(ci_f)
+    head = "\n".join(textwrap.wrap(verdict_title(ci_f, d.get("share_positive")), 72))
     lines = []
     if rho is not None and ci_f:
         lines.append(f"Spearman rho = {rho:+.2f} across {len(rows)} models spanning "
@@ -139,6 +139,73 @@ def main():
                  ha="left", va="bottom", wrap=True)
 
     fig.subplots_adjust(top=0.77, left=0.085, right=0.975, bottom=0.14)
+    # Direct labels carry identity, so a collision makes a point unidentifiable.
+    # Placement happens here, after the layout is final, and is measured in
+    # display pixels. The previous version compared positions in DATA units
+    # against thresholds picked when the axis spanned 22 capability points; at
+    # 50 points those thresholds covered less than half the pixels they had
+    # been tuned for, and two labels printed on top of each other.
+    fig.canvas.draw()
+    FS = 8.8
+    ppp = fig.dpi / 72.0
+    char_w, text_h = 0.63 * FS * ppp, 1.30 * FS * ppp
+    ax_box = ax.get_window_extent()
+    marker = {}
+    for r in rows:
+        mx, my = ax.transData.transform((r["eci"], r["ehs"]))
+        marker[r["tag"]] = (mx - 9, my - 9, mx + 9, my + 9)
+    try:
+        lb = leg.get_window_extent()
+        fixed = [(lb.x0 - 4, lb.y0 - 4, lb.x1 + 4, lb.y1 + 4)]
+    except Exception:
+        fixed = []
+
+    def rect_at(px, py, dx, dy, w, ha):
+        ox, oy = px + dx * ppp, py + dy * ppp
+        if ha == "center":
+            x0, x1 = ox - w / 2, ox + w / 2
+        elif ha == "left":
+            x0, x1 = ox, ox + w
+        else:
+            x0, x1 = ox - w, ox
+        return (x0, oy - text_h / 2, x1, oy + text_h / 2)
+
+    def overlap(a, b):
+        """Area two label boxes share, in square pixels. Zero when they miss."""
+        return (max(0.0, min(a[2], b[2]) - max(a[0], b[0]))
+                * max(0.0, min(a[3], b[3]) - max(a[1], b[1])))
+
+    placed = []
+    for r in sorted(rows, key=lambda r: r["eci"]):
+        px, py = ax.transData.transform((r["eci"], r["ehs"]))
+        w = len(r["tag"]) * char_w
+        others = [v for k, v in marker.items() if k != r["tag"]]
+        obstacles = placed + others + fixed
+        # Every candidate is scored, so a crowded corner gets the least-bad
+        # position instead of the default one. The first version stopped at
+        # "none of the six is clean" and fell back to candidate one, which is
+        # how two labels at the right edge ended up printed on top of each other.
+        choice, best, best_cost = None, None, None
+        for dx, dy, ha in ((0, 12, "center"), (0, -20, "center"),
+                           (14, -4, "left"), (-14, -4, "right"),
+                           (0, 25, "center"), (0, -33, "center"),
+                           (13, 13, "left"), (-13, 13, "right"),
+                           (13, -19, "left"), (-13, -19, "right"),
+                           (0, 38, "center"), (0, -46, "center")):
+            box = rect_at(px, py, dx, dy, w, ha)
+            outside = max(0.0, ax_box.x0 - box[0]) + max(0.0, box[2] - ax_box.x1)
+            cost = 30 * outside + sum(overlap(box, b) for b in obstacles)
+            if cost == 0:
+                choice = (dx, dy, ha, box)
+                break
+            if best_cost is None or cost < best_cost:
+                best, best_cost = (dx, dy, ha, box), cost
+        dx, dy, ha, box = choice or best
+        ax.annotate(r["tag"], (r["eci"], r["ehs"]), textcoords="offset points",
+                    xytext=(dx, dy), ha=ha, va="center",
+                    fontsize=FS, color=INK)
+        placed.append(box)
+
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        "results", "fleet.png")
     fig.savefig(out, facecolor=SURFACE)

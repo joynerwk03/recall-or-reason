@@ -6,6 +6,79 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+## 2026-09-11 (later) — the fleet result: the null was range restriction
+
+**Headline.** Across **14 models** spanning **30.5 ECI points**, Epistemic
+Honesty Score and capability correlate at **rho +0.543** (permutation
+p = 0.048). Sampling-only 95% interval [-0.08, +0.89]; with repeat
+noise and Epoch's own ECI intervals propagated, **[-0.04, +0.86]**, with
+97% of draws positive. Verdict as printed: **not established, and leaning
+positive** — the interval includes zero, so it is not a result; 97% of the
+mass is above zero, so it is not a null either.
+
+🔴 **This retracts the 2026-09-10 headline.** That draft reported rho +0.25 on
+ten models as "capability does not predict epistemic honesty". The same pipeline,
+run today on those same ten models, gives **+0.261** across 22.6
+points against **+0.543** across 30.5. The earlier null was
+substantially **range restriction**: a real relationship measured inside the
+bottom two-thirds of a range looks like noise. The claim was also never
+accompanied by an interval, which is what let it be stated at all.
+
+**Components.** Holm-corrected across four tests, two survive and they are the
+two about *stating* uncertainty:
+
+| component | rho | Holm |
+|---|---|---|
+| calibration | +0.754 | **0.013** |
+| honesty (coverage x sharpness) | +0.667 | **0.035** |
+| discrimination | +0.204 | 0.632 |
+| independence from anchors | +0.288 | 0.632 |
+
+The memorisation half does not track capability. That is the strongest argument
+this project has produced for measuring it separately: a leaderboard predicts the
+familiar half of this benchmark and not the novel half. (At ten models calibration
+failed Holm at 0.176 and was recorded as worth re-testing. It was re-tested and
+it held.)
+
+**Robustness.** Weightings +0.543 to
++0.697; leave-one-out +0.429 (without
+gemma3:4b) to +0.764 (without mistral-small:24b), so no
+single model carries it; putting the two excluded models back
+**+0.641**, so the pre-set exclusion rule is not what
+produces the answer — it weakens it.
+
+**The confound that cannot be removed by more models.** Capability here is nearly
+collinear with release date: every model above ECI 139 is a 2026 release. The
+bank asks many questions in the present tense without a date, so a model with an
+older cutoff answers with an older figure and is scored wrong, costing it
+calibration and coverage — the two components carrying the correlation. The bias
+points at the result. The within-family ladders are the only part it cannot
+reach: in Gemma 3 (three sizes, one release day) and Qwen3, calibration and
+honesty both rise monotonically with size.
+
+**Excluded by pre-set rules:** llama3.2:1b, gemma4:26b. Two more models are flagged rather than
+excluded: qwen3.6:35b-a3b and qwen3.6:27b miss the single null control by 31% and
+43%, so their perturbation scores are unattributable rather than bad. One control
+item cannot separate "thrown by rewording" from "thrown by this rewording", which
+is now a next step.
+
+**Two instrument fixes made while producing this.**
+- The verdict logic printed "no relationship detected; the interval is narrow
+  enough to bound it" for [-0.04, +0.86]. That interval is neither narrow
+  nor a null. The branch fired on width <= 1.0, far too lenient for those words.
+  It now refuses both overclaims in one sentence and uses the bootstrap mass to
+  say which way the evidence leans.
+- The chart placed its direct labels by comparing positions in **data units**
+  against thresholds tuned when the axis spanned 22 points. At 50 points two
+  labels printed on top of each other. Placement is now done in display pixels
+  after layout, scoring every candidate position and taking the least-bad when
+  none is clean.
+
+**Status.** Six of the 14 scored models had two complete runs when these numbers
+were produced; repeats for the rest were still running, and every figure
+regenerates from `results/fleet.json`. Written up in PAPER §6; chart at
+`results/fleet.png`; ladders in `results/ladder.json`.
+
 ## 2026-09-11 — extending the range for free, and what doing it properly turned up
 
 **Why.** The ten-model null (rho +0.25) carried a bootstrap 95% interval of

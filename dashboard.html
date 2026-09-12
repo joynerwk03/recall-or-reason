@@ -155,11 +155,11 @@
     question.
   </p>
   <p class="standfirst" style="margin-top:14px">
-    Then I ran the whole thing on <strong>ten</strong> models, and found that
-    where a model sits on the public ability leaderboards tells you almost
-    nothing about whether its confidence is worth believing.
+    Then I ran the whole thing on <strong>eighteen</strong> models — and found
+    something I had got backwards the first time I looked, for a reason worth
+    more than the result itself.
   </p>
-  <div class="byline">William Joyner · 80 questions · ten AI models · every answer traced to its own source, and four that failed that check excluded</div>
+  <div class="byline">William Joyner · 80 questions · eighteen AI models · every answer traced to its own source, and four that failed that check excluded</div>
 </header>
 
 <!-- ---------- setup ---------- -->
@@ -175,7 +175,7 @@
     enough to run on a home computer. Sections 1 to 4 compare <strong>two</strong>
     of them that are <strong>the same size as each other</strong>, which matters:
     when they behave differently, it isn't because one is bigger. Section 5
-    widens it to <strong>ten</strong>.
+    widens it to <strong>eighteen</strong>.
   </p>
   <p>
     Try three of the questions yourself first. It makes the rest of this page land harder.
@@ -353,77 +353,112 @@
   <div class="shead"><span class="snum">5</span><h2>Do smarter models know themselves better?</h2></div>
   <p>
     Everything above is two models, which could just be those two models. So I
-    ran the whole thing on <strong>ten</strong> — every one you can download and
-    run on a home computer, from a small 4-billion-parameter model up to a
-    32-billion one.
+    ran the whole thing on <strong>eighteen</strong> — every one I could
+    download and run on a home computer, from a 1-billion-parameter model up to
+    a 35-billion one. Fourteen of them can be placed on a public ability
+    leaderboard <em>and</em> answered reliably enough to score.
   </p>
   <p>
-    There are public leaderboards that rank AI models on general ability, built
-    by combining scores from dozens of separate tests. I used one of them, from a
-    research group called Epoch, and asked a simple question:
-    <strong>if a model is higher on that leaderboard, is it also better at
-    knowing what it doesn't know?</strong>
+    Those leaderboards rank models on general ability by combining dozens of
+    separate tests. I used one from a research group called Epoch, and asked:
+    <strong>if a model is higher on it, is it also better at knowing what it
+    doesn't know?</strong> You would expect yes — the same intuition that says a
+    better student is also better at judging which exam answers they got wrong.
   </p>
   <p>
-    You would expect yes. It's the same intuition as thinking a better student is
-    also better at judging which exam answers they got wrong.
+    <strong>The answer is probably yes. The first time I ran this, on ten
+    models, I got "no" and wrote it up as the headline finding.</strong> Why that
+    happened is the most useful thing on this page.
   </p>
   <figure class="wide">
     <svg id="fleet" viewBox="0 0 900 470" role="img"
-         aria-label="Ten models plotted by general ability against how well they know their own uncertainty. There is no clear relationship."></svg>
+         aria-label="Fourteen models plotted by general ability against how well they know their own uncertainty. The trend is upward but loose, with large exceptions."></svg>
     <figcaption>
       Each dot is one model. Left-to-right is general ability from the public
       leaderboard; up-and-down is how well it knows its own uncertainty. The
       horizontal bars are the leaderboard's <em>own</em> uncertainty about where a
       model belongs — several are wide, and hiding them would imply a precision
-      the ranking doesn't have.
+      the ranking doesn't have. Hollow dots are models I added to widen the
+      range. Vertical bars, where you can see them, are how much a model's own
+      score moved when I ran it twice.
     </figcaption>
   </figure>
   <div class="findings">
     <p class="finding">
-      <strong>There's no clear relationship.</strong> If you knew a model's
-      leaderboard rank and had to guess how honest it was about its own
-      uncertainty, you would do about as well guessing at random.
+      <strong>Ability and self-knowledge do move together — but I can't call it
+      settled.</strong> Rank the models both ways and the two orders come out
+      similar: the correlation is <b>+0.54</b> (1.00 would be identical
+      orders, 0 unrelated). Once I account for every source of error at once, the
+      plausible range runs from <b>-0.04</b> to <b>+0.86</b> — and
+      because that just barely includes zero, "no relationship" isn't quite ruled
+      out. 97% of the statistical resamples land on the positive side.
     </p>
     <p class="finding">
-      The three <em>most</em> capable models here are neck-and-neck on the
-      leaderboard — within a rounding error of each other — and they score
-      <b>82</b>, <b>65</b> and <b>55</b> on knowing their own limits.
+      <strong>Why I got the opposite answer the first time.</strong> My first ten
+      models were bunched into a narrow band of ability. Inside a narrow band, a
+      real relationship looks like noise — it's like testing whether height
+      predicts basketball ability using only people between 5'10" and 6'0".
+      Same code, same questions, wider band: <b>+0.26</b> across the
+      original 10 models becomes <b>+0.54</b> across 14.
     </p>
     <p class="finding">
-      The best model on this test, <span class="idm">mistral-small:24b</span> at
-      <b>88</b>, is beaten on the leaderboard by four other models — including one
-      that scores <b>55</b> here.
+      <strong>Two of the four things I measure improve with ability; two don't.</strong>
+      The two about <em>stating</em> uncertainty do — whether "90% sure" means 90%
+      (<b>+0.75</b>), and whether a stated range
+      actually contains the answer (<b>+0.67</b>). The two
+      about <em>memorisation</em> don't: widening the range where it's about to be
+      wrong (<b>+0.20</b>) and avoiding repeating a
+      number it already had (<b>+0.29</b>).
+      <strong>So the leaderboard predicts the familiar half of this test and not
+      the novel half.</strong>
     </p>
     <p class="finding">
-      And <span class="idm">llama3.1:8b</span>, near the bottom of the
-      leaderboard, matches <span class="idm">qwen3:8b</span>, which sits
-      <b>20 points</b> higher on it. Twenty points of general ability bought
-      nothing.
+      <strong>The big exceptions are still there.</strong>
+      <span class="idm">mistral-small:24b</span> scores <b>82</b> while
+      <span class="idm">gpt-oss:20b</span> — 11 points
+      <em>higher</em> on the leaderboard — scores <b>52</b>. And
+      <span class="idm">llama3.1:8b</span>, 20 points
+      <em>lower</em> than <span class="idm">qwen3:8b</span>, matches it
+      (53 against 54).
+    </p>
+    <p class="finding">
+      <strong>One thing I can't rule out.</strong> Every model at the top of the
+      ability range is a 2026 release, and some of my questions ask about
+      "now" without saying when — so a model trained earlier answers with an
+      older figure and is marked wrong. That penalty lands on older models, which
+      are also the lower-ranked ones, and pushes toward exactly the result I
+      found. The check is further down: within a single family released on a
+      single day, the same two measures still rise with size.
     </p>
   </div>
   <p style="margin-top:20px">
-    <strong>This is the most useful thing on the page.</strong> If you're picking
-    a model and you care whether its confidence means anything — whether you can
-    act on "I'm 90% sure" — the leaderboard won't tell you. You have to test it
-    separately. That is the whole argument for a benchmark like this existing.
+    <strong>What this means if you're picking a model.</strong> A higher-ranked
+    model is a better bet for trustworthy confidence than a lower-ranked one —
+    that much now has evidence behind it. But the exceptions above are large
+    enough that the ranking can't settle it for any particular pair of models:
+    one model here is beaten by another eleven leaderboard points below it. If
+    you need to act on "I'm 90% sure", you still have to test it.
   </p>
   <details style="margin-top:20px;border:1px solid var(--rule)">
-    <summary>One part of it does track ability — with a catch</summary>
-    <p>Broken into its four parts, one does move with the leaderboard:
-    <b>calibration</b>, meaning whether a stated "90% sure" is right about 90% of
-    the time. That correlates at rho +0.66 with a raw p of 0.044.</p>
-    <p><b>But I tested four parts against the same axis</b>, and when you look at
-    four things, one of them clearing the usual bar by luck stops being
-    surprising. Correcting for that (Holm) moves the p to <b>0.176</b>, and it no
-    longer clears. It is recorded as worth re-testing on more models, not as a
-    result. Quoting the 0.044 on its own would be exactly the kind of error the
-    section above this one is about.</p>
-    <p>The other three parts show nothing. One — whether a model avoids repeating
-    a figure it was already holding — runs slightly <em>negative</em>, meaning
-    more capable models did it marginally more often, not less. That is what
-    you'd expect if more capable models have memorised more, but at ten models it
-    is indistinguishable from noise and I would not lean on it.</p>
+    <summary>Four ways I tried to break this result</summary>
+    <p><b>Change how the four parts are weighted.</b> The score above weights them
+    equally. Under five different weightings the correlation runs
+    +0.54 to +0.70, so it
+    isn't an artefact of that choice.</p>
+    <p><b>Drop each model in turn.</b> With any single model removed the
+    correlation stays between <b>+0.43</b> (without
+    gemma3:4b) and <b>+0.76</b> (without
+    mistral-small:24b). No one model is carrying it.</p>
+    <p><b>Put back the models I excluded.</b> Two models are left out by rules I
+    fixed in advance — one answers in prose instead of the format I asked for,
+    one runs out of thinking room on 30% of answers. Putting both back
+    <em>strengthens</em> the result to <b>+0.64</b>, so the
+    exclusions aren't what produce it.</p>
+    <p><b>Check the same-family size ladders.</b> Gemma 3 comes in three sizes
+    released the same day, and Qwen3 in three more. Within both families, the two
+    "stating uncertainty" measures rise with size — which the release-date worry
+    above cannot explain, because within a family the release date doesn't vary.
+    Three sizes is a description, not a test, and I quote it as one.</p>
   </details>
 </section>
 
@@ -550,10 +585,12 @@
       well-documented too. A model that memorised the entire table would pass my test.</li>
     <li><b>The numbers are small.</b> 80 questions, 50 with numeric answers, 8 moved
       questions. One experiment, not a replication.</li>
-    <li><b>Ten models is few for a comparison like Section 5.</b> "No relationship
-      detected" is not the same as "no relationship". The leaderboard also has its
-      own uncertainty about where each model belongs — for the smallest model, a
-      range 26 points wide — which the chart draws rather than hides.</li>
+    <li><b>Fourteen models is still few for a comparison like Section 5.</b> The
+      plausible range for the correlation runs from -0.04 to +0.86 — wide
+      enough that it includes "no relationship", and wide enough that it includes
+      a very strong one. The leaderboard also has its own uncertainty about where
+      each model belongs — for the smallest model, a range 26 points wide — which
+      the chart draws rather than hides.</li>
     <li><b>Two of the models in Sections 1–4 aren't on the leaderboard at all</b>,
       so they can't appear in Section 5. That's inconvenient rather than
       convenient: one of them is among the best performers on this test.</li>
@@ -600,13 +637,21 @@
   Chosen over the error gap because it is defined on every item regardless of baseline
   accuracy; the gap is only defined where the model got the original right, and the
   weaker model qualifies once. Fisher exact, two-tailed: <b>p = 0.026</b>.</p>
-  <p><b>Ten-model comparison.</b> Epistemic Honesty Score against the Epoch
-  Capabilities Index, ten open-weights models spanning ECI 116.0–138.5:
-  Spearman rho = <b>+0.248</b>, permutation p = <b>0.493</b>, n = 10. Stable
-  across five weightings of the composite (rho +0.19 to +0.35, p never below
-  0.33). Per component: calibration rho +0.661 (p 0.044, <b>Holm 0.176</b>),
-  honesty +0.321, discrimination −0.006, independence −0.231. Nothing survives
-  correction for four tests. ECI pulled from
+  <p><b>Fleet comparison.</b> Epistemic Honesty Score against the Epoch
+  Capabilities Index. 14 open-weights models spanning 30.5 ECI points:
+  Spearman rho = <b>+0.543</b>, permutation p = <b>0.048</b>, n = 14.
+  Bootstrap 95% interval with model resampling, repeat-run noise and Epoch's own
+  ECI intervals all propagated: <b>[-0.04, +0.86]</b>, 97% of draws
+  positive. Range check on the same pipeline: rho +0.261 across the original
+  10 models (22.6 points) against +0.543 across 14 (30.5).
+  Per component, Holm-corrected across four tests: calibration
+  +0.754 (Holm <b>0.013</b>),
+  honesty +0.667 (Holm
+  <b>0.035</b>), discrimination
+  +0.204 (Holm 0.632),
+  independence +0.288 (Holm
+  0.632). Excluded by pre-set rules:
+  llama3.2:1b, gemma4:26b. ECI pulled from
   <code>epoch.ai/data/benchmark_data.zip</code>, not a rendered leaderboard.</p>
   <p><b>Subset control</b> — the interval run uses only the 50 numeric items, so the
   multiple-choice run was rescored on exactly those 50. Calibration error got
@@ -808,16 +853,20 @@ function bind(node,html){
 })();
 
 const FLEET=[
- {t:"gemma3:4b",       e:116.0, lo:97.45, hi:123.39, s:33.5},
- {t:"llama3.1:8b",     e:116.51,lo:105.95,hi:121.71, s:54.7},
- {t:"gemma3:12b",      e:123.46,lo:116.21,hi:128.73, s:75.2},
- {t:"mistral-small:24b",e:127.07,lo:122.41,hi:129.01,s:87.6},
- {t:"gemma3:27b",      e:130.04,lo:124.64,hi:132.17, s:69.8},
- {t:"phi4:14b",        e:130.42,lo:125.5, hi:132.1,  s:65.5},
- {t:"qwen3:8b",        e:136.18,lo:129.58,hi:138.07, s:53.4},
- {t:"gpt-oss:20b",     e:137.81,lo:132.89,hi:139.56, s:55.2},
- {t:"qwen3:14b",       e:138.25,lo:133.68,hi:139.84, s:65.1},
- {t:"qwen3:32b",       e:138.52,lo:135.14,hi:140.32, s:82.2}
+ {t:"gemma3:4b", e:115.97, lo:97.45, hi:123.39, s:32.4},
+ {t:"llama3.1:8b", e:116.51, lo:105.95, hi:121.71, s:53.0},
+ {t:"gemma3:12b", e:123.46, lo:116.21, hi:128.73, s:70.1},
+ {t:"mistral-small:24b", e:127.07, lo:122.41, hi:129.01, s:81.8, slo:80.7, shi:82.9},
+ {t:"gemma3:27b", e:130.04, lo:124.64, hi:132.17, s:68.8},
+ {t:"phi4:14b", e:130.42, lo:125.50, hi:132.10, s:56.2},
+ {t:"qwen3:8b", e:136.18, lo:129.58, hi:138.07, s:54.3},
+ {t:"gpt-oss:20b", e:137.81, lo:132.89, hi:139.56, s:52.4},
+ {t:"qwen3:14b", e:138.25, lo:133.68, hi:139.84, s:61.9},
+ {t:"qwen3:32b", e:138.52, lo:135.14, hi:140.32, s:78.4},
+ {t:"qwen3.5:9b", e:139.45, lo:136.59, hi:141.07, s:71.3, add:1},
+ {t:"gemma4:31b", e:142.68, lo:140.28, hi:144.75, s:81.7, add:1},
+ {t:"qwen3.6:35b-a3b", e:143.87, lo:141.31, hi:146.00, s:81.0, add:1},
+ {t:"qwen3.6:27b", e:146.51, lo:144.53, hi:147.80, s:76.0, add:1}
 ];
 
 /* 5b. fleet scatter */

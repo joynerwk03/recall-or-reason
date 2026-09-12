@@ -1,607 +1,513 @@
 {
  "rows": [
   {
+   "tag": "gemma3:4b",
    "model": "gemma3-4b-t0",
-   "ehs": 33.45,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 8.0,
-   "honesty": 20.38,
-   "discrimination": 30.41,
-   "independence": 75.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.46,
-    "accuracy": 0.4,
-    "min_conf": 65,
-    "distinct_conf": 6,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 50,
-    "parse_rate": 1.0,
-    "coverage": 0.42,
-    "cov_ci": [
-     0.2937,
-     0.5577
-    ],
-    "shuffle_null": 0.1789,
-    "margin": 0.241,
-    "sharpness": 0.3881,
-    "rho_raw": 0.3041,
-    "median_halfwidth": 11.0,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 2,
-    "which": [
-     "ceo-pay@1989",
-     "gun-suicides@canada"
-    ],
-    "control_error": 0.0345
-   },
+   "n_reps": 2,
+   "ehs": 32.44,
+   "ehs_lo": 32.44,
+   "ehs_hi": 32.44,
+   "ehs_reps": [
+    32.44,
+    32.44
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
+   "truncated": 0,
+   "calibration": 11.84,
+   "honesty": 25.26,
+   "discrimination": 22.65,
+   "independence": 70.0,
    "eci": 115.97,
    "eci_lo": 97.45,
    "eci_hi": 123.39,
    "eci_name": "Gemma 3 4B",
    "org": "Google DeepMind",
-   "tag": "gemma3:4b"
+   "original_ten": true
   },
   {
+   "tag": "llama3.1:8b",
    "model": "llama3-1-8b-t0",
-   "ehs": 54.72,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 55.5,
-   "honesty": 39.2,
-   "discrimination": 36.67,
-   "independence": 87.5,
-   "choice": {
-    "n": 80,
-    "ece": 0.2225,
-    "accuracy": 0.6,
-    "min_conf": 60,
-    "distinct_conf": 5,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 50,
-    "parse_rate": 1.0,
-    "coverage": 0.54,
-    "cov_ci": [
-     0.404,
-     0.6703
-    ],
-    "shuffle_null": 0.1797,
-    "margin": 0.3603,
-    "sharpness": 0.5808,
-    "rho_raw": 0.3667,
-    "median_halfwidth": 9.75,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 1,
-    "which": [
-     "recidivism@3year"
-    ],
-    "control_error": 0.0345
-   },
+   "n_reps": 2,
+   "ehs": 52.97,
+   "ehs_lo": 52.97,
+   "ehs_hi": 52.97,
+   "ehs_reps": [
+    52.97,
+    52.97
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
+   "truncated": 0,
+   "calibration": 56.32,
+   "honesty": 43.5,
+   "discrimination": 32.06,
+   "independence": 80.0,
    "eci": 116.51,
    "eci_lo": 105.95,
    "eci_hi": 121.71,
    "eci_name": "Llama 3.1-8B",
    "org": "Meta AI",
-   "tag": "llama3.1:8b"
+   "original_ten": true
   },
   {
+   "tag": "gemma3:12b",
    "model": "gemma3-12b-t0",
-   "ehs": 75.16,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 70.75,
-   "honesty": 73.72,
-   "discrimination": 56.19,
-   "independence": 100.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.1462,
-    "accuracy": 0.7125,
-    "min_conf": 60,
-    "distinct_conf": 7,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 50,
-    "parse_rate": 1.0,
-    "coverage": 0.7,
-    "cov_ci": [
-     0.5625,
-     0.809
-    ],
-    "shuffle_null": 0.165,
-    "margin": 0.535,
-    "sharpness": 0.8425,
-    "rho_raw": 0.5619,
-    "median_halfwidth": 5.5,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 0,
-    "which": [],
-    "control_error": 0.0345
-   },
+   "n_reps": 2,
+   "ehs": 70.1,
+   "ehs_lo": 70.1,
+   "ehs_hi": 70.1,
+   "ehs_reps": [
+    70.1,
+    70.1
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
+   "truncated": 0,
+   "calibration": 72.11,
+   "honesty": 72.69,
+   "discrimination": 55.6,
+   "independence": 80.0,
    "eci": 123.46,
    "eci_lo": 116.21,
    "eci_hi": 128.73,
    "eci_name": "Gemma 3 12B",
    "org": "Google DeepMind",
-   "tag": "gemma3:12b"
+   "original_ten": true
   },
   {
+   "tag": "mistral-small:24b",
    "model": "mistral-small-24b-t0",
-   "ehs": 87.64,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 82.25,
-   "honesty": 98.85,
-   "discrimination": 69.45,
-   "independence": 100.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.0887,
-    "accuracy": 0.8125,
-    "min_conf": 80,
-    "distinct_conf": 4,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 49,
-    "parse_rate": 0.98,
-    "coverage": 0.7959,
-    "cov_ci": [
-     0.6636,
-     0.8852
-    ],
-    "shuffle_null": 0.1657,
-    "margin": 0.6302,
-    "sharpness": 0.9936,
-    "rho_raw": 0.6945,
-    "median_halfwidth": 5.0,
-    "incoherent": 1
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 0,
-    "which": [],
-    "control_error": 0.0805
-   },
+   "n_reps": 2,
+   "ehs": 81.81,
+   "ehs_lo": 80.68,
+   "ehs_hi": 82.94,
+   "ehs_reps": [
+    82.94,
+    80.68
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
+   "truncated": 0,
+   "calibration": 80.26,
+   "honesty": 90.81,
+   "discrimination": 71.16,
+   "independence": 85.0,
    "eci": 127.07,
    "eci_lo": 122.41,
    "eci_hi": 129.01,
    "eci_name": "Mistral Small 3",
    "org": "Mistral AI",
-   "tag": "mistral-small:24b"
+   "original_ten": true
   },
   {
+   "tag": "gemma3:27b",
    "model": "gemma3-27b-t0",
-   "ehs": 69.78,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 88.25,
-   "honesty": 83.71,
-   "discrimination": 44.68,
-   "independence": 62.5,
-   "choice": {
-    "n": 80,
-    "ece": 0.0587,
-    "accuracy": 0.7875,
-    "min_conf": 60,
-    "distinct_conf": 7,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 50,
-    "parse_rate": 1.0,
-    "coverage": 0.74,
-    "cov_ci": [
-     0.6045,
-     0.8413
-    ],
-    "shuffle_null": 0.1686,
-    "margin": 0.5714,
-    "sharpness": 0.905,
-    "rho_raw": 0.4468,
-    "median_halfwidth": 6.5,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 3,
-    "which": [
-     "lgbt-share@2012",
-     "creationism-share@1999",
-     "gun-suicides@canada"
-    ],
-    "control_error": 0.0345
-   },
+   "n_reps": 2,
+   "ehs": 68.79,
+   "ehs_lo": 68.79,
+   "ehs_hi": 68.79,
+   "ehs_reps": [
+    68.79,
+    68.79
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
+   "truncated": 0,
+   "calibration": 87.37,
+   "honesty": 77.89,
+   "discrimination": 39.92,
+   "independence": 70.0,
    "eci": 130.04,
    "eci_lo": 124.64,
    "eci_hi": 132.17,
    "eci_name": "Gemma 3 27B",
    "org": "Google DeepMind",
-   "tag": "gemma3:27b"
+   "original_ten": true
   },
   {
+   "tag": "phi4:14b",
    "model": "phi4-14b-t0",
-   "ehs": 65.5,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 66.0,
-   "honesty": 60.57,
-   "discrimination": 35.43,
-   "independence": 100.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.17,
-    "accuracy": 0.7,
-    "min_conf": 70,
-    "distinct_conf": 4,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 50,
-    "parse_rate": 1.0,
-    "coverage": 0.64,
-    "cov_ci": [
-     0.5014,
-     0.7586
-    ],
-    "shuffle_null": 0.1412,
-    "margin": 0.4988,
-    "sharpness": 0.7571,
-    "rho_raw": 0.3543,
-    "median_halfwidth": 5.0,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 0,
-    "which": [],
-    "control_error": 0.0345
-   },
+   "n_reps": 2,
+   "ehs": 56.23,
+   "ehs_lo": 56.23,
+   "ehs_hi": 56.23,
+   "ehs_reps": [
+    56.23,
+    56.23
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
+   "truncated": 0,
+   "calibration": 65.26,
+   "honesty": 53.77,
+   "discrimination": 25.91,
+   "independence": 80.0,
    "eci": 130.42,
    "eci_lo": 125.5,
    "eci_hi": 132.1,
    "eci_name": "Phi-4",
    "org": "Microsoft Research",
-   "tag": "phi4:14b"
+   "original_ten": true
   },
   {
+   "tag": "qwen3:8b",
    "model": "qwen3-8b-t0",
-   "ehs": 53.39,
-   "truncated": 3,
-   "truncation_rate": 0.0216,
-   "calibration": 73.25,
-   "honesty": 54.1,
-   "discrimination": 36.23,
-   "independence": 50.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.1338,
-    "accuracy": 0.725,
-    "min_conf": 40,
-    "distinct_conf": 7,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 46,
-    "parse_rate": 0.92,
-    "coverage": 0.6087,
-    "cov_ci": [
-     0.4646,
-     0.7361
-    ],
-    "shuffle_null": 0.138,
-    "margin": 0.4707,
-    "sharpness": 0.711,
-    "rho_raw": 0.3623,
-    "median_halfwidth": 5.0,
-    "incoherent": 1
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 4,
-    "which": [
-     "lgbt-share@2012",
-     "creationism-share@1999",
-     "ceo-pay@1989",
-     "interracial-marriage@1978"
-    ],
-    "control_error": 0.0345
-   },
-   "flags": [
-    "3 of 139 answers ran out of token budget mid-thought (2%) \u2014 excluded, and they are likely the harder items"
+   "n_reps": 1,
+   "ehs": 54.34,
+   "ehs_lo": 54.34,
+   "ehs_hi": 54.34,
+   "ehs_reps": [
+    54.34
    ],
-   "scratchpad_rate": 1.0,
+   "flags": [],
+   "truncated": 0,
+   "calibration": 73.68,
+   "honesty": 47.98,
+   "discrimination": 40.7,
+   "independence": 55.0,
    "eci": 136.18,
    "eci_lo": 129.58,
    "eci_hi": 138.07,
    "eci_name": "Qwen3-8B",
    "org": "Alibaba",
-   "tag": "qwen3:8b"
+   "original_ten": true
   },
   {
+   "tag": "gpt-oss:20b",
    "model": "gpt-oss-20b-t0",
-   "ehs": 55.18,
-   "truncated": 5,
-   "truncation_rate": 0.036,
-   "calibration": 67.14,
-   "honesty": 53.05,
-   "discrimination": 25.55,
-   "independence": 75.0,
-   "choice": {
-    "n": 77,
-    "ece": 0.1643,
-    "accuracy": 0.7532,
-    "min_conf": 70,
-    "distinct_conf": 6,
-    "parse_rate": 0.9625
-   },
-   "interval": {
-    "n": 50,
-    "usable": 47,
-    "parse_rate": 0.94,
-    "coverage": 0.5957,
-    "cov_ci": [
-     0.4534,
-     0.7236
-    ],
-    "shuffle_null": 0.09,
-    "margin": 0.5058,
-    "sharpness": 0.7123,
-    "rho_raw": 0.2555,
-    "median_halfwidth": 4.0,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 2,
-    "which": [
-     "creationism-share@1999",
-     "scientists-god@public"
-    ],
-    "control_error": 0.0345
-   },
-   "flags": [
-    "5 of 139 answers ran out of token budget mid-thought (4%) \u2014 excluded, and they are likely the harder items"
+   "n_reps": 1,
+   "ehs": 52.43,
+   "ehs_lo": 52.43,
+   "ehs_hi": 52.43,
+   "ehs_reps": [
+    52.43
    ],
-   "scratchpad_rate": 0.9928,
+   "flags": [
+    "4 of 143 answers ran out of token budget mid-thought (3%) \u2014 excluded, and they are likely the harder items"
+   ],
+   "truncated": 4,
+   "calibration": 71.33,
+   "honesty": 59.49,
+   "discrimination": 8.91,
+   "independence": 70.0,
    "eci": 137.81,
    "eci_lo": 132.89,
    "eci_hi": 139.56,
    "eci_name": "gpt-oss-20b",
    "org": "OpenAI",
-   "tag": "gpt-oss:20b"
+   "original_ten": true
   },
   {
+   "tag": "qwen3:14b",
    "model": "qwen3-14b-t0",
-   "ehs": 65.09,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 82.5,
-   "honesty": 58.49,
-   "discrimination": 44.38,
-   "independence": 75.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.0875,
-    "accuracy": 0.7625,
-    "min_conf": 50,
-    "distinct_conf": 8,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 49,
-    "parse_rate": 0.98,
-    "coverage": 0.6327,
-    "cov_ci": [
-     0.4927,
-     0.7534
-    ],
-    "shuffle_null": 0.1572,
-    "margin": 0.4755,
-    "sharpness": 0.7397,
-    "rho_raw": 0.4438,
-    "median_halfwidth": 6.5,
-    "incoherent": 1
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 2,
-    "which": [
-     "lgbt-share@2012",
-     "creationism-share@1999"
-    ],
-    "control_error": 0.0345
-   },
+   "n_reps": 1,
+   "ehs": 61.88,
+   "ehs_lo": 61.88,
+   "ehs_hi": 61.88,
+   "ehs_reps": [
+    61.88
+   ],
    "flags": [],
-   "scratchpad_rate": 1.0,
+   "truncated": 0,
+   "calibration": 85.26,
+   "honesty": 66.2,
+   "discrimination": 26.07,
+   "independence": 70.0,
    "eci": 138.25,
    "eci_lo": 133.68,
    "eci_hi": 139.84,
    "eci_name": "Qwen3-14B",
    "org": "Alibaba",
-   "tag": "qwen3:14b"
+   "original_ten": true
   },
   {
+   "tag": "qwen3:32b",
    "model": "qwen3-32b-t0",
-   "ehs": 82.23,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 94.1,
-   "honesty": 97.73,
-   "discrimination": 49.57,
-   "independence": 87.5,
-   "choice": {
-    "n": 78,
-    "ece": 0.0295,
-    "accuracy": 0.859,
-    "min_conf": 60,
-    "distinct_conf": 7,
-    "parse_rate": 0.975
-   },
-   "interval": {
-    "n": 50,
-    "usable": 48,
-    "parse_rate": 0.96,
-    "coverage": 0.7917,
-    "cov_ci": [
-     0.6574,
-     0.8827
-    ],
-    "shuffle_null": 0.1281,
-    "margin": 0.6635,
-    "sharpness": 0.9876,
-    "rho_raw": 0.4957,
-    "median_halfwidth": 5.0,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 1,
-    "which": [
-     "scientists-god@public"
-    ],
-    "control_error": 0.0345
-   },
+   "n_reps": 1,
+   "ehs": 78.36,
+   "ehs_lo": 78.36,
+   "ehs_hi": 78.36,
+   "ehs_reps": [
+    78.36
+   ],
    "flags": [],
-   "scratchpad_rate": 0.9712,
+   "truncated": 0,
+   "calibration": 97.03,
+   "honesty": 100.0,
+   "discrimination": 36.42,
+   "independence": 80.0,
    "eci": 138.52,
    "eci_lo": 135.14,
    "eci_hi": 140.32,
    "eci_name": "Qwen3-32B",
    "org": "Alibaba",
-   "tag": "qwen3:32b"
+   "original_ten": true
+  },
+  {
+   "tag": "qwen3.5:9b",
+   "model": "qwen3-5-9b-t0",
+   "n_reps": 1,
+   "ehs": 71.31,
+   "ehs_lo": 71.31,
+   "ehs_hi": 71.31,
+   "ehs_reps": [
+    71.31
+   ],
+   "flags": [
+    "13 of 143 answers ran out of token budget mid-thought (9%) \u2014 excluded, and they are likely the harder items"
+   ],
+   "truncated": 13,
+   "calibration": 76.58,
+   "honesty": 81.44,
+   "discrimination": 43.0,
+   "independence": 84.21,
+   "eci": 139.45,
+   "eci_lo": 136.59,
+   "eci_hi": 141.07,
+   "eci_name": "Qwen3.5-9B",
+   "org": "Alibaba",
+   "original_ten": false
+  },
+  {
+   "tag": "gemma4:31b",
+   "model": "gemma4-31b-t0",
+   "n_reps": 1,
+   "ehs": 81.73,
+   "ehs_lo": 81.73,
+   "ehs_hi": 81.73,
+   "ehs_reps": [
+    81.73
+   ],
+   "flags": [
+    "4 of 143 answers ran out of token budget mid-thought (3%) \u2014 excluded, and they are likely the harder items"
+   ],
+   "truncated": 4,
+   "calibration": 95.79,
+   "honesty": 88.89,
+   "discrimination": 54.01,
+   "independence": 88.24,
+   "eci": 142.68,
+   "eci_lo": 140.28,
+   "eci_hi": 144.75,
+   "eci_name": "Gemma 4 31B IT",
+   "org": "Google DeepMind",
+   "original_ten": false
+  },
+  {
+   "tag": "qwen3.6:35b-a3b",
+   "model": "qwen3-6-35b-a3b-t0",
+   "n_reps": 1,
+   "ehs": 80.97,
+   "ehs_lo": 80.97,
+   "ehs_hi": 80.97,
+   "ehs_reps": [
+    80.97
+   ],
+   "flags": [
+    "null control off by 31% \u2014 perturbation result not attributable"
+   ],
+   "truncated": 0,
+   "calibration": 92.89,
+   "honesty": 89.78,
+   "discrimination": 56.21,
+   "independence": 85.0,
+   "eci": 143.87,
+   "eci_lo": 141.31,
+   "eci_hi": 146.0,
+   "eci_name": "Qwen 3.6 35B-A3B",
+   "org": "Alibaba",
+   "original_ten": false
+  },
+  {
+   "tag": "qwen3.6:27b",
+   "model": "qwen3-6-27b-t0",
+   "n_reps": 1,
+   "ehs": 76.0,
+   "ehs_lo": 76.0,
+   "ehs_hi": 76.0,
+   "ehs_reps": [
+    76.0
+   ],
+   "flags": [
+    "1 of 143 answers ran out of token budget mid-thought (1%) \u2014 excluded, and they are likely the harder items",
+    "null control off by 43% \u2014 perturbation result not attributable"
+   ],
+   "truncated": 1,
+   "calibration": 93.95,
+   "honesty": 100.0,
+   "discrimination": 35.04,
+   "independence": 75.0,
+   "eci": 146.51,
+   "eci_lo": 144.53,
+   "eci_hi": 147.8,
+   "eci_name": "Qwen3.6 27B",
+   "org": "Alibaba",
+   "original_ten": false
   }
  ],
  "no_eci": [
   {
+   "tag": "devstral-small-2-t0",
    "model": "devstral-small-2-t0",
-   "ehs": 83.6,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 81.5,
-   "honesty": 83.63,
-   "discrimination": 69.25,
-   "independence": 100.0,
-   "choice": {
-    "n": 80,
-    "ece": 0.0925,
-    "accuracy": 0.8,
-    "min_conf": 80,
-    "distinct_conf": 4,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 50,
-    "parse_rate": 1.0,
-    "coverage": 0.74,
-    "cov_ci": [
-     0.6045,
-     0.8413
-    ],
-    "shuffle_null": 0.1741,
-    "margin": 0.5659,
-    "sharpness": 0.9041,
-    "rho_raw": 0.6925,
-    "median_halfwidth": 5.0,
-    "incoherent": 0
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 0,
-    "which": [],
-    "control_error": 0.0805
-   },
+   "n_reps": 2,
+   "ehs": 74.12,
+   "ehs_lo": 72.62,
+   "ehs_hi": 75.63,
+   "ehs_reps": [
+    75.63,
+    72.62
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
-   "tag": "devstral-small-2-t0"
+   "truncated": 0,
+   "calibration": 81.45,
+   "honesty": 75.2,
+   "discrimination": 59.85,
+   "independence": 80.0
   },
   {
+   "tag": "lfm2-t0",
    "model": "lfm2-t0",
-   "ehs": 26.72,
-   "truncated": 0,
-   "truncation_rate": 0.0,
-   "calibration": 14.0,
-   "honesty": 10.88,
-   "discrimination": 44.5,
-   "independence": 37.5,
-   "choice": {
-    "n": 80,
-    "ece": 0.43,
-    "accuracy": 0.4875,
-    "min_conf": 85,
-    "distinct_conf": 4,
-    "parse_rate": 1.0
-   },
-   "interval": {
-    "n": 50,
-    "usable": 47,
-    "parse_rate": 0.94,
-    "coverage": 0.3404,
-    "cov_ci": [
-     0.2217,
-     0.4833
-    ],
-    "shuffle_null": 0.1826,
-    "margin": 0.1579,
-    "sharpness": 0.2557,
-    "rho_raw": 0.445,
-    "median_halfwidth": 12.5,
-    "incoherent": 3
-   },
-   "variants": {
-    "n": 8,
-    "echoes": 5,
-    "which": [
-     "lgbt-share@2012",
-     "ceo-pay@1989",
-     "interracial-marriage@1978",
-     "gun-suicides@canada",
-     "scientists-god@public"
-    ],
-    "control_error": 0.1494
-   },
+   "n_reps": 2,
+   "ehs": 28.5,
+   "ehs_lo": 28.5,
+   "ehs_hi": 28.5,
+   "ehs_reps": [
+    28.5,
+    28.5
+   ],
    "flags": [],
-   "scratchpad_rate": 0.0,
-   "tag": "lfm2-t0"
+   "truncated": 0,
+   "calibration": 18.95,
+   "honesty": 11.46,
+   "discrimination": 38.58,
+   "independence": 45.0
   }
  ],
- "invalid": [],
- "rho": 0.24848484848484848,
- "p": 0.49316753416232917
+ "pending": [],
+ "excluded": [
+  {
+   "tag": "llama3.2:1b",
+   "model": "llama3-2-1b-t0",
+   "n_reps": 1,
+   "ehs": 21.48,
+   "ehs_lo": 21.48,
+   "ehs_hi": 21.48,
+   "ehs_reps": [
+    21.48
+   ],
+   "flags": [
+    "choice parse rate 54% \u2014 score unreliable",
+    "interval parse rate 61% \u2014 score unreliable",
+    "null control off by 877% \u2014 perturbation result not attributable"
+   ],
+   "truncated": 0,
+   "calibration": 10.49,
+   "honesty": 12.06,
+   "discrimination": 13.39,
+   "independence": 50.0,
+   "eci": 102.43,
+   "eci_lo": 91.24,
+   "eci_hi": 109.91,
+   "eci_name": "Llama 3.2 1B",
+   "original_ten": false
+  },
+  {
+   "tag": "gemma4:26b",
+   "model": "gemma4-26b-t0",
+   "n_reps": 1,
+   "ehs": 81.74,
+   "ehs_lo": 81.74,
+   "ehs_hi": 81.74,
+   "ehs_reps": [
+    81.74
+   ],
+   "flags": [
+    "43 of 143 answers ran out of token budget mid-thought (30%) \u2014 excluded, and they are likely the harder items",
+    "choice parse rate 74% \u2014 score unreliable",
+    "interval parse rate 70% \u2014 score unreliable"
+   ],
+   "truncated": 43,
+   "calibration": 95.71,
+   "honesty": 98.44,
+   "discrimination": 49.46,
+   "independence": 83.33,
+   "eci": 141.87,
+   "eci_lo": 138.55,
+   "eci_hi": 143.58,
+   "eci_name": "Gemma 4 26B A4B",
+   "original_ten": false
+  }
+ ],
+ "rho": 0.5428571428571428,
+ "p": 0.04825951740482595,
+ "ci_sampling": [
+  -0.07865168539325842,
+  0.8930957683741648
+ ],
+ "ci_full": [
+  -0.0354384955969167,
+  0.8644978101539402
+ ],
+ "share_rho_gt_half": 0.56395,
+ "share_positive": 0.96845,
+ "span": 30.539999999999992,
+ "verdict": "NOT ESTABLISHED, and leaning positive: the interval includes zero, so this is not a result \u2014 but 97% of draws fall on the positive side and 56% exceed +0.5, so it is not a null either",
+ "rho_original": 0.2606060606060606,
+ "span_original": 22.55000000000001,
+ "n_original": 10,
+ "components": [
+  {
+   "k": "calibration",
+   "rho": 0.7538461538461538,
+   "p": 0.0031749206269843255,
+   "holm": 0.012699682507937302
+  },
+  {
+   "k": "honesty",
+   "rho": 0.666667070081045,
+   "p": 0.011674708132296693,
+   "holm": 0.03502412439689008
+  },
+  {
+   "k": "discrimination",
+   "rho": 0.2043956043956044,
+   "p": 0.47881302967425815,
+   "holm": 0.6317342066448339
+  },
+  {
+   "k": "independence",
+   "rho": 0.2880443802562632,
+   "p": 0.31586710332241696,
+   "holm": 0.6317342066448339
+  }
+ ],
+ "sensitivity": [
+  {
+   "w": "equal",
+   "rho": 0.5428571428571428,
+   "p": 0.04729881752956176
+  },
+  {
+   "w": "intervals-heavy",
+   "rho": 0.5516483516483517,
+   "p": 0.043473913152171195
+  },
+  {
+   "w": "calibration-heavy",
+   "rho": 0.6571428571428571,
+   "p": 0.013574660633484163
+  },
+  {
+   "w": "memorisation-heavy",
+   "rho": 0.5604395604395604,
+   "p": 0.039874003149921254
+  },
+  {
+   "w": "drop-discrimination",
+   "rho": 0.6967032967032967,
+   "p": 0.007599810004749881
+  }
+ ],
+ "loo": {
+  "min": 0.42857142857142855,
+  "min_without": "gemma3:4b",
+  "max": 0.7637362637362637,
+  "max_without": "mistral-small:24b"
+ },
+ "rho_with_excluded": 0.6411764705882353
 }
