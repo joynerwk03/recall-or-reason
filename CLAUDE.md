@@ -52,6 +52,11 @@ single accuracy number hides:
 7. **Capability numbers come from machine-readable releases**, never from a
    rendered leaderboard read through a summariser. `fetch_eci.py` pulls Epoch's
    own data; two leaderboard reads once disagreed with each other.
+8. **Numbers in the write-up are generated, never typed.** `refresh_writeup.py`
+   rebuilds the abstract, PAPER section 6 and the dashboard from
+   `results/fleet.json`, deriving the claims that depend on the pattern of
+   results as well as the figures. A table typed by hand is what produced the
+   retracted comparison of 2026-09-10.
 
 ## Design
 
@@ -92,6 +97,8 @@ bash pin_models.sh               # build the pinned -t0 models
 ./run.sh fleet_status.py         # what is complete, with parse/truncation counts
 ./run.sh compare_capability.py --json results/fleet.json
 ./run.sh plot_fleet.py results/fleet.json
+./run.sh ladder.py results/fleet.json   # within-family size ladders
+./run.sh refresh_writeup.py            # regenerate the write-up from that JSON
 ./run.sh budget_effect.py        # what the old 2,500-token budget distorted
 ```
 
