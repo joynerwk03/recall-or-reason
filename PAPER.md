@@ -36,26 +36,26 @@ stronger model produces **0/8** anchor echoes; the weaker produces **5/8**
 2012, the US figure when asked about Canada, and twice repeating a number the
 prompt itself supplied.
 
-**Extended to eighteen models**, fourteen of which carry a capability score and
+**Extended to eighteen models**, 14 of which carry a capability score and
 survive pre-set reliability rules, the relationship between general capability
 and epistemic honesty is **positive but not established**: Spearman rho =
-**+0.54** across 30.5 points of the Epoch Capabilities Index (permutation
-*p* = 0.048), with a 95% interval that still touches zero once every source of
-uncertainty is propagated: **[−0.04, +0.86]**, 97% of draws positive. Two of the
-four components survive correction for multiple testing — calibration
-(rho +0.75) and interval honesty (rho +0.67) — while the two that probe
-memorisation do not.
+**+0.58** across 30.5 points of the Epoch Capabilities Index
+(permutation *p* = 0.033), with a 95% interval that still touches zero once
+every source of uncertainty is propagated: **[-0.02, +0.86]**,
+97% of draws positive. Of the four components, 2 survive
+correction for multiple testing — calibration and interval honesty — while
+discrimination and independence do not.
 
 **This replaces a null.** An earlier draft reported rho = +0.25 on ten models and
 called it "capability does not predict epistemic honesty". That claim was
 already too strong for its own interval; it is also, on the wider range, wrong
-in direction. The same pipeline still returns +0.26 on those ten models, so the
-earlier result was substantially **range restriction**: ten models spanning 22.6
-index points could not see a relationship that fourteen spanning 30.5 can.
-Capability in this fleet is nearly collinear with release date, and the item
-set penalises models with older training cutoffs, so the honest reading is that
-*something* about newer, stronger models tracks epistemic honesty — not that
-capability alone causes it.
+in direction. The same pipeline still returns +0.26 on those ten models,
+so the earlier result was substantially **range restriction**: ten models
+spanning 22.6 index points could not see a relationship that 14
+spanning 30.5 can. Capability in this fleet is nearly collinear with
+release date, and the item set penalises models with older training cutoffs, so
+the honest reading is that *something* about newer, stronger models tracks
+epistemic honesty — not that capability alone causes it.
 
 Finally we document nine ways this instrument produced confident wrong numbers
 before those numbers were checked — including the token budget that was deleting
@@ -588,7 +588,7 @@ reports.
 
 ---
 
-## 6. Does general capability predict epistemic honesty? Fourteen models
+## 6. Does general capability predict epistemic honesty? 14 models
 
 Everything above concerns two models. The obvious question is whether any of it
 is a property of *models* or of *those* models — and behind that, a sharper one:
@@ -600,18 +600,18 @@ exist.
 correction.** The 2026-09-10 draft reported rho = +0.25 on ten models and said
 capability does not predict epistemic honesty. Two things were wrong with that.
 The claim was stronger than its own interval, which was never computed; and the
-ten models covered the bottom 22.6 points of a range that now runs 30.5, which
-is exactly the condition under which a real correlation is attenuated toward
-zero. Section 6.5 measures that directly.
+ten models covered the bottom 22.6 points of a range that now runs
+30.5, which is exactly the condition under which a real correlation is
+attenuated toward zero. Section 6.5 measures that directly.
 
 ### 6.1 Design
 
 Eighteen models run locally (Section 1.2). Sixteen carry an Epoch Capabilities
-Index score; **fourteen** of those pass reliability rules fixed in advance and
-enter the correlation. ECI stitches 50+ benchmarks onto one scale by comparing
-models evaluated on more than one of them, so it stays meaningful after any
-single benchmark saturates, and it is read from Epoch's machine-readable release
-with the interval Epoch publishes for each model.
+Index score; **14** of those pass reliability rules fixed in advance and enter
+the correlation. ECI stitches 50+ benchmarks onto one scale by comparing models
+evaluated on more than one of them, so it stays meaningful after any single
+benchmark saturates, and it is read from Epoch's machine-readable release with
+the interval Epoch publishes for each model.
 
 Each model is reduced to one **Epistemic Honesty Score** (0–100), the mean of
 four components: calibration, interval honesty scaled by sharpness,
@@ -620,65 +620,64 @@ by construction.** Had it rewarded getting answers right it would partly *be* a
 capability index, and any correlation below would be guaranteed rather than
 discovered.
 
-Where a model has more than one complete run of all three modes, its score is
-the mean over runs and the chart draws its min–max spread. Six of the fourteen
-had two complete runs when these numbers were produced — as did both off-axis
-models — and the rest had one, with their repeats still running. Every figure
-here regenerates from `results/fleet.json`.
+A model's score is the mean over its complete repeat runs, and the chart draws
+its min–max spread. 14 of the 14 scored models have more than one
+complete run of all three modes, up to 3. Every figure in this section
+regenerates from `results/fleet.json` via `refresh_writeup.py`.
 
 ### 6.2 Result
 
 | model | ECI | EHS | repeat range | runs | calib | honesty | disc | indep |
 |---|---|---|---|---|---|---|---|---|
-| gemma3:4b | 116.0 | 32.4 | [32, 32] | 2 | 12 | 25 | 23 | 70 |
-| llama3.1:8b | 116.5 | 53.0 | [53, 53] | 2 | 56 | 44 | 32 | 80 |
-| gemma3:12b | 123.5 | 70.1 | [70, 70] | 2 | 72 | 73 | 56 | 80 |
-| mistral-small:24b | 127.1 | 81.8 | [81, 83] | 2 | 80 | 91 | 71 | 85 |
-| gemma3:27b | 130.0 | 68.8 | [69, 69] | 2 | 87 | 78 | 40 | 70 |
-| phi4:14b | 130.4 | 56.2 | [56, 56] | 2 | 65 | 54 | 26 | 80 |
-| qwen3:8b | 136.2 | 54.3 | — | 1 | 74 | 48 | 41 | 55 |
-| gpt-oss:20b | 137.8 | 52.4 | — | 1 | 71 | 59 | 9 | 70 |
-| qwen3:14b | 138.2 | 61.9 | — | 1 | 85 | 66 | 26 | 70 |
-| qwen3:32b | 138.5 | 78.4 | — | 1 | 97 | 100 | 36 | 80 |
-| qwen3.5:9b | 139.4 | 71.3 | — | 1 | 77 | 81 | 43 | 84 |
-| gemma4:31b | 142.7 | **81.7** | — | 1 | 96 | 89 | 54 | 88 |
-| qwen3.6:35b-a3b | 143.9 | 81.0 | — | 1 | 93 | 90 | 56 | 85 |
-| qwen3.6:27b | 146.5 | 76.0 | — | 1 | 94 | 100 | 35 | 75 |
+| gemma3:4b | 116.0 | 32.4 | [32, 32] | 3 | 12 | 25 | 23 | 70 |
+| llama3.1:8b | 116.5 | 53.0 | [53, 53] | 3 | 56 | 44 | 32 | 80 |
+| gemma3:12b | 123.5 | 70.1 | [70, 70] | 3 | 72 | 73 | 56 | 80 |
+| mistral-small:24b | 127.1 | 81.4 | [81, 83] | 3 | 80 | 90 | 71 | 85 |
+| gemma3:27b | 130.0 | 68.8 | [69, 69] | 3 | 87 | 78 | 40 | 70 |
+| phi4:14b | 130.4 | 56.2 | [56, 56] | 3 | 65 | 54 | 26 | 80 |
+| qwen3:8b | 136.2 | 54.3 | [54, 54] | 2 | 74 | 48 | 41 | 55 |
+| gpt-oss:20b | 137.8 | 52.4 | [52, 52] | 2 | 71 | 59 | 9 | 70 |
+| qwen3:14b | 138.2 | 61.9 | [62, 62] | 2 | 85 | 66 | 26 | 70 |
+| qwen3:32b | 138.5 | 78.3 | [78, 78] | 2 | 97 | 100 | 36 | 80 |
+| qwen3.5:9b | 139.4 | 71.3 | [71, 71] | 2 | 77 | 81 | 43 | 84 |
+| gemma4:31b | 142.7 | **81.7** | [82, 82] | 2 | 96 | 89 | 54 | 88 |
+| qwen3.6:35b-a3b | 143.9 | 81.0 | [81, 81] | 2 | 93 | 90 | 56 | 85 |
+| qwen3.6:27b | 146.5 | 76.0 | [76, 76] | 2 | 94 | 100 | 35 | 75 |
 
-Not on the capability axis, because Epoch does not score them: devstral-small-2
-**74.1** and lfm2 **28.5** (two runs each). They are reported rather than
-dropped, but they cannot enter the correlation.
+Not on the capability axis, because Epoch does not score them:
+devstral-small-2 **73.6**, lfm2 **28.5**.
+They are reported rather than dropped, but they cannot enter the correlation.
 
 **Excluded by rules fixed before the runs finished**, with their reasons:
 
 | model | ECI | why |
 |---|---|---|
-| llama3.2:1b | 102.4 | answers in prose rather than the requested format — choice parse rate 54%, interval 61%; its null control is off by 877% |
-| gemma4:26b | 141.9 | 43 of 143 answers (30%) ran out of token budget mid-thought; parse rates 74% and 70% |
+| llama3.2:1b | 102.4 | choice parse rate 54% — score unreliable; interval parse rate 61% — score unreliable; null control off by 877% — perturbation result not attributable |
+| gemma4:26b | 141.9 | 43 of 143 answers ran out of token budget mid-thought (30%) — excluded, and they are likely the harder items; choice parse rate 74% — score unreliable; interval parse rate 70% — score unreliable |
 
-**Spearman rho = +0.543, permutation *p* = 0.048, n = 14 models spanning 30.5
-ECI points.**
+**Spearman rho = +0.578, permutation *p* = 0.033, n = 14 models spanning
+30.5 ECI points.**
 
 | interval | | |
 |---|---|---|
-| 95%, sampling only | [−0.08, +0.89] | resampling models |
-| 95%, full uncertainty | **[−0.04, +0.86]** | + repeat-run noise + Epoch's own ECI intervals |
+| 95%, sampling only | [-0.01, +0.89] | resampling models |
+| 95%, full uncertainty | **[-0.02, +0.86]** | + repeat-run noise + Epoch's own ECI intervals |
 | draws above zero | 97% | |
-| draws above +0.5 | 56% | |
+| draws above +0.5 | 59% | |
 
 **The verdict is "not established, and leaning positive", and both halves of
 that matter.** The interval includes zero, so this is not a result: a fleet of
-fourteen cannot rule out that the relationship is nothing. But 97% of the
-bootstrap mass sits above zero and more than half of it above +0.5, so it is not
-a null either, and calling it one — as the earlier draft did with weaker
-evidence — would be the same error in the opposite direction.
+14 cannot rule out that the relationship is nothing. But 97% of the
+bootstrap mass sits above zero and 59% of it above +0.5, so it is not a
+null either, and calling it one — as the earlier draft did with weaker evidence
+— would be the same error in the opposite direction.
 
 **Why the *p* and the interval disagree.** The permutation test asks whether
 this rho could arise if capability and honesty were unrelated *in this set of
-fourteen models*; it clears 0.05, barely. The bootstrap interval asks a harder
-question: what would happen with a different sample of models, different draws
-of their run-to-run noise, and ECI values redrawn from Epoch's own uncertainty.
-The second question is the one a reader cares about, so the interval governs the
+14 models*; it clears 0.05. The bootstrap interval asks a harder question: what
+would happen with a different sample of models, different draws of their
+run-to-run noise, and ECI values redrawn from Epoch's own uncertainty. The
+second question is the one a reader cares about, so the interval governs the
 verdict.
 
 ### 6.3 The components move apart
@@ -689,7 +688,7 @@ separate cleanly:
 | component | rho vs ECI | p | Holm-adjusted |
 |---|---|---|---|
 | calibration | **+0.754** | 0.003 | **0.013** ✓ |
-| honesty (interval coverage × sharpness) | **+0.667** | 0.012 | **0.035** ✓ |
+| honesty (interval coverage × sharpness) | **+0.675** | 0.011 | **0.032** ✓ |
 | discrimination | +0.204 | 0.479 | 0.632 |
 | independence from anchors | +0.288 | 0.316 | 0.632 |
 
@@ -709,13 +708,12 @@ models, and recorded it as worth re-testing. It was re-tested, and it held.)
 
 The correlation is real but loose, and the loose part is the middle of the range:
 
-- **mistral-small:24b scores 81.8 at ECI 127.1.** gpt-oss:20b, **10.7 index
-  points more capable**, scores **52.4** — the largest single inversion in the
-  set.
-- **qwen3:8b (ECI 136.2) scores 54.3; llama3.1:8b, 19.7 points weaker, scores
-  53.0.** Twenty points of general capability buy about one point here.
-- **The four most capable models score 71.3, 81.7, 81.0 and 76.0** — all well
-  above the middle of the fleet. The top of the range is uniformly decent; the
+- **mistral-small:24b scores 81.4 at ECI 127.1.**
+  gpt-oss:20b, **10.7 index points more capable**, scores
+  **52.4** — the largest single inversion in the set.
+- **gpt-oss:20b (ECI 137.8) scores 52.4; llama3.1:8b, 21.3 points weaker, scores 53.0.** Twenty points of general capability buy about a point here.
+- **The four most capable models score 71.3, 81.7, 81.0, 76.0** — all well above the
+  middle of the fleet. The top of the range is uniformly decent; the
   disagreement is everywhere else.
 
 **The practical reading has not changed as much as the headline.** If you are
@@ -729,10 +727,10 @@ large and real. What has changed is the claim that the leaderboard tells you
 | check | rho | reading |
 |---|---|---|
 | **Range**: original ten models (22.6 ECI points) | **+0.261** | the earlier null was substantially range restriction |
-| same pipeline, extended fourteen (30.5 points) | **+0.543** | |
-| **Weighting**: five weightings of the composite | +0.543 to +0.697 (p 0.008–0.047) | not an artefact of weighting the four components equally |
-| **Leave-one-out**: drop each model in turn | +0.429 (without gemma3:4b) to +0.764 (without mistral-small:24b) | no single model carries it, including the one sitting exactly on the parse bar |
-| **Exclusions**: put the two excluded models back | **+0.641**, n = 16 | the pre-set exclusion rule is not what produces the result — it weakens it |
+| same pipeline, extended 14 (30.5 points) | **+0.578** | |
+| **Weighting**: five weightings of the composite | +0.552 to +0.697 (p 0.008–0.043) | not an artefact of weighting the four components equally |
+| **Leave-one-out**: drop each model in turn | +0.473 (without gemma3:4b) to +0.764 (without mistral-small:24b) | no single model carries it |
+| **Exclusions**: put the two excluded models back | **+0.691**, n = 16 | the pre-set exclusion rule is not what produces the result — it strengthens without it |
 
 The range row is the important one. Both numbers come from the same code, the
 same items and the same scoring, run today; the only difference is which models
@@ -756,14 +754,10 @@ most of that:
 |---|---|---|---|---|---|---|---|
 | qwen3:8b | 8.2B | 136.2 | 54.3 | 74 | 48 | 41 | 55 |
 | qwen3:14b | 14.8B | 138.2 | 61.9 | 85 | 66 | 26 | 70 |
-| qwen3:32b | 32.8B | 138.5 | 78.4 | 97 | 100 | 36 | 80 |
+| qwen3:32b | 32.8B | 138.5 | 78.3 | 97 | 100 | 36 | 80 |
 
-**In both families, calibration and interval honesty rise monotonically with
-size — the same two components that survive correction across the whole fleet.**
-The composite rises monotonically for Qwen3 but not for Gemma 3, where the 27B
-scores slightly below the 12B (68.8 against 70.1, a gap larger than either
-model's repeat spread, which was zero on both). Discrimination has no consistent
-direction in either family.
+**In both families, calibration and interval honesty rise monotonically with size — the same two components that survive correction across the whole fleet.** The composite itself is less tidy — Gemma 3: EHS no consistent direction; Qwen3: EHS rises with size — and
+discrimination has no consistent direction in either family.
 
 Three sizes is a description, not a test, and this is quoted as one. But it is a
 description that the release-date confound cannot explain, because within each
@@ -771,7 +765,7 @@ family the release date does not vary.
 
 ### 6.7 Limits specific to this comparison
 
-- **n = 14 models.** A rank correlation on fourteen points has a wide interval
+- **n = 14 models.** A rank correlation on 14 points has a wide interval
   whichever way it lands, which is why the interval governs the verdict here.
 - **Capability is nearly collinear with recency.** Every model above ECI 139 in
   this fleet is a 2026 release. The item set asks many questions in the present

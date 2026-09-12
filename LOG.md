@@ -6,6 +6,34 @@ interesting ones**; a log that only contains wins is a marketing document.
 
 ---
 
+## 2026-09-12 — refreshed with the full repeat set; the write-up now generates itself
+
+The sweep finished at 04:15. Every one of the 14 scored models now
+has at least two complete runs of all three modes, and the eight fastest have
+3; only llama3.2:1b has none, and it is excluded from scoring anyway.
+
+**The result held.** rho +0.543 to **+0.578** (permutation p 0.048 to
+0.033); full-uncertainty interval [-0.04, +0.86] to
+**[-0.02, +0.86]**. The verdict is unchanged — not established, leaning
+positive. Per-model scores barely moved: mistral-small:24b 81.8 to 81.4, qwen3:32b 78.4 to 78.3.
+Every other model returned exactly the same score on its repeat, which is the
+determinism finding from 2026-09-10 holding up across a much larger fleet: the
+small models are bit-reproducible under a pinned decode and the large ones mostly
+are. Putting the excluded models back now gives
++0.691 (was +0.641), and both
+size ladders now carry repeat spreads, so every adjacent gap in them is larger
+than its own noise.
+
+**The write-up is no longer transcribed.** `refresh_writeup.py` regenerates the
+abstract's fleet paragraphs, the whole of PAPER §6, and the dashboard's fleet
+section, chart data, technical paragraph and sample-size caveat from
+`results/fleet.json`. It derives the claims that depend on the *pattern* of
+results too — which components survive Holm, which pair is the largest
+inversion, which capability gap buys the least honesty, which direction each
+ladder runs — so a sentence cannot outlive the data that justified it. Hand
+transcription is what produced the retracted table on 2026-09-10; this closes
+that route. The pre-refresh JSON is kept as `results/fleet-6reps.json`.
+
 ## 2026-09-11 (later) — the fleet result: the null was range restriction
 
 **Headline.** Across **14 models** spanning **30.5 ECI points**, Epistemic

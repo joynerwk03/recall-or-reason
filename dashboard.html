@@ -361,7 +361,7 @@
     Everything above is two models, which could just be those two models. So I
     ran the whole thing on <strong>eighteen</strong> — every one I could
     download and run on a home computer, from a 1-billion-parameter model up to
-    a 35-billion one. Fourteen of them can be placed on a public ability
+    a 35-billion one. 14 of them can be placed on a public ability
     leaderboard <em>and</em> answered reliably enough to score.
   </p>
   <p>
@@ -378,7 +378,7 @@
   </p>
   <figure class="wide">
     <svg id="fleet" viewBox="0 0 900 470" role="img"
-         aria-label="Fourteen models plotted by general ability against how well they know their own uncertainty. The trend is upward but loose, with large exceptions."></svg>
+         aria-label="14 models plotted by general ability against how well they know their own uncertainty. The trend is upward but loose, with large exceptions."></svg>
     <figcaption>
       Each dot is one model. Left-to-right is general ability from the public
       leaderboard; up-and-down is how well it knows its own uncertainty. The
@@ -386,16 +386,16 @@
       model belongs — several are wide, and hiding them would imply a precision
       the ranking doesn't have. Hollow dots are models I added to widen the
       range. Vertical bars, where you can see them, are how much a model's own
-      score moved when I ran it twice.
+      score moved between repeat runs.
     </figcaption>
   </figure>
   <div class="findings">
     <p class="finding">
       <strong>Ability and self-knowledge do move together — but I can't call it
       settled.</strong> Rank the models both ways and the two orders come out
-      similar: the correlation is <b>+0.54</b> (1.00 would be identical
+      similar: the correlation is <b>+0.58</b> (1.00 would be identical
       orders, 0 unrelated). Once I account for every source of error at once, the
-      plausible range runs from <b>-0.04</b> to <b>+0.86</b> — and
+      plausible range runs from <b>-0.02</b> to <b>+0.86</b> — and
       because that just barely includes zero, "no relationship" isn't quite ruled
       out. 97% of the statistical resamples land on the positive side.
     </p>
@@ -405,27 +405,20 @@
       real relationship looks like noise — it's like testing whether height
       predicts basketball ability using only people between 5'10" and 6'0".
       Same code, same questions, wider band: <b>+0.26</b> across the
-      original 10 models becomes <b>+0.54</b> across 14.
+      original 10 models becomes <b>+0.58</b> across 14.
     </p>
     <p class="finding">
       <strong>Two of the four things I measure improve with ability; two don't.</strong>
       The two about <em>stating</em> uncertainty do — whether "90% sure" means 90%
-      (<b>+0.75</b>), and whether a stated range
-      actually contains the answer (<b>+0.67</b>). The two
-      about <em>memorisation</em> don't: widening the range where it's about to be
-      wrong (<b>+0.20</b>) and avoiding repeating a
-      number it already had (<b>+0.29</b>).
+      (<b>+0.75</b>), and whether a stated range actually contains the
+      answer (<b>+0.67</b>). The two about <em>memorisation</em> don't:
+      widening the range where it's about to be wrong (<b>+0.20</b>) and
+      avoiding repeating a number it already had (<b>+0.29</b>).
       <strong>So the leaderboard predicts the familiar half of this test and not
       the novel half.</strong>
     </p>
     <p class="finding">
-      <strong>The big exceptions are still there.</strong>
-      <span class="idm">mistral-small:24b</span> scores <b>82</b> while
-      <span class="idm">gpt-oss:20b</span> — 11 points
-      <em>higher</em> on the leaderboard — scores <b>52</b>. And
-      <span class="idm">llama3.1:8b</span>, 20 points
-      <em>lower</em> than <span class="idm">qwen3:8b</span>, matches it
-      (53 against 54).
+      <strong>The big exceptions are still there.</strong> <span class="idm">mistral-small:24b</span> scores <b>81</b> while <span class="idm">gpt-oss:20b</span> — 11 points <em>higher</em> on the leaderboard — scores <b>52</b>. And <span class="idm">llama3.1:8b</span>, 21 points <em>lower</em> than <span class="idm">gpt-oss:20b</span>, matches it (53 against 52).
     </p>
     <p class="finding">
       <strong>One thing I can't rule out.</strong> Every model at the top of the
@@ -442,24 +435,23 @@
     model is a better bet for trustworthy confidence than a lower-ranked one —
     that much now has evidence behind it. But the exceptions above are large
     enough that the ranking can't settle it for any particular pair of models:
-    one model here is beaten by another eleven leaderboard points below it. If
-    you need to act on "I'm 90% sure", you still have to test it.
+    one model here is beaten by another 11 leaderboard points below
+    it. If you need to act on "I'm 90% sure", you still have to test it.
   </p>
   <details style="margin-top:20px;border:1px solid var(--rule)">
     <summary>Four ways I tried to break this result</summary>
     <p><b>Change how the four parts are weighted.</b> The score above weights them
     equally. Under five different weightings the correlation runs
-    +0.54 to +0.70, so it
-    isn't an artefact of that choice.</p>
+    +0.55 to +0.70, so it isn't an artefact of that choice.</p>
     <p><b>Drop each model in turn.</b> With any single model removed the
-    correlation stays between <b>+0.43</b> (without
+    correlation stays between <b>+0.47</b> (without
     gemma3:4b) and <b>+0.76</b> (without
     mistral-small:24b). No one model is carrying it.</p>
     <p><b>Put back the models I excluded.</b> Two models are left out by rules I
     fixed in advance — one answers in prose instead of the format I asked for,
     one runs out of thinking room on 30% of answers. Putting both back
-    <em>strengthens</em> the result to <b>+0.64</b>, so the
-    exclusions aren't what produce it.</p>
+    <em>strengthens</em> the result to <b>+0.69</b>, so the exclusions
+    aren't what produce it.</p>
     <p><b>Check the same-family size ladders.</b> Gemma 3 comes in three sizes
     released the same day, and Qwen3 in three more. Within both families, the two
     "stating uncertainty" measures rise with size — which the release-date worry
@@ -591,8 +583,8 @@
       well-documented too. A model that memorised the entire table would pass my test.</li>
     <li><b>The numbers are small.</b> 80 questions, 50 with numeric answers, 8 moved
       questions. One experiment, not a replication.</li>
-    <li><b>Fourteen models is still few for a comparison like Section 5.</b> The
-      plausible range for the correlation runs from -0.04 to +0.86 — wide
+    <li><b>14 models is still few for a comparison like Section 5.</b> The
+      plausible range for the correlation runs from -0.02 to +0.86 — wide
       enough that it includes "no relationship", and wide enough that it includes
       a very strong one. The leaderboard also has its own uncertainty about where
       each model belongs — for the smallest model, a range 26 points wide — which
@@ -645,18 +637,15 @@
   weaker model qualifies once. Fisher exact, two-tailed: <b>p = 0.026</b>.</p>
   <p><b>Fleet comparison.</b> Epistemic Honesty Score against the Epoch
   Capabilities Index. 14 open-weights models spanning 30.5 ECI points:
-  Spearman rho = <b>+0.543</b>, permutation p = <b>0.048</b>, n = 14.
+  Spearman rho = <b>+0.578</b>, permutation p = <b>0.033</b>, n = 14.
   Bootstrap 95% interval with model resampling, repeat-run noise and Epoch's own
-  ECI intervals all propagated: <b>[-0.04, +0.86]</b>, 97% of draws
+  ECI intervals all propagated: <b>[-0.02, +0.86]</b>, 97% of draws
   positive. Range check on the same pipeline: rho +0.261 across the original
-  10 models (22.6 points) against +0.543 across 14 (30.5).
-  Per component, Holm-corrected across four tests: calibration
-  +0.754 (Holm <b>0.013</b>),
-  honesty +0.667 (Holm
-  <b>0.035</b>), discrimination
-  +0.204 (Holm 0.632),
-  independence +0.288 (Holm
-  0.632). Excluded by pre-set rules:
+  10 models (22.6 points) against +0.578 across 14 (30.5).
+  Per component, Holm-corrected across four tests: calibration +0.754
+  (Holm <b>0.013</b>), honesty +0.675 (Holm <b>0.032</b>),
+  discrimination +0.204 (Holm 0.632), independence +0.288
+  (Holm 0.632). Excluded by pre-set rules:
   llama3.2:1b, gemma4:26b. ECI pulled from
   <code>epoch.ai/data/benchmark_data.zip</code>, not a rendered leaderboard.</p>
   <p><b>Subset control</b> — the interval run uses only the 50 numeric items, so the
@@ -862,13 +851,13 @@ const FLEET=[
  {t:"gemma3:4b", e:115.97, lo:97.45, hi:123.39, s:32.4},
  {t:"llama3.1:8b", e:116.51, lo:105.95, hi:121.71, s:53.0},
  {t:"gemma3:12b", e:123.46, lo:116.21, hi:128.73, s:70.1},
- {t:"mistral-small:24b", e:127.07, lo:122.41, hi:129.01, s:81.8, slo:80.7, shi:82.9},
+ {t:"mistral-small:24b", e:127.07, lo:122.41, hi:129.01, s:81.4, slo:80.7, shi:82.9},
  {t:"gemma3:27b", e:130.04, lo:124.64, hi:132.17, s:68.8},
  {t:"phi4:14b", e:130.42, lo:125.50, hi:132.10, s:56.2},
  {t:"qwen3:8b", e:136.18, lo:129.58, hi:138.07, s:54.3},
  {t:"gpt-oss:20b", e:137.81, lo:132.89, hi:139.56, s:52.4},
  {t:"qwen3:14b", e:138.25, lo:133.68, hi:139.84, s:61.9},
- {t:"qwen3:32b", e:138.52, lo:135.14, hi:140.32, s:78.4},
+ {t:"qwen3:32b", e:138.52, lo:135.14, hi:140.32, s:78.3, slo:78.2, shi:78.4},
  {t:"qwen3.5:9b", e:139.45, lo:136.59, hi:141.07, s:71.3, add:1},
  {t:"gemma4:31b", e:142.68, lo:140.28, hi:144.75, s:81.7, add:1},
  {t:"qwen3.6:35b-a3b", e:143.87, lo:141.31, hi:146.00, s:81.0, add:1},

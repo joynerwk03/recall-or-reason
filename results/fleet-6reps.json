@@ -3,12 +3,11 @@
   {
    "tag": "gemma3:4b",
    "model": "gemma3-4b-t0",
-   "n_reps": 3,
+   "n_reps": 2,
    "ehs": 32.44,
    "ehs_lo": 32.44,
    "ehs_hi": 32.44,
    "ehs_reps": [
-    32.44,
     32.44,
     32.44
    ],
@@ -28,12 +27,11 @@
   {
    "tag": "llama3.1:8b",
    "model": "llama3-1-8b-t0",
-   "n_reps": 3,
+   "n_reps": 2,
    "ehs": 52.97,
    "ehs_lo": 52.97,
    "ehs_hi": 52.97,
    "ehs_reps": [
-    52.97,
     52.97,
     52.97
    ],
@@ -53,12 +51,11 @@
   {
    "tag": "gemma3:12b",
    "model": "gemma3-12b-t0",
-   "n_reps": 3,
+   "n_reps": 2,
    "ehs": 70.1,
    "ehs_lo": 70.1,
    "ehs_hi": 70.1,
    "ehs_reps": [
-    70.1,
     70.1,
     70.1
    ],
@@ -78,20 +75,19 @@
   {
    "tag": "mistral-small:24b",
    "model": "mistral-small-24b-t0",
-   "n_reps": 3,
-   "ehs": 81.43,
+   "n_reps": 2,
+   "ehs": 81.81,
    "ehs_lo": 80.68,
    "ehs_hi": 82.94,
    "ehs_reps": [
     82.94,
-    80.68,
     80.68
    ],
    "flags": [],
    "truncated": 0,
    "calibration": 80.26,
-   "honesty": 89.82,
-   "discrimination": 70.65,
+   "honesty": 90.81,
+   "discrimination": 71.16,
    "independence": 85.0,
    "eci": 127.07,
    "eci_lo": 122.41,
@@ -103,12 +99,11 @@
   {
    "tag": "gemma3:27b",
    "model": "gemma3-27b-t0",
-   "n_reps": 3,
+   "n_reps": 2,
    "ehs": 68.79,
    "ehs_lo": 68.79,
    "ehs_hi": 68.79,
    "ehs_reps": [
-    68.79,
     68.79,
     68.79
    ],
@@ -128,12 +123,11 @@
   {
    "tag": "phi4:14b",
    "model": "phi4-14b-t0",
-   "n_reps": 3,
+   "n_reps": 2,
    "ehs": 56.23,
    "ehs_lo": 56.23,
    "ehs_hi": 56.23,
    "ehs_reps": [
-    56.23,
     56.23,
     56.23
    ],
@@ -153,12 +147,11 @@
   {
    "tag": "qwen3:8b",
    "model": "qwen3-8b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 54.34,
    "ehs_lo": 54.34,
    "ehs_hi": 54.34,
    "ehs_reps": [
-    54.34,
     54.34
    ],
    "flags": [],
@@ -177,18 +170,17 @@
   {
    "tag": "gpt-oss:20b",
    "model": "gpt-oss-20b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 52.43,
    "ehs_lo": 52.43,
    "ehs_hi": 52.43,
    "ehs_reps": [
-    52.43,
     52.43
    ],
    "flags": [
     "4 of 143 answers ran out of token budget mid-thought (3%) \u2014 excluded, and they are likely the harder items"
    ],
-   "truncated": 8,
+   "truncated": 4,
    "calibration": 71.33,
    "honesty": 59.49,
    "discrimination": 8.91,
@@ -203,12 +195,11 @@
   {
    "tag": "qwen3:14b",
    "model": "qwen3-14b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 61.88,
    "ehs_lo": 61.88,
    "ehs_hi": 61.88,
    "ehs_reps": [
-    61.88,
     61.88
    ],
    "flags": [],
@@ -227,18 +218,17 @@
   {
    "tag": "qwen3:32b",
    "model": "qwen3-32b-t0",
-   "n_reps": 2,
-   "ehs": 78.3,
-   "ehs_lo": 78.23,
+   "n_reps": 1,
+   "ehs": 78.36,
+   "ehs_lo": 78.36,
    "ehs_hi": 78.36,
    "ehs_reps": [
-    78.36,
-    78.23
+    78.36
    ],
    "flags": [],
    "truncated": 0,
    "calibration": 97.03,
-   "honesty": 99.73,
+   "honesty": 100.0,
    "discrimination": 36.42,
    "independence": 80.0,
    "eci": 138.52,
@@ -251,18 +241,17 @@
   {
    "tag": "qwen3.5:9b",
    "model": "qwen3-5-9b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 71.31,
    "ehs_lo": 71.31,
    "ehs_hi": 71.31,
    "ehs_reps": [
-    71.31,
     71.31
    ],
    "flags": [
     "13 of 143 answers ran out of token budget mid-thought (9%) \u2014 excluded, and they are likely the harder items"
    ],
-   "truncated": 26,
+   "truncated": 13,
    "calibration": 76.58,
    "honesty": 81.44,
    "discrimination": 43.0,
@@ -277,18 +266,17 @@
   {
    "tag": "gemma4:31b",
    "model": "gemma4-31b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 81.73,
    "ehs_lo": 81.73,
    "ehs_hi": 81.73,
    "ehs_reps": [
-    81.73,
     81.73
    ],
    "flags": [
     "4 of 143 answers ran out of token budget mid-thought (3%) \u2014 excluded, and they are likely the harder items"
    ],
-   "truncated": 8,
+   "truncated": 4,
    "calibration": 95.79,
    "honesty": 88.89,
    "discrimination": 54.01,
@@ -303,12 +291,11 @@
   {
    "tag": "qwen3.6:35b-a3b",
    "model": "qwen3-6-35b-a3b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 80.97,
    "ehs_lo": 80.97,
    "ehs_hi": 80.97,
    "ehs_reps": [
-    80.97,
     80.97
    ],
    "flags": [
@@ -329,19 +316,18 @@
   {
    "tag": "qwen3.6:27b",
    "model": "qwen3-6-27b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 76.0,
    "ehs_lo": 76.0,
    "ehs_hi": 76.0,
    "ehs_reps": [
-    76.0,
     76.0
    ],
    "flags": [
     "1 of 143 answers ran out of token budget mid-thought (1%) \u2014 excluded, and they are likely the harder items",
     "null control off by 43% \u2014 perturbation result not attributable"
    ],
-   "truncated": 2,
+   "truncated": 1,
    "calibration": 93.95,
    "honesty": 100.0,
    "discrimination": 35.04,
@@ -358,31 +344,29 @@
   {
    "tag": "devstral-small-2-t0",
    "model": "devstral-small-2-t0",
-   "n_reps": 3,
-   "ehs": 73.62,
+   "n_reps": 2,
+   "ehs": 74.12,
    "ehs_lo": 72.62,
    "ehs_hi": 75.63,
    "ehs_reps": [
     75.63,
-    72.62,
     72.62
    ],
    "flags": [],
    "truncated": 0,
-   "calibration": 81.41,
-   "honesty": 74.33,
-   "discrimination": 58.76,
+   "calibration": 81.45,
+   "honesty": 75.2,
+   "discrimination": 59.85,
    "independence": 80.0
   },
   {
    "tag": "lfm2-t0",
    "model": "lfm2-t0",
-   "n_reps": 3,
+   "n_reps": 2,
    "ehs": 28.5,
    "ehs_lo": 28.5,
    "ehs_hi": 28.5,
    "ehs_reps": [
-    28.5,
     28.5,
     28.5
    ],
@@ -425,12 +409,11 @@
   {
    "tag": "gemma4:26b",
    "model": "gemma4-26b-t0",
-   "n_reps": 2,
+   "n_reps": 1,
    "ehs": 81.74,
    "ehs_lo": 81.74,
    "ehs_hi": 81.74,
    "ehs_reps": [
-    81.74,
     81.74
    ],
    "flags": [
@@ -438,7 +421,7 @@
     "choice parse rate 74% \u2014 score unreliable",
     "interval parse rate 70% \u2014 score unreliable"
    ],
-   "truncated": 86,
+   "truncated": 43,
    "calibration": 95.71,
    "honesty": 98.44,
    "discrimination": 49.46,
@@ -450,20 +433,20 @@
    "original_ten": false
   }
  ],
- "rho": 0.578021978021978,
- "p": 0.033439665603343965,
+ "rho": 0.5428571428571428,
+ "p": 0.04825951740482595,
  "ci_sampling": [
-  -0.011547344110854504,
-  0.8933333333333333
+  -0.07865168539325842,
+  0.8930957683741648
  ],
  "ci_full": [
-  -0.020046333352068475,
-  0.8628508637699189
+  -0.0354384955969167,
+  0.8644978101539402
  ],
- "share_rho_gt_half": 0.5898,
- "share_positive": 0.97095,
+ "share_rho_gt_half": 0.56395,
+ "share_positive": 0.96845,
  "span": 30.539999999999992,
- "verdict": "NOT ESTABLISHED, and leaning positive: the interval includes zero, so this is not a result \u2014 but 97% of draws fall on the positive side and 59% exceed +0.5, so it is not a null either",
+ "verdict": "NOT ESTABLISHED, and leaning positive: the interval includes zero, so this is not a result \u2014 but 97% of draws fall on the positive side and 56% exceed +0.5, so it is not a null either",
  "rho_original": 0.2606060606060606,
  "span_original": 22.55000000000001,
  "n_original": 10,
@@ -476,9 +459,9 @@
   },
   {
    "k": "honesty",
-   "rho": 0.6747252747252748,
-   "p": 0.010674733131671709,
-   "holm": 0.03202419939501513
+   "rho": 0.666667070081045,
+   "p": 0.011674708132296693,
+   "holm": 0.03502412439689008
   },
   {
    "k": "discrimination",
@@ -496,8 +479,8 @@
  "sensitivity": [
   {
    "w": "equal",
-   "rho": 0.578021978021978,
-   "p": 0.03259918502037449
+   "rho": 0.5428571428571428,
+   "p": 0.04729881752956176
   },
   {
    "w": "intervals-heavy",
@@ -521,10 +504,10 @@
   }
  ],
  "loo": {
-  "min": 0.4725274725274725,
+  "min": 0.42857142857142855,
   "min_without": "gemma3:4b",
   "max": 0.7637362637362637,
   "max_without": "mistral-small:24b"
  },
- "rho_with_excluded": 0.6911764705882353
+ "rho_with_excluded": 0.6411764705882353
 }

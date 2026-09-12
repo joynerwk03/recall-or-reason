@@ -72,7 +72,7 @@
    "values": [
     54.34,
     61.88,
-    78.36
+    78.3
    ],
    "direction": "rises with size"
   },
@@ -88,7 +88,7 @@
    "values": [
     47.98,
     66.2,
-    100.0
+    99.73
    ],
    "direction": "rises with size"
   },
@@ -109,8 +109,8 @@
    "direction": "rises with size"
   },
   "ehs_adjacent_separated": [
-   null,
-   null
+   true,
+   true
   ]
  }
 }
