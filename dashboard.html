@@ -314,8 +314,14 @@
     that memorised will hand back the number it already had.
   </p>
   <p>
-    I built eight of these. Each new answer was looked up in an original source:
-    Gallup, Pew, the Bureau of Justice Statistics, Statistics Canada, the EPA.
+    I built eight of these for the two-model comparison below. Each new answer was
+    looked up in an original source: Gallup, Pew, the Bureau of Justice
+    Statistics, Statistics Canada, the EPA.
+  </p>
+  <p>
+    <strong>The set has since grown to twenty moved questions plus the trap</strong>,
+    sourced the same way — and all eighteen models in Section 5 answer the full
+    set. The table here is the original eight, as they were run.
   </p>
   <div class="tscroll">
     <table>
@@ -904,8 +910,10 @@ const FLEET=[
     transform:"translate(34 "+((T+B)/2)+") rotate(-90)"});
   yl.textContent="knows what it doesn\u2019t know  \u2192";s.appendChild(yl);
 
-  const placed=[];
-  FLEET.slice().sort((a,b)=>a.e-b.e).forEach(m=>{
+  const ordered=FLEET.slice().sort((a,b)=>a.e-b.e);
+
+  /* Marks first, so every label knows where every marker is. */
+  ordered.forEach(m=>{
     /* horizontal: the leaderboard's own uncertainty about this model */
     s.appendChild(el("line",{x1:x(m.lo),y1:y(m.s),x2:x(m.hi),y2:y(m.s),
       stroke:"var(--a)",opacity:.3,"stroke-width":2,"stroke-linecap":"round"}));
@@ -922,14 +930,36 @@ const FLEET=[
          (m.shi!=null&&m.slo!=null&&m.shi>m.slo
             ? "<br>across repeat runs: "+m.slo+" to "+m.shi : ""));
     s.appendChild(c);
-    /* Collision is measured in pixels, not data units: the axis range is no
-       longer fixed, so a gap of "4 points" is a different distance each time. */
-    const below=placed.some(p=>!p.b && Math.abs(x(m.e)-x(p.e))<74
-                                   && Math.abs(y(m.s)-y(p.s))<24);
-    const t=el("text",{x:x(m.e),y:y(m.s)+(below?22:-13),"text-anchor":"middle",
-      class:"dl"});
-    t.textContent=m.t;s.appendChild(t);
-    placed.push({e:m.e,s:m.s,b:below});
+  });
+
+  /* Then the labels. Identity depends on them, so a collision makes a point
+     unreadable. Each tries eight positions and takes the first that overlaps
+     nothing; if the corner is too crowded for any of them, it takes the
+     least-bad rather than the first. Two candidates were enough at ten models
+     and stopped being enough at fourteen. */
+  const CH=6.7, TH=15, obstacles=[];
+  ordered.forEach(m=>obstacles.push({x0:x(m.e)-9,y0:y(m.s)-9,
+                                     x1:x(m.e)+9,y1:y(m.s)+9,own:m.t}));
+  const over=(a,b)=>Math.max(0,Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0))
+                   *Math.max(0,Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0));
+  const CANDS=[[0,-14,"middle"],[0,21,"middle"],[11,4,"start"],[-11,4,"end"],
+               [0,-29,"middle"],[0,36,"middle"],[11,-12,"start"],[-11,-12,"end"]];
+  ordered.forEach(m=>{
+    const w=m.t.length*CH;
+    let pick=null, pickCost=null;
+    for(const [dx,dy,anc] of CANDS){
+      const cx=x(m.e)+dx, cy=y(m.s)+dy;
+      const x0 = anc==="middle" ? cx-w/2 : (anc==="start" ? cx : cx-w);
+      const box={x0:x0, y0:cy-TH/2, x1:x0+w, y1:cy+TH/2};
+      let cost=30*(Math.max(0,L-box.x0)+Math.max(0,box.x1-R));
+      obstacles.forEach(b=>{ if(b.own!==m.t) cost+=over(box,b); });
+      if(cost===0){ pick={dx,dy,anc,box}; break; }
+      if(pickCost===null || cost<pickCost){ pick={dx,dy,anc,box}; pickCost=cost; }
+    }
+    const t=el("text",{x:x(m.e)+pick.dx, y:y(m.s)+pick.dy+4,
+      "text-anchor":pick.anc, class:"dl"});
+    t.textContent=m.t; s.appendChild(t);
+    obstacles.push(pick.box);
   });
 })();
 
