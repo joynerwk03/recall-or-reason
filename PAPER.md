@@ -4,7 +4,7 @@
 recall from reasoning, on 80 primary-sourced statistics — and what it finds
 across eighteen models**
 
-William Joyner · draft of 2026-09-11 · *not published; every number below is
+William Joyner · 2026-09-11 · *every number below is
 reproducible from this repository*
 
 ---

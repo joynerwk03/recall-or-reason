@@ -1,0 +1,106 @@
+# Recall or Reason
+
+**Do AI models know what they don't know?** A benchmark built on 80 real-world
+statistics, each traced to a primary source, run on 18 open-weight models small
+enough to run at home.
+
+- **Results, in plain language with charts:** https://claude.ai/artifact/Ajk7bWQystm4Epc5nC4zyR
+- **Full write-up:** [`PAPER.md`](PAPER.md)
+- **Every dated result, including the ones that turned out wrong:** [`LOG.md`](LOG.md)
+
+## What it found
+
+1. **Asked for a confidence score, models said "80 or higher" every time.** Across
+   160 answers from two same-size models, none went below 80, including on the 41
+   questions the weaker model got wrong.
+2. **Asked for an 80% range instead, the stronger model was nearly honest.** The
+   truth landed inside its range 72% of the time, and its widest ranges were the
+   ones where it was about to miss. The weaker model managed 32%.
+3. **Moving a question exposes memorization.** Asked about another year, country or
+   population, the stronger model adjusted every time; the weaker one handed back a
+   number it already had on 5 of 8.
+4. **Across the fleet, higher-ranked models probably know themselves better, but it
+   isn't settled.** Spearman +0.58 across 14 scorable models against the Epoch
+   Capabilities Index, with a 95% interval of [-0.02, +0.86]. A first run on ten
+   models found nothing, because those ten sat in too narrow a band of ability.
+
+## What it measures
+
+| Measure | Question it answers |
+|---|---|
+| Accuracy | Right answer, against a per-item chance baseline (options vary 3 to 4, so a flat 25% would flatter the model) |
+| Calibration | When a model says 90% sure, is it right 90% of the time? |
+| Interval honesty | Asked for an 80% range, does the truth land inside about 80% of the time, and are the ranges aimed rather than padded? |
+| Recall versus reasoning | The same claim moved to another year, country or population, each with its own sourced answer, plus a null control whose answer barely moves |
+| Skew (diagnostic only) | Do errors lean toward the worldview a finding contradicts? Every item is tagged with the prior it punctures |
+
+The **Epistemic Honesty Score** (`epistemic_score.py`) combines four components and
+deliberately has **no accuracy term**, so any relationship with capability is
+discovered rather than built in.
+
+## Rules the project holds itself to
+
+- **Every answer traces to a primary source.** Four items failed a check against
+  their own cited source and are excluded from scoring, with the evidence in
+  [`AUDIT.md`](AUDIT.md).
+- **Items are chosen on importance and evidence, never to balance a column.** The
+  skew tally is a diagnostic, not a target.
+- **Decoding is pinned in the model, not the prompt.** `pin_models.sh` builds a
+  `-t0` copy of each model (temperature 0, top-k 1, seed 42). Even pinned, some
+  models vary run to run, so every model gets repeat runs.
+- **A result file that exists is not a result.** Completeness is a row count
+  (`have_complete.py`).
+- **Capability numbers come from Epoch's machine-readable release**, never a
+  rendered leaderboard (`fetch_eci.py`).
+- **Numbers in the write-up are generated, not typed** (`refresh_writeup.py`).
+- **Negative results are reported with their intervals**, so "not detected" is never
+  dressed up as "no effect".
+
+## Running it
+
+Requirements: Python 3 (evaluation and scoring use the standard library; the charts
+need `matplotlib`) and [Ollama](https://ollama.com).
+
+```bash
+git clone https://github.com/joynerwk03/priors ../priors   # the question bank
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+
+./run.sh extract_items.py        # Priors bank -> data/items.jsonl
+./run.sh build_variants.py       # moved questions -> data/variants.jsonl
+./run.sh fetch_eci.py            # Epoch Capabilities Index -> data/eci.csv
+bash pin_models.sh               # deterministic -t0 copies of each model
+./run.sh run_eval.py --model <model>-t0 --mode interval   # or --mode choice
+./run.sh fleet_status.py         # what is complete
+./run.sh compare_capability.py --json results/fleet.json
+./run.sh plot_fleet.py results/fleet.json
+./run.sh refresh_writeup.py      # regenerate the write-up from the results
+```
+
+`run_eval.py` talks to Ollama over its HTTP API when it can reach it and falls back
+to the `ollama` command line when it can't. On the machine these results came from,
+Ollama ran on the Windows side of WSL2, so every run used the command line;
+`sweep_windows.ps1` drives the full sweep from Windows PowerShell. The Windows
+paths in `run_eval.py` and `pin_models.sh` are defaults for that setup, and
+`OLLAMA_BIN` overrides the one in `pin_models.sh`.
+
+## What's where
+
+| Path | What |
+|---|---|
+| `PAPER.md` | The full write-up |
+| `LOG.md` | Dated log of every result and retraction |
+| `AUDIT.md` | Answer-key checks against primary sources |
+| `public.html` | Source of the published results page |
+| `dashboard.html` | Working report, partly regenerated by `refresh_writeup.py` |
+| `run_eval.py` | Runs one model in one mode (`choice` or `interval`); `--items` picks the question set, e.g. the moved questions |
+| `score.py`, `score_interval.py`, `score_variants.py` | Scoring per mode |
+| `epistemic_score.py`, `compare_capability.py` | The honesty score and the capability comparison |
+| `results/` | Raw answers (JSONL), fleet summary and charts |
+
+## Credits
+
+Questions come from [Priors](https://joynerwk03.github.io/priors), a worldview quiz
+whose bank was verified against primary sources before release. Capability scores
+are from the Epoch AI Benchmarking Hub (CC BY 4.0).
+
+William Joyner, 2026.
