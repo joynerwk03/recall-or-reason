@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Does the AI know what it doesn't know?</title>
+<meta name="description" content="80 real-world statistics, 18 AI models you can run at home: do their confidence scores mean anything?">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ground:#f4f6f9; --surface:#ffffff; --sunk:#eceff4;
+    --ink:#151a21; --ink-2:#3d4753; --muted:#6b7684;
+    --rule:#dde3ea; --rule-strong:#c3ccd8;
+    --a:#1f6feb; --b:#b4531f;
+    --a-wash:#1f6feb1a; --b-wash:#b4531f1a;
+    --dead:#8892a01f; --good:#166f4a; --flag:#8c2f1d;
+    --shadow:0 1px 2px #151a210d;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#131519; --surface:#1a1d22; --sunk:#212530;
+      --ink:#e8ecf1; --ink-2:#b7c0cc; --muted:#8b95a3;
+      --rule:#2b3038; --rule-strong:#3c434e;
+      --a:#4a8ae0; --b:#cd7a3c; --a-wash:#4a8ae024; --b-wash:#cd7a3c24;
+      --dead:#8892a01a; --good:#4fb489; --flag:#d98670; --shadow:0 1px 2px #0006;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#131519; --surface:#1a1d22; --sunk:#212530;
+    --ink:#e8ecf1; --ink-2:#b7c0cc; --muted:#8b95a3;
+    --rule:#2b3038; --rule-strong:#3c434e;
+    --a:#4a8ae0; --b:#cd7a3c; --a-wash:#4a8ae024; --b-wash:#cd7a3c24;
+    --dead:#8892a01a; --good:#4fb489; --flag:#d98670; --shadow:0 1px 2px #0006;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font:400 16px/1.68 "IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:0 20px 80px;
+  }
+  .wrap{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:30px}
+  .wide{max-width:1040px;margin:0 auto;width:100%}
+  h1,h2,h3{text-wrap:balance;margin:0}
+  p{margin:0}
+
+  header{padding:46px 0 6px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.13em;
+          text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+  h1{font-family:Newsreader,Georgia,serif;font-weight:400;
+     font-size:clamp(31px,5vw,50px);line-height:1.08;letter-spacing:-.017em}
+  .standfirst{margin-top:18px;color:var(--ink-2);font-size:18.5px;line-height:1.6}
+  .byline{margin-top:20px;padding-top:16px;border-top:1px solid var(--rule);
+          font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+
+  section{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+          padding:30px 30px 28px;box-shadow:var(--shadow)}
+  .shead{display:flex;align-items:baseline;gap:14px;margin-bottom:12px}
+  .snum{font-family:Newsreader,Georgia,serif;font-size:24px;color:var(--muted);line-height:1;flex:none}
+  h2{font-size:23px;font-weight:600;letter-spacing:-.014em;line-height:1.25}
+  section p{color:var(--ink-2);font-size:16px}
+  section p+p{margin-top:14px}
+  section strong{color:var(--ink);font-weight:600}
+  .findings{margin-top:22px;padding-top:20px;border-top:1px solid var(--rule)}
+  .finding{font-size:17px;color:var(--ink);line-height:1.6}
+  .finding+.finding{margin-top:12px}
+  .finding b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:500}
+
+  /* the short version: the four findings, before any detail */
+  .short{background:transparent;border:none;box-shadow:none;padding:0}
+  .short h2{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:500;
+            letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .keys{list-style:none;margin:0;padding:0}
+  .keys li{display:grid;grid-template-columns:5.2em 1fr;gap:18px;align-items:baseline;
+           padding:16px 0;border-bottom:1px solid var(--rule)}
+  .keys li:first-child{border-top:1px solid var(--rule-strong)}
+  .keys .num{font-family:"IBM Plex Mono",monospace;font-size:21px;font-weight:500;
+             color:var(--a);font-variant-numeric:tabular-nums;text-align:right;line-height:1.2}
+  .keys .num small{display:block;font-size:10.5px;letter-spacing:.06em;color:var(--muted);
+                   font-weight:400;text-transform:uppercase;margin-top:3px}
+  .keys p{font-size:16.5px;color:var(--ink-2);line-height:1.55}
+  .keys p strong{color:var(--ink);font-weight:600}
+
+  /* part dividers: the page really has two parts */
+  .part{display:flex;align-items:baseline;gap:14px;margin:14px 0 -12px;
+        font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--muted)}
+  .part b{color:var(--ink);font-weight:500}
+  .part::after{content:"";flex:1;border-top:1px solid var(--rule-strong);transform:translateY(-3px)}
+
+  /* try-it cards */
+  .quiz{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:14px;margin-top:20px}
+  .q{background:var(--sunk);border:1px solid var(--rule);border-radius:3px;padding:17px;
+     display:flex;flex-direction:column;gap:11px;text-align:left;font:inherit;color:inherit;
+     cursor:pointer}
+  .q:hover{border-color:var(--rule-strong)}
+  .q:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+  .q .qt{font-size:14.5px;line-height:1.5;color:var(--ink)}
+  .q .qa{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:500;
+         color:var(--muted);font-variant-numeric:tabular-nums}
+  .q[aria-pressed="true"] .qa{color:var(--a)}
+  .q .hint{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+           text-transform:uppercase;color:var(--muted)}
+
+  figure{margin:22px 0 0}
+  figcaption{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.6}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .ax{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
+  .axl{fill:var(--muted);font-family:"IBM Plex Sans",sans-serif;font-size:12.5px}
+  .dl{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;fill:var(--ink)}
+  .idm{font-family:"IBM Plex Mono",monospace;font-size:.92em;color:var(--ink)}
+  .dlx{font-family:"IBM Plex Sans",sans-serif;font-size:13px;font-weight:500;fill:var(--ink)}
+  .grid{stroke:var(--rule);stroke-width:1}
+
+  .tscroll{overflow-x:auto;margin-top:22px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:600px}
+  th,td{text-align:left;padding:11px 15px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+     text-transform:uppercase;color:var(--muted);font-weight:500}
+  td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.echo td{background:var(--b-wash)}
+  tr.ctrl td{color:var(--muted)}
+  .changed{color:var(--ink);font-weight:600}
+  .why{font-size:13.5px;color:var(--ink-2);line-height:1.45}
+  .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;
+        letter-spacing:.06em;padding:2px 7px;border-radius:2px;border:1px solid currentColor;
+        white-space:nowrap;text-transform:uppercase}
+  .pill.no{color:var(--flag)}
+  .pill.ok{color:var(--good)}
+
+  .fail{display:grid;grid-template-columns:24px 1fr;gap:15px;padding:17px 0;
+        border-bottom:1px solid var(--rule)}
+  .fails>.fail:first-child{border-top:1px solid var(--rule)}
+  .fail .fn{font-family:Newsreader,Georgia,serif;font-size:18px;color:var(--muted);line-height:1.3}
+  .fail h3{font-size:16px;font-weight:600;margin-bottom:6px}
+  .fail p{font-size:15px}
+  .fail p+p{margin-top:10px}
+
+  details{border:1px solid var(--rule);border-radius:3px;background:var(--surface);
+          padding:0 22px;box-shadow:var(--shadow)}
+  details[open]{padding-bottom:20px}
+  section details{box-shadow:none;margin-top:20px}
+  summary{cursor:pointer;padding:17px 0;font-weight:600;font-size:15px;list-style:none;
+          display:flex;align-items:center;gap:10px}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"+";font-family:"IBM Plex Mono",monospace;color:var(--muted);
+                  font-weight:400;font-size:17px}
+  details[open] summary::before{content:"\2212"}
+  summary:focus-visible{outline:2px solid var(--a);outline-offset:3px}
+  details table{font-size:13.5px;min-width:440px}
+  details p{font-size:14.5px;color:var(--ink-2)}
+  details p+p{margin-top:12px}
+  details .fail p{font-size:14.5px}
+
+  .caveat{background:var(--sunk);border:1px solid var(--rule);border-radius:3px;padding:24px}
+  .caveat h2{font-size:18px;margin-bottom:14px}
+  .caveat ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:11px;
+             font-size:15px;color:var(--ink-2)}
+  .caveat b{color:var(--ink)}
+
+  footer{color:var(--muted);font-size:13.5px;line-height:1.7}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--sunk);
+       padding:1px 5px;border-radius:2px}
+  #tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;
+       background:var(--ink);color:var(--ground);padding:8px 11px;border-radius:3px;
+       font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;z-index:9;
+       max-width:260px;box-shadow:0 3px 12px #0003}
+  .hit{cursor:pointer}
+  .hit:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  @media (max-width:560px){
+    body{padding:0 16px 64px}
+    section{padding:22px 18px 20px}
+    .keys li{grid-template-columns:1fr;gap:4px}
+    .keys .num{text-align:left}
+    .keys .num small{display:inline;margin:0 0 0 8px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">An experiment with AI models you can run at home · September 2026</div>
+  <h1>I asked AI models how sure they were. They always said &ldquo;very.&rdquo;</h1>
+  <p class="standfirst">
+    Then I asked the same questions a different way, and the better model turned
+    out to know exactly which of its answers were shaky. The problem was never the
+    model. It was the question I was asking it.
+  </p>
+  <p class="standfirst" style="margin-top:14px">
+    Then I ran everything on <strong>eighteen</strong> models, and found I had
+    gotten one conclusion backwards the first time, for a reason more useful than
+    the result itself.
+  </p>
+  <div class="byline">William Joyner · 80 questions, each traced to its original source · 18 models</div>
+</header>
+
+<!-- ---------- the short version ---------- -->
+<section class="short" aria-labelledby="short-h">
+  <h2 id="short-h">The short version</h2>
+  <ul class="keys">
+    <li><div class="num">160/160<small>said 80+</small></div>
+      <p><strong>Asked for a confidence score, the models said &ldquo;80 or higher&rdquo;
+      every single time</strong>, including on the 41 questions the weaker one got
+      wrong.</p></li>
+    <li><div class="num">72%<small>vs 80% promised</small></div>
+      <p><strong>Asked for a range instead, the better model was nearly honest.</strong>
+      It promised to be right 80% of the time and was right 72%, and it drew its widest
+      ranges exactly where it was about to miss.</p></li>
+    <li><div class="num">5 of 8<small>repeated</small></div>
+      <p><strong>Moving a question exposes memorization.</strong> Asked about Canada
+      instead of the US, or 1989 instead of today, the better model adjusted every time.
+      The weaker one handed back a number it already had on 5 of 8.</p></li>
+    <li><div class="num">+0.58<small>not settled</small></div>
+      <p><strong>Across eighteen models, higher-ranked ones probably know themselves
+      better</strong>, but it isn&rsquo;t settled, and my first run, on ten models,
+      said the opposite.</p></li>
+  </ul>
+</section>
+
+<!-- ---------- setup ---------- -->
+<section>
+  <div class="shead"><span class="snum">§</span><h2>The setup, in sixty seconds</h2></div>
+  <p>
+    I collected <strong>80 questions about real-world statistics</strong>, the kind
+    where most people&rsquo;s guess is badly wrong. Every answer traces to an original
+    source: a government agency, a national survey, a published study.
+  </p>
+  <p>
+    Then I gave them to AI models. Not the big famous ones: free models small enough
+    to run on a home computer. <strong>Part 1</strong> looks closely at two of them
+    that are <strong>the same size</strong>, so when they behave differently, it
+    isn&rsquo;t because one is bigger. <strong>Part 2</strong> runs everything on
+    eighteen.
+  </p>
+  <p>Try three of the questions yourself first.</p>
+  <div class="quiz" id="quiz"></div>
+  <p style="margin-top:16px;font-size:14.5px;color:var(--muted)">
+    Most people are off by a lot. So were the models, and that part isn&rsquo;t
+    interesting. What&rsquo;s interesting is whether they <em>knew</em> they were off.
+  </p>
+</section>
+
+<div class="part"><b>Part 1</b> Two same-size models, up close</div>
+
+<!-- ---------- 1 ---------- -->
+<section>
+  <div class="shead"><span class="snum">1</span><h2>Every answer came with &ldquo;I&rsquo;m very sure&rdquo;</h2></div>
+  <p>
+    Each question was multiple choice, and I asked for one more thing:
+    <strong>how confident are you, from 0 to 100?</strong>
+  </p>
+  <p>
+    Think of a weather forecaster. When they say &ldquo;70% chance of rain,&rdquo; it
+    should rain on about 70 of those hundred days. If it rains on 20, the number is
+    worthless, not because the forecaster is unlucky, but because the number
+    isn&rsquo;t tracking anything.
+  </p>
+  <p>
+    Across <strong>160 answers, neither model ever said a number below 80.</strong>
+    Each used four values all day and never touched the rest of the scale.
+  </p>
+  <figure class="wide">
+    <svg id="deadzone" viewBox="0 0 900 210" role="img"
+         aria-label="Confidence values the models used. One used 80, 85, 90 and 95. The other used 85, 90, 95 and 100. Neither ever went below 80."></svg>
+    <figcaption>
+      Each circle is one confidence value; bigger circles mean more answers landed
+      there. The shaded region is the four-fifths of the scale neither model ever used.
+      Hover or tap any mark on this page for exact counts.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      The weaker model got <b>41</b> of its 80 questions wrong. On every one of those,
+      it had told me it was <b>at least 85%</b> sure.
+    </p>
+  </div>
+</section>
+
+<!-- ---------- 2 ---------- -->
+<section>
+  <div class="shead"><span class="snum">2</span><h2>Asked for a range instead, one model was nearly honest</h2></div>
+  <p>
+    So I stopped asking for a confidence score and asked for <strong>a range</strong>:
+    your best guess, plus a low and a high number you&rsquo;re 80% sure the truth falls
+    between.
+  </p>
+  <p>
+    That comes with a built-in test. If a model says &ldquo;80% sure&rdquo; and means
+    it, the real answer should land inside its range <strong>about 80% of the
+    time</strong>. Much less, and it was overconfident. Much more, and it was being
+    needlessly vague.
+  </p>
+  <figure class="wide">
+    <svg id="coverage" viewBox="0 0 900 216" role="img"
+         aria-label="How often the true answer fell inside the range each model gave. One model 72 percent against the 80 percent it promised; the other 32 percent."></svg>
+    <figcaption>
+      How often the true answer landed inside the range the model gave. The dashed
+      line is what both of them promised.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      The stronger model promised 80% and delivered <b>72%</b>, a gap small enough to be
+      chance. <strong>That is roughly honest behavior.</strong>
+    </p>
+    <p class="finding">
+      On these same questions, asked for a confidence score, it had never once gone
+      below 80. <strong>The doubt was there. The 0 to 100 scale just couldn&rsquo;t
+      carry it.</strong>
+    </p>
+    <p class="finding">
+      The weaker model delivered <b>32%</b>. It is overconfident whichever way you ask,
+      so this isn&rsquo;t a magic trick: a range gives a model <em>room</em> to express
+      doubt, but it can&rsquo;t create doubt that isn&rsquo;t there.
+    </p>
+  </div>
+</section>
+
+<!-- ---------- 3 ---------- -->
+<section>
+  <div class="shead"><span class="snum">3</span><h2>Wait, couldn&rsquo;t it just cheat?</h2></div>
+  <p>
+    Yes, and it&rsquo;s the first thing you should ask. A model that answers
+    <strong>&ldquo;somewhere between 0% and 100%&rdquo;</strong> every time is always
+    right and tells you nothing. A range only counts if it&rsquo;s tight enough to be a
+    real claim. So I ran two checks.
+  </p>
+  <p>
+    <strong>First</strong>, I scored each range against a <em>different</em>
+    question&rsquo;s answer. Lazily huge ranges would catch random answers too, and the
+    score would barely move. It collapsed from 72% to <strong>17%</strong>. The ranges
+    are aimed, not padded.
+  </p>
+  <p>
+    <strong>Second</strong>, a model that knows when it&rsquo;s on shaky ground should
+    draw its wide ranges where it&rsquo;s about to be badly wrong, and its narrow ones
+    where it nails it.
+  </p>
+  <figure class="wide">
+    <svg id="narrowwide" viewBox="0 0 900 240" role="img"
+         aria-label="When the stronger model gave a narrow range it was typically off by 1 percentage point; when it gave a wide range it was typically off by 6."></svg>
+    <figcaption>
+      Only questions whose answer is a percentage, so everything is on one scale.
+      &ldquo;Typically off by&rdquo; is the median miss.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      When the stronger model drew a narrow range, it was typically off by
+      <b>1 percentage point</b>. When it drew a wide one, it was typically off by
+      <b>6</b>. <strong>It widened its range exactly where it was about to be wrong.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- ---------- 4 ---------- -->
+<section>
+  <div class="shead"><span class="snum">4</span><h2>Did it reason, or just remember?</h2></div>
+  <p>
+    Here&rsquo;s the objection that could sink all of this: these are famous statistics,
+    and the models were trained on the internet. Maybe they never reasoned about
+    anything. Maybe they just remember the number.
+  </p>
+  <p>
+    There&rsquo;s a clean way to check. <strong>Move the question.</strong> Ask about
+    Canada instead of the United States, or 1978 instead of today. The real answer
+    changes, so a model that understands will adjust, and a model that memorized will
+    hand back the number it already had.
+  </p>
+  <p>
+    I built eight of these for Part 1, each new answer looked up in an original source
+    (Gallup, Pew, the Bureau of Justice Statistics, Statistics Canada, the EPA). The set
+    has since grown to twenty plus the trap below, and all eighteen models in Part 2
+    answer it.
+  </p>
+  <div class="tscroll">
+    <table>
+      <thead><tr>
+        <th style="width:38%">The same question, moved</th>
+        <th>Real answer</th><th>Stronger model</th><th>Weaker model</th>
+        <th style="width:24%">What went wrong</th>
+      </tr></thead>
+      <tbody id="ptable"></tbody>
+    </table>
+  </div>
+  <div class="findings">
+    <p class="finding">
+      The stronger model adjusted <strong>every time</strong>: 75% for Canada, not
+      America&rsquo;s 60%; 61× for 1989, not today&rsquo;s 340×.
+    </p>
+    <p class="finding">
+      The weaker model handed back a number it already had on <b>5 of the 8</b>. Twice,
+      the number it repeated was <strong>printed in the question itself</strong>: asked
+      for the pay ratio in 1989, it read back the 1965 figure the question had just given
+      it.
+    </p>
+    <p class="finding">
+      One row is a <strong>trap I set for myself</strong>: a move where the real answer
+      barely changes (US against global plastic recycling, 8.7% against 9%). If the models
+      had fallen apart there too, they&rsquo;d just be confused by rewording, and nothing
+      else here would mean anything. Both handled it fine.
+    </p>
+  </div>
+</section>
+
+<div class="part"><b>Part 2</b> Eighteen models</div>
+
+<!-- ---------- 5 ---------- -->
+<section>
+  <div class="shead"><span class="snum">5</span><h2>Do smarter models know themselves better?</h2></div>
+  <p>
+    Two models could just be those two models. So I ran everything on
+    <strong>eighteen</strong>: every one I could run on a home computer, from 1 billion
+    parameters to 35 billion. Fourteen of them appear on a public ability leaderboard
+    <em>and</em> answered reliably enough to score.
+  </p>
+  <p>
+    That leaderboard, from a research group called Epoch, ranks models on general
+    ability by combining dozens of tests. The question: <strong>if a model ranks higher,
+    is it also better at knowing what it doesn&rsquo;t know?</strong> You&rsquo;d expect
+    yes, the way a better student is usually better at guessing which exam answers they
+    got wrong.
+  </p>
+  <p>
+    <strong>The answer is probably yes. The first time I ran this, on ten models, I got
+    &ldquo;no&rdquo; and wrote it up as the headline.</strong> Why is the most useful
+    thing on this page.
+  </p>
+  <figure class="wide">
+    <svg id="fleet" viewBox="0 0 900 470" role="img"
+         aria-label="14 models plotted by general ability against how well they know their own uncertainty. The trend is upward but loose, with large exceptions."></svg>
+    <figcaption>
+      Each dot is one model: general ability left to right, how well it knows its own
+      uncertainty bottom to top. Horizontal bars are the leaderboard&rsquo;s <em>own</em>
+      uncertainty about where a model belongs; several are wide, and hiding them would
+      claim a precision the ranking doesn&rsquo;t have. Hollow dots are models added to
+      widen the range. Vertical bars show how much a score moved between repeat runs.
+    </figcaption>
+  </figure>
+  <div class="findings">
+    <p class="finding">
+      <strong>Ability and self-knowledge move together, but I can&rsquo;t call it
+      settled.</strong> Rank the models both ways and the orders come out similar: a
+      correlation of <b>+0.58</b> (1.00 would be identical order, 0 unrelated).
+      Accounting for every source of error at once, the plausible range runs from
+      <b>-0.02</b> to <b>+0.86</b>. That barely includes zero, so &ldquo;no
+      relationship&rdquo; isn&rsquo;t quite ruled out; 97% of resamples land positive.
+    </p>
+    <p class="finding">
+      <strong>Why my first answer was wrong.</strong> The first ten models were bunched
+      into a narrow band of ability, and inside a narrow band a real relationship looks
+      like noise. It&rsquo;s like testing whether height predicts basketball skill using
+      only people between 5&prime;10&Prime; and 6&prime;0&Prime;. Same code, same questions,
+      wider band: <b>+0.26</b> across the original ten becomes <b>+0.58</b> across
+      fourteen.
+    </p>
+    <p class="finding">
+      <strong>Half of the test tracks the leaderboard.</strong> The two measures of
+      <em>stating</em> uncertainty improve with ability: whether &ldquo;90% sure&rdquo;
+      means 90% (<b>+0.75</b>), and whether a stated range contains the answer
+      (<b>+0.67</b>). The two about <em>memorization</em> don&rsquo;t: widening the range
+      where it&rsquo;s about to be wrong (<b>+0.20</b>), and not repeating a number it
+      already had (<b>+0.29</b>). <strong>The leaderboard predicts the familiar half of
+      this test, not the novel half.</strong>
+    </p>
+    <p class="finding">
+      <strong>The exceptions are big.</strong> <span class="idm">mistral-small:24b</span>
+      scores <b>81</b>, while <span class="idm">gpt-oss:20b</span>, 11 points
+      <em>higher</em> on the leaderboard, scores <b>52</b>. And
+      <span class="idm">llama3.1:8b</span>, 21 points <em>below</em> gpt-oss:20b,
+      matches it (53 against 52).
+    </p>
+    <p class="finding">
+      <strong>One thing I can&rsquo;t rule out.</strong> Every model at the top of the
+      ability range is a 2026 release, and some questions ask about &ldquo;now&rdquo;
+      without a date, so a model trained earlier answers with an older figure and is
+      marked wrong. That penalty lands on older, lower-ranked models, which pushes toward
+      exactly my result. The last check below speaks to it: within one model family
+      released on one day, the same two measures still rise with size.
+    </p>
+  </div>
+  <p style="margin-top:20px">
+    <strong>What this means if you&rsquo;re picking a model:</strong> a higher-ranked
+    model is a better bet for trustworthy confidence, and that now has evidence behind
+    it. But the exceptions are large enough that the ranking can&rsquo;t settle any
+    particular pair. If you need to act on &ldquo;I&rsquo;m 90% sure,&rdquo; you still
+    have to test it.
+  </p>
+  <details>
+    <summary>Four ways I tried to break this result</summary>
+    <p><b>Change how the four parts are weighted.</b> The score weights them equally.
+    Under five different weightings the correlation runs +0.55 to +0.70, so it
+    isn&rsquo;t an artifact of that choice.</p>
+    <p><b>Drop each model in turn.</b> With any single model removed, the correlation
+    stays between <b>+0.47</b> (without gemma3:4b) and <b>+0.76</b> (without
+    mistral-small:24b). No one model is carrying it.</p>
+    <p><b>Put back the models I excluded.</b> Two models are left out by rules I fixed in
+    advance: one answers in prose instead of the format I asked for, one runs out of
+    thinking room on 30% of answers. Putting both back <em>strengthens</em> the result to
+    <b>+0.69</b>, so the exclusions aren&rsquo;t what produce it.</p>
+    <p><b>Check the same-family size ladders.</b> Gemma 3 comes in three sizes released
+    the same day, and Qwen3 in three more. Within both families, the two
+    &ldquo;stating uncertainty&rdquo; measures rise with size, which the release-date
+    worry can&rsquo;t explain, because within a family the release date doesn&rsquo;t
+    vary. Three sizes is a description, not a test, and I quote it as one.</p>
+  </details>
+</section>
+
+<!-- ---------- 6 ---------- -->
+<section>
+  <div class="shead"><span class="snum">6</span><h2>Nine times my own measuring tools lied to me</h2></div>
+  <p>
+    Every number above survived a bug that had already handed me a confident, believable,
+    wrong result. These were the hardest part of the work, and a results page that only
+    shows the wins is advertising. The four that mattered most:
+  </p>
+  <div class="fails" style="margin-top:18px">
+    <div class="fail">
+      <div class="fn">1</div>
+      <div>
+        <h3>The experiment wasn&rsquo;t repeatable, and said it was</h3>
+        <p>AI models are random by default: ask twice, get two answers. I thought
+        I&rsquo;d switched that off. I hadn&rsquo;t. My setting was being silently pasted
+        into the question as text instead of being applied, and two runs of the same 50
+        questions disagreed on <strong>35 of them</strong>. Every number I had was a coin
+        flip I&rsquo;d recorded once.</p>
+      </div>
+    </div>
+    <div class="fail">
+      <div class="fn">2</div>
+      <div>
+        <h3>My length limit was deleting the answers of the models that think</h3>
+        <p>Newer models work through a problem in writing before answering. I had capped
+        how much they could write, at a level set for two older models that never came
+        near it. One newer model was cut off mid-thought on <strong>63% of its
+        answers</strong>, and a cut-off answer records as no answer at all. The cap was
+        quietly deleting the hardest questions from the strongest models, exactly the ones
+        Part 2 needed. Raising it moved scores by up to 5 points.</p>
+      </div>
+    </div>
+    <div class="fail">
+      <div class="fn">3</div>
+      <div>
+        <h3>My reader was scrambling the answers</h3>
+        <p>One model wrote its ranges as <em>low, guess, high</em>. My program assumed
+        <em>guess, low, high</em>, so it read &ldquo;0, 5, 10&rdquo; as a guess of 0 with a
+        range of 5 to 10, and I had written that up as <strong>the model being
+        incoherent</strong>. It wasn&rsquo;t. I was.</p>
+      </div>
+    </div>
+    <div class="fail">
+      <div class="fn">4</div>
+      <div>
+        <h3>My own answer key had four bad questions in it</h3>
+        <p>Every question I touched, I re-checked against the source it cites. Four
+        didn&rsquo;t survive, and all four are excluded from scoring. One of them asked
+        what a ratio is <em>now</em> while answering for 2022. That penalizes any model
+        that answers with a more current figure, and the more recently trained models are
+        also the more capable ones, so scoring it would have quietly tilted Part 2.</p>
+      </div>
+    </div>
+  </div>
+  <details>
+    <summary>Five more, for the curious</summary>
+    <div class="fails">
+      <div class="fail">
+        <div class="fn">5</div>
+        <div>
+          <h3>A score that rewarded being wrong</h3>
+          <p>I measured memorization as &ldquo;how much worse does it get when I move the
+          question.&rdquo; But a model already 96% wrong <em>can&rsquo;t</em> get much
+          worse, so it scored as rock-solid. My tool printed &ldquo;no meaningful
+          degradation&rdquo; about the model that was failing hardest.</p>
+        </div>
+      </div>
+      <div class="fail">
+        <div class="fn">6</div>
+        <div>
+          <h3>A statistic that swapped the two models around</h3>
+          <p>I divided two different measurements by the same number before comparing
+          them, which makes unrelated things look related. Corrected, the two models traded
+          places: as first reported, the page would have named the wrong model as the one
+          that knew what it didn&rsquo;t know.</p>
+        </div>
+      </div>
+      <div class="fail">
+        <div class="fn">7</div>
+        <div>
+          <h3>A file that looked finished and was a third of a run</h3>
+          <p>My check for &ldquo;has this model been tested yet?&rdquo; asked whether a
+          results file existed. Four interrupted runs had left files holding 0, 9, 11 and 24
+          answers where 80 were expected. All four passed, I built a comparison table on
+          them, and I had to retract it. The check counts rows now.</p>
+        </div>
+      </div>
+      <div class="fail">
+        <div class="fn">8</div>
+        <div>
+          <h3>I matched a model to the wrong row on the leaderboard</h3>
+          <p>The leaderboard lists several releases of the same family under similar names.
+          I joined mine to the wrong one, which would have moved a point sideways on the
+          Part 2 chart for no reason. The match is now written out model by model, and a
+          missing name stops the program instead of being guessed at.</p>
+        </div>
+      </div>
+      <div class="fail">
+        <div class="fn">9</div>
+        <div>
+          <h3>A measure that was partly measuring the size of the numbers</h3>
+          <p>One measure asks whether a model draws wider ranges on the questions it gets
+          more wrong. I was computing it across percentages and raw counts at once, and big
+          numbers track big numbers no matter who is answering. Restricted to one scale,
+          every model&rsquo;s score on that measure fell.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- caveats ---------- -->
+<div class="caveat">
+  <h2>What this does <em>not</em> show</h2>
+  <ul>
+    <li><b>It doesn&rsquo;t prove a model isn&rsquo;t memorizing.</b> It proves the model
+      isn&rsquo;t parroting <em>one</em> number. I could only move questions where a single
+      source publishes the whole history, so those answers are well documented too. A model
+      that memorized the entire table would pass.</li>
+    <li><b>The numbers are small.</b> 80 questions, 50 with numeric answers, 8 moved
+      questions in Part 1, and 14 scorable models in Part 2, whose plausible correlation
+      runs anywhere from zero to very strong. One experiment, not a replication.</li>
+    <li><b>This says nothing about ChatGPT or Claude.</b> These are small models you can
+      run at home, with one way of phrasing each question.</li>
+    <li><b>Two of the Part 1 models aren&rsquo;t on the leaderboard</b>, so they
+      can&rsquo;t appear in Part 2. That&rsquo;s inconvenient rather than convenient: one
+      of them is among the best performers on this test.</li>
+    <li><b>My answer key is imperfect.</b> Four questions failed a check against their own
+      sources and are excluded. These were the questions I happened to check, not a random
+      sample, so four is a count, not a rate.</li>
+  </ul>
+</div>
+
+<!-- ---------- technical ---------- -->
+<details>
+  <summary>The actual numbers, for anyone who wants them</summary>
+  <p>Part 1 models pinned to deterministic decoding (temperature 0, top-k 1, seed 42) in
+  each model&rsquo;s Modelfile; every figure below reproduces exactly.</p>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Measure</th><th>devstral-small-2</th><th>lfm2</th></tr></thead>
+      <tbody>
+        <tr><td>Parameters / quantization</td><td class="n">24.0B dense · Q4_K_M</td><td class="n">23.8B MoE · Q4_K_M</td></tr>
+        <tr><td>Multiple-choice accuracy</td><td class="n">80.0% [70.0, 87.3]</td><td class="n">48.8% [38.1, 59.5]</td></tr>
+        <tr><td>Chance baseline (per item)</td><td class="n">26.8%</td><td class="n">26.8%</td></tr>
+        <tr><td>Expected calibration error</td><td class="n">0.092</td><td class="n">0.430</td></tr>
+        <tr><td>Confidence values used</td><td class="n">80, 85, 90, 95</td><td class="n">85, 90, 95, 100</td></tr>
+        <tr><td>80% interval coverage</td><td class="n">72.0% [58.3, 82.5]</td><td class="n">32.0% [20.8, 45.8]</td></tr>
+        <tr><td>Shuffle null (2000 derangements)</td><td class="n">17.2%</td><td class="n">18.9%</td></tr>
+        <tr><td>Width vs error, Spearman ρ (raw)</td><td class="n">+0.647</td><td class="n">+0.460</td></tr>
+        <tr><td>…restricted to percentage items</td><td class="n">+0.548 (n=37)</td><td class="n">+0.382 (n=37)</td></tr>
+        <tr><td>Estimate outside its own interval</td><td class="n">0/50</td><td class="n">3/50</td></tr>
+        <tr><td>Anchor echoes on moved questions</td><td class="n">0/8</td><td class="n">5/8</td></tr>
+        <tr><td>Null-control gap</td><td class="n">+0.08</td><td class="n">+0.15</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>Anchor echo:</b> the estimate lands closer to a figure the model was already
+  holding (the unmoved answer, or a number quoted in the prompt) than to the truth. Chosen
+  over the error gap because it is defined on every item regardless of baseline accuracy;
+  the gap is only defined where the model got the original right, and the weaker model
+  qualifies once. Fisher exact, two-tailed: <b>p = 0.026</b>.</p>
+  <p><b>Fleet comparison.</b> Epistemic Honesty Score against the Epoch Capabilities
+  Index. 14 open-weights models spanning 30.5 ECI points: Spearman rho = <b>+0.578</b>,
+  permutation p = <b>0.033</b>, n = 14. Bootstrap 95% interval with model resampling,
+  repeat-run noise and Epoch&rsquo;s own ECI intervals all propagated:
+  <b>[-0.02, +0.86]</b>, 97% of draws positive. Range check on the same pipeline: rho
+  +0.261 across the original 10 models (22.6 points) against +0.578 across 14 (30.5). Per
+  component, Holm-corrected across four tests: calibration +0.754 (Holm <b>0.013</b>),
+  honesty +0.675 (Holm <b>0.032</b>), discrimination +0.204 (Holm 0.632), independence
+  +0.288 (Holm 0.632). Excluded by pre-set rules: llama3.2:1b, gemma4:26b. ECI pulled from
+  <code>epoch.ai/data/benchmark_data.zip</code>, not a rendered leaderboard.</p>
+  <p><b>Subset control:</b> the interval run uses only the 50 numeric items, so the
+  multiple-choice run was rescored on exactly those 50. Calibration error got
+  <em>worse</em> (0.092 → 0.122 and 0.430 → 0.514), so the interval result is not
+  inherited from an easier subset.</p>
+</details>
+
+<footer>
+  Questions inherited from <em>Priors</em>, a worldview quiz whose question bank was
+  verified against primary sources before release. The full write-up and a dated log of
+  every claim, including the ones that turned out to be wrong, are kept with the code,
+  and every figure on this page is regenerated from the raw results.
+</footer>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+const CONF={devstral:{80:23,85:23,90:17,95:17}, lfm2:{85:26,90:29,95:24,100:1}};
+
+const QUIZ=[
+ {q:"Of all gun deaths in the United States, what share are suicides?",a:"60%"},
+ {q:"What share of the US federal budget goes to foreign aid?",a:"1%"},
+ {q:"What share of US adults identify as LGBT?",a:"9%"}
+];
+
+const PERT=[
+ {w:"Muslims as a share of the population: <span class='changed'>France</span>, not the US",
+  t:"8.8%", d:"8%", l:"9%", why:"", ctrl:0},
+ {w:"Believe in God: the <span class='changed'>general public</span>, not scientists",
+  t:"95%", d:"85%", l:"62%", why:"gave roughly the scientists&rsquo; figure", ctrl:0},
+ {w:"CEO-to-worker pay ratio: in <span class='changed'>1989</span>, not today",
+  t:"61×", d:"60×", l:"21×", why:"read back a number printed in the question", ctrl:0},
+ {w:"Approved of interracial marriage: in <span class='changed'>1978</span>, not today",
+  t:"36%", d:"48%", l:"6%", why:"read back a number printed in the question", ctrl:0},
+ {w:"Adults identifying as LGBT: in <span class='changed'>2012</span>, not today",
+  t:"3.5%", d:"3.5%", l:"10%", why:"gave today&rsquo;s figure", ctrl:0},
+ {w:"Believe God created humans: in <span class='changed'>1999</span>, not today",
+  t:"47%", d:"50%", l:"65%", why:"", ctrl:0},
+ {w:"Gun deaths that are suicides: <span class='changed'>Canada</span>, not the US",
+  t:"75%", d:"75%", l:"60%", why:"gave the US figure", ctrl:0},
+ {w:"Prisoners rearrested: within <span class='changed'>3 years</span>, not 10",
+  t:"68%", d:"67%", l:"65%", why:"", ctrl:0},
+ {w:"Plastic actually recycled: <span class='changed'>US</span>, not global",
+  t:"8.7%", d:"8%", l:"10%", why:"", ctrl:1}
+];
+
+const NS="http://www.w3.org/2000/svg";
+const el=(n,a={})=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const tip=document.getElementById("tip");
+function bind(node,html){
+  const show=ev=>{tip.innerHTML=html;tip.style.opacity=1;
+    const r=ev.touches?ev.touches[0]:ev;
+    let x=r.clientX+14,y=r.clientY-10,w=tip.offsetWidth,h=tip.offsetHeight;
+    if(x+w>innerWidth-8)x=r.clientX-w-14;
+    if(y+h>innerHeight-8)y=innerHeight-h-8;
+    if(y<8)y=8;
+    tip.style.left=x+"px";tip.style.top=y+"px";};
+  node.addEventListener("mouseenter",show);
+  node.addEventListener("mousemove",show);
+  node.addEventListener("mouseleave",()=>tip.style.opacity=0);
+  node.addEventListener("focus",()=>{const b=node.getBoundingClientRect();
+    show({clientX:b.left+b.width/2,clientY:b.top});});
+  node.addEventListener("blur",()=>tip.style.opacity=0);
+  node.classList.add("hit");node.setAttribute("tabindex","0");
+}
+
+/* quiz */
+(function(){
+  const box=document.getElementById("quiz");
+  QUIZ.forEach(item=>{
+    const b=document.createElement("button");
+    b.className="q";b.type="button";b.setAttribute("aria-pressed","false");
+    b.innerHTML=`<div class="qt">${item.q}</div><div class="qa">?</div>
+                 <div class="hint">tap to reveal</div>`;
+    b.addEventListener("click",()=>{
+      const on=b.getAttribute("aria-pressed")==="true";
+      b.setAttribute("aria-pressed",String(!on));
+      b.querySelector(".qa").textContent=on?"?":item.a;
+      b.querySelector(".hint").textContent=on?"tap to reveal":"the real answer";
+    });
+    box.appendChild(b);
+  });
+})();
+
+/* 1. dead zone */
+(function(){
+  const s=document.getElementById("deadzone");
+  const L=118,R=846,W=R-L,rows={devstral:70,lfm2:132};
+  const x=v=>L+(v/100)*W;
+  s.appendChild(el("rect",{x:L,y:40,width:x(80)-L,height:126,fill:"var(--dead)"}));
+  s.appendChild(el("line",{x1:x(80),y1:34,x2:x(80),y2:172,stroke:"var(--rule-strong)",
+    "stroke-width":1,"stroke-dasharray":"4 4"}));
+  const dz=el("text",{x:(L+x(80))/2,y:28,"text-anchor":"middle",class:"axl"});
+  dz.textContent="neither model ever answered anywhere in here";s.appendChild(dz);
+  for(let v=0;v<=100;v+=20){
+    s.appendChild(el("line",{x1:x(v),y1:166,x2:x(v),y2:172,stroke:"var(--rule-strong)"}));
+    const t=el("text",{x:x(v),y:188,"text-anchor":"middle",class:"ax"});t.textContent=v;s.appendChild(t);
+  }
+  const cap=el("text",{x:(L+R)/2,y:206,"text-anchor":"middle",class:"axl"});
+  cap.textContent="how sure the model said it was  (0 = no idea, 100 = certain)";s.appendChild(cap);
+  s.appendChild(el("line",{x1:L,y1:166,x2:R,y2:166,stroke:"var(--rule-strong)"}));
+  const names={devstral:"stronger model",lfm2:"weaker model"};
+  for(const[m,vals]of Object.entries(CONF)){
+    const y=rows[m],col=m==="devstral"?"var(--a)":"var(--b)";
+    const lab=el("text",{x:L-16,y:y+4,"text-anchor":"end",class:"dlx",fill:col});
+    lab.textContent=names[m];s.appendChild(lab);
+    s.appendChild(el("line",{x1:L,y1:y,x2:R,y2:y,class:"grid"}));
+    for(const[v,n]of Object.entries(vals)){
+      const r=Math.sqrt(n)*3.2;
+      const c=el("circle",{cx:x(+v),cy:y,r:r,fill:col,stroke:"var(--surface)","stroke-width":2});
+      bind(c,`<b>${names[m]}</b><br>said it was ${v}% sure<br>on ${n} answer${n>1?"s":""}`);
+      s.appendChild(c);
+      const t=el("text",{x:x(+v),y:y-r-9,"text-anchor":"middle",class:"ax",fill:"var(--ink-2)"});
+      t.textContent=v;s.appendChild(t);
+    }
+  }
+})();
+
+/* 2. coverage */
+(function(){
+  const s=document.getElementById("coverage");
+  const L=150,R=800,W=R-L,T=48,BH=42,GAP=40;
+  const x=v=>L+(v/100)*W;
+  for(let v=0;v<=100;v+=20){
+    s.appendChild(el("line",{x1:x(v),y1:T-12,x2:x(v),y2:T+2*BH+GAP+10,class:"grid"}));
+    const t=el("text",{x:x(v),y:T+2*BH+GAP+30,"text-anchor":"middle",class:"ax"});
+    t.textContent=v+"%";s.appendChild(t);
+  }
+  const cap=el("text",{x:(L+R)/2,y:T+2*BH+GAP+52,"text-anchor":"middle",class:"axl"});
+  cap.textContent="how often the true answer was inside the range";s.appendChild(cap);
+  s.appendChild(el("line",{x1:x(80),y1:T-34,x2:x(80),y2:T+2*BH+GAP+10,
+    stroke:"var(--ink)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
+  const tl=el("text",{x:x(80),y:T-42,"text-anchor":"middle",class:"dl"});
+  tl.textContent="what they promised: 80%";s.appendChild(tl);
+  [{m:"stronger model",v:72,c:"var(--a)",n:"36 of 50"},
+   {m:"weaker model",v:32,c:"var(--b)",n:"16 of 50"}].forEach((d,i)=>{
+    const y=T+i*(BH+GAP);
+    const lab=el("text",{x:L-16,y:y+BH/2-1,"text-anchor":"end",class:"dlx",fill:d.c});
+    lab.textContent=d.m;s.appendChild(lab);
+    const sub=el("text",{x:L-16,y:y+BH/2+16,"text-anchor":"end",class:"ax"});
+    sub.textContent=d.n;s.appendChild(sub);
+    const bar=el("rect",{x:L,y:y,width:Math.max(2,x(d.v)-L),height:BH,fill:d.c,rx:3});
+    bind(bar,`<b>${d.m}</b><br>the truth was inside its range<br>${d.n} times = ${d.v}%<br>it promised 80%`);
+    s.appendChild(bar);
+    const val=el("text",{x:x(d.v)+12,y:y+BH/2+5,class:"dl"});
+    val.textContent=d.v+"%";s.appendChild(val);
+  });
+})();
+
+/* 3. narrow vs wide */
+(function(){
+  const s=document.getElementById("narrowwide");
+  const groups=[
+    {m:"stronger model",c:"var(--a)",nar:1.0,wid:6.0},
+    {m:"weaker model",c:"var(--b)",nar:8.0,wid:28.5}];
+  const L=150,R=790,W=R-L,T=52,RH=68;
+  const MAX=30, x=v=>L+(v/MAX)*W;
+  [0,5,10,15,20,25,30].forEach(v=>{
+    s.appendChild(el("line",{x1:x(v),y1:T-16,x2:x(v),y2:T+2*RH-6,class:"grid"}));
+    const t=el("text",{x:x(v),y:T+2*RH+12,"text-anchor":"middle",class:"ax"});
+    t.textContent=v;s.appendChild(t);
+  });
+  const cap=el("text",{x:(L+R)/2,y:T+2*RH+34,"text-anchor":"middle",class:"axl"});
+  cap.textContent="typically off by this many percentage points";s.appendChild(cap);
+  const hd=el("text",{x:L,y:T-28,class:"axl"});
+  hd.textContent="↓ narrow range = the model claimed to be precise";s.appendChild(hd);
+  groups.forEach((g,i)=>{
+    const y0=T+i*RH;
+    const lab=el("text",{x:L-16,y:y0+22,"text-anchor":"end",class:"dlx",fill:g.c});
+    lab.textContent=g.m;s.appendChild(lab);
+    [["narrow range",g.nar,0],["wide range",g.wid,1]].forEach(([nm,v,k])=>{
+      const y=y0+k*22, h=15;
+      const bar=el("rect",{x:L,y:y,width:Math.max(2,x(v)-L),height:h,
+        fill:g.c,rx:2,opacity:k?1:.45});
+      bind(bar,`<b>${g.m}</b><br>${nm}s<br>typically off by ${v} points`);
+      s.appendChild(bar);
+      const t=el("text",{x:x(v)+10,y:y+12,class:"dl"});
+      t.textContent=v+" pts · "+nm;s.appendChild(t);
+    });
+  });
+})();
+
+/* 4. table */
+(function(){
+  const tb=document.getElementById("ptable");
+  PERT.forEach(p=>{
+    const tr=document.createElement("tr");
+    tr.className=p.why?"echo":(p.ctrl?"ctrl":"");
+    tr.innerHTML=
+      `<td>${p.w}${p.ctrl?'<br><span class="pill ok">my own trap</span>':''}</td>`+
+      `<td class="n">${p.t}</td>`+
+      `<td class="n" style="color:var(--a)">${p.d}</td>`+
+      `<td class="n" style="color:var(--b)">${p.l}</td>`+
+      `<td class="why">${p.why?`<span class="pill no">repeated an old answer</span><br>${p.why}`:
+        '<span style="color:var(--muted)">both adjusted</span>'}</td>`;
+    tb.appendChild(tr);
+  });
+})();
+
+const FLEET=[
+ {t:"gemma3:4b", e:115.97, lo:97.45, hi:123.39, s:32.4},
+ {t:"llama3.1:8b", e:116.51, lo:105.95, hi:121.71, s:53.0},
+ {t:"gemma3:12b", e:123.46, lo:116.21, hi:128.73, s:70.1},
+ {t:"mistral-small:24b", e:127.07, lo:122.41, hi:129.01, s:81.4, slo:80.7, shi:82.9},
+ {t:"gemma3:27b", e:130.04, lo:124.64, hi:132.17, s:68.8},
+ {t:"phi4:14b", e:130.42, lo:125.50, hi:132.10, s:56.2},
+ {t:"qwen3:8b", e:136.18, lo:129.58, hi:138.07, s:54.3},
+ {t:"gpt-oss:20b", e:137.81, lo:132.89, hi:139.56, s:52.4},
+ {t:"qwen3:14b", e:138.25, lo:133.68, hi:139.84, s:61.9},
+ {t:"qwen3:32b", e:138.52, lo:135.14, hi:140.32, s:78.3, slo:78.2, shi:78.4},
+ {t:"qwen3.5:9b", e:139.45, lo:136.59, hi:141.07, s:71.3, add:1},
+ {t:"gemma4:31b", e:142.68, lo:140.28, hi:144.75, s:81.7, add:1},
+ {t:"qwen3.6:35b-a3b", e:143.87, lo:141.31, hi:146.00, s:81.0, add:1},
+ {t:"qwen3.6:27b", e:146.51, lo:144.53, hi:147.80, s:76.0, add:1}
+];
+
+/* 5. fleet scatter */
+(function(){
+  const s=document.getElementById("fleet");
+  if(!s) return;
+  const L=96,R=812,T=34,B=372;
+  const lo=m=>m.slo==null?m.s:m.slo, hi=m=>m.shi==null?m.s:m.shi;
+  const xv=FLEET.flatMap(m=>[m.lo,m.hi]);
+  const yv=FLEET.flatMap(m=>[lo(m),hi(m)]);
+  const xlo=Math.min(...xv)-1.5, xhi=Math.max(...xv)+1.5;
+  const ylo=Math.max(0,Math.min(...yv)-8), yhi=Math.min(100,Math.max(...yv)+8);
+  const x=v=>L+(v-xlo)/(xhi-xlo)*(R-L);
+  const y=v=>B-(v-ylo)/(yhi-ylo)*(B-T);
+  const step=(a,b)=>{const raw=(b-a)/5, p=Math.pow(10,Math.floor(Math.log10(raw)));
+    return [1,2,2.5,5,10].map(k=>k*p).find(v=>v>=raw)||p*10;};
+  const sx=step(xlo,xhi), sy=step(ylo,yhi);
+  for(let v=Math.ceil(xlo/sx)*sx;v<=xhi;v+=sx){
+    s.appendChild(el("line",{x1:x(v),y1:T,x2:x(v),y2:B,class:"grid"}));
+    const t=el("text",{x:x(v),y:B+21,"text-anchor":"middle",class:"ax"});
+    t.textContent=Math.round(v);s.appendChild(t);
+  }
+  for(let v=Math.ceil(ylo/sy)*sy;v<=yhi;v+=sy){
+    s.appendChild(el("line",{x1:L,y1:y(v),x2:R,y2:y(v),class:"grid"}));
+    const t=el("text",{x:L-12,y:y(v)+4,"text-anchor":"end",class:"ax"});
+    t.textContent=Math.round(v);s.appendChild(t);
+  }
+  const xl=el("text",{x:(L+R)/2,y:B+46,"text-anchor":"middle",class:"axl"});
+  xl.textContent="general ability, from the public leaderboard  →";
+  s.appendChild(xl);
+  const yl=el("text",{x:0,y:0,class:"axl","text-anchor":"middle",
+    transform:"translate(34 "+((T+B)/2)+") rotate(-90)"});
+  yl.textContent="knows what it doesn’t know  →";s.appendChild(yl);
+
+  const ordered=FLEET.slice().sort((a,b)=>a.e-b.e);
+
+  ordered.forEach(m=>{
+    s.appendChild(el("line",{x1:x(m.lo),y1:y(m.s),x2:x(m.hi),y2:y(m.s),
+      stroke:"var(--a)",opacity:.3,"stroke-width":2,"stroke-linecap":"round"}));
+    if(m.slo!=null && m.shi!=null && m.shi>m.slo){
+      s.appendChild(el("line",{x1:x(m.e),y1:y(m.slo),x2:x(m.e),y2:y(m.shi),
+        stroke:"var(--a)",opacity:.55,"stroke-width":3,"stroke-linecap":"round"}));
+    }
+    const c=el("circle",{cx:x(m.e),cy:y(m.s),r:6.5,
+      fill:m.add?"var(--surface)":"var(--a)",
+      stroke:m.add?"var(--a)":"var(--surface)","stroke-width":2});
+    bind(c,"<b>"+m.t+"</b><br>ability "+m.e.toFixed(1)+
+         "<br>knows-itself score "+m.s+
+         (m.shi!=null&&m.slo!=null&&m.shi>m.slo
+            ? "<br>across repeat runs: "+m.slo+" to "+m.shi : ""));
+    s.appendChild(c);
+  });
+
+  const CH=6.7, TH=15, obstacles=[];
+  ordered.forEach(m=>obstacles.push({x0:x(m.e)-9,y0:y(m.s)-9,
+                                     x1:x(m.e)+9,y1:y(m.s)+9,own:m.t}));
+  const over=(a,b)=>Math.max(0,Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0))
+                   *Math.max(0,Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0));
+  const CANDS=[[0,-14,"middle"],[0,21,"middle"],[11,4,"start"],[-11,4,"end"],
+               [0,-29,"middle"],[0,36,"middle"],[11,-12,"start"],[-11,-12,"end"]];
+  ordered.forEach(m=>{
+    const w=m.t.length*CH;
+    let pick=null, pickCost=null;
+    for(const [dx,dy,anc] of CANDS){
+      const cx=x(m.e)+dx, cy=y(m.s)+dy;
+      const x0 = anc==="middle" ? cx-w/2 : (anc==="start" ? cx : cx-w);
+      const box={x0:x0, y0:cy-TH/2, x1:x0+w, y1:cy+TH/2};
+      let cost=30*(Math.max(0,L-box.x0)+Math.max(0,box.x1-R));
+      obstacles.forEach(b=>{ if(b.own!==m.t) cost+=over(box,b); });
+      if(cost===0){ pick={dx,dy,anc,box}; break; }
+      if(pickCost===null || cost<pickCost){ pick={dx,dy,anc,box}; pickCost=cost; }
+    }
+    const t=el("text",{x:x(m.e)+pick.dx, y:y(m.s)+pick.dy+4,
+      "text-anchor":pick.anc, class:"dl"});
+    t.textContent=m.t; s.appendChild(t);
+    obstacles.push(pick.box);
+  });
+})();
+</script>
+</body>
+</html>
